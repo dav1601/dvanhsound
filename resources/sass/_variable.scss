@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap");
+html {
+    font-family: "Manrope", sans-serif !important;
+    font-size: 16px;
+    word-wrap: break-word;
+    color: white;
+}
+
+input {
+    all: unset;
+}
+$green: #1db954;
+$heightBottom: 88px;
+$white-72: rgba(255, 255, 255, 0.72);
+$secondary: #212121;
+.v-main {
+    padding-bottom: $heightBottom !important;
+}
+.col-4 {
+    flex: 0 0 33%;
+    max-width: 33%;
+}
+.white-72 {
+    color: rgba(255, 255, 255, 0.72);
+}
+.grey-font {
+    font-weight: 500;
+    color: $white-72;
+}
+.dva-text-green {
+    color: $green;
+}
+.dva-bg-green {
+    background: $green !important;
+}
