@@ -108,7 +108,7 @@ export const useDatabaseApp = defineStore({
         ],
         // ANCHOR current song //////////////////////////////////////////////////////
         currentSong: {
-            status: "",
+            status: "paused",
             index: null,
             el: null,
             data: [],
@@ -122,11 +122,17 @@ export const useDatabaseApp = defineStore({
     }),
 
     getters: {
-        getDataCurrentSong: (state) => {
-            return state.currentSong.data;
+        isPlaying: (state) => {
+            return (
+                state.currentSong.status === "playing" ||
+                state.currentSong.status === "play"
+            );
         },
-        getPlaylist: (state) => {
-            return state.playlist;
+        isPaused: (state) => {
+            return (
+                state.currentSong.status === "pause" ||
+                state.currentSong.status === "paused"
+            );
         },
     },
     actions: {
@@ -146,13 +152,18 @@ export const useDatabaseApp = defineStore({
         updateSettings(payload) {
             if (payload.volume) {
                 console.log(payload.volume);
-                if (payload.volume === 1) {
+                if (payload.volume <= 1) {
                     payload.volume = 0;
                 }
                 this.currentSong.el.volume = payload.volume / 100;
                 this.settings.volume = payload.volume;
-                localStorage.setItem("songVolume", payload.volume);
+                if (!payload.volumeOff) {
+                    localStorage.setItem("songVolume", payload.volume);
+                }
             }
+        },
+        updateStatusCurrentSong(status) {
+            this.currentSong.status = status;
         },
     },
 });

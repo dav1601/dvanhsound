@@ -50,7 +50,10 @@
                             class="--controls-btn --controls-playOrPause"
                             @click="playSong"
                         >
-                            <v-icon icon="mdi-play-circle" class="text-white">
+                            <v-icon
+                                :icon="renderIconPlayPause"
+                                class="text-white"
+                            >
                             </v-icon>
                         </button>
                         <button class="--controls-btn --controls-next">
@@ -79,14 +82,25 @@
 
                 <!-- ANCHOR end --------------------------------- -->
                 <div
-                    class="npb-layout-end col-4 flex items-center justify-center"
+                    class="npb-layout-end col-4 flex items-center justify-end pr-10"
                 >
-                    <div class="npb-layout-end-time">
+                    <div class="npb-layout-end-time mr-6">
                         <span id="npb-layout-timeupdate">0:00</span>
                         <span class="px-1">/</span>
                         <span id="npb-layout-duration">0:00</span>
                     </div>
+                    <!-- ANCHOR end layout-end-time --------------------------------- -->
                     <div class="npb-layout-end-volume flex items-center">
+                        <v-icon
+                            :icon="
+                                state.volumeOff.value
+                                    ? 'mdi-volume-off'
+                                    : 'mdi-volume-high'
+                            "
+                            class="mr-3"
+                            size="24"
+                            @click="switchVolume"
+                        ></v-icon>
                         <input
                             type="range"
                             id="songVolume"
@@ -96,21 +110,29 @@
                             @input="changeVolume"
                         />
                     </div>
+                    <!-- ANCHOR end layout-end-volume --------------------------------- -->
                 </div>
             </div>
         </div>
     </v-bottom-navigation>
 </template>
 <script>
-import { onMounted, reactive, toRefs, watch, getCurrentInstance } from "vue";
+import {
+    onMounted,
+    reactive,
+    toRefs,
+    watch,
+    getCurrentInstance,
+    computed,
+} from "vue";
 import { useDatabaseApp } from "@/stores/database";
 import { storeToRefs } from "pinia";
 export default {
-    setup(props) {
+    setup() {
         const { proxy } = getCurrentInstance();
         // SECTION Store //////////////////////////////////////////////////////
         const useStore = useDatabaseApp();
-        useStore.setCurrentSong({ index: 1 });
+        useStore.setCurrentSong({ index: 3 });
         const currentSong = useStore.currentSong;
         // !SECTION End Store //////////////////////////////////////////////////////
 
@@ -120,6 +142,8 @@ export default {
                 elAudio: null,
                 progress: 0,
                 progressVolume: useStore.settings.volume,
+                volumeOff: false,
+                playTime: 0,
             };
         };
         const stateReactive = reactive({ ...initData() });
@@ -129,32 +153,34 @@ export default {
         onMounted(() => {
             setDuration();
             renderBgSongVolume();
+            console.log(useStore.isPlaying, useStore.isPaused);
+            currentSong.el.addEventListener("timeupdate", function () {
+                const el = document.getElementById("npb-layout-timeupdate");
+                const value =
+                    (currentSong.el.currentTime / currentSong.el.duration) *
+                    100;
 
-            currentSong.el.addEventListener("timeupdate", () => {
-                // console.log(currentSong.el.duration);
+                el.innerText = proxy.$formatTime(currentSong.el.currentTime);
+                stateReactive.progress = value.toFixed();
             });
+            // ANCHOR events //////////////////////////////////////////////////////
         });
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
 
         // SECTION Computed //////////////////////////////////////////////////////
-
+        const renderIconPlayPause = computed(() => {
+            if (useStore.isPlaying) return "mdi-pause-circle";
+            if (useStore.isPaused) return "mdi-play-circle";
+        });
         // !SECTION End Computed //////////////////////////////////////////////////////
 
         // SECTION Methods //////////////////////////////////////////////////////
+        // ANCHOR play song //////////////////////////////////////////////////////
         const playSong = () => {
-            stateReactive.interval = setInterval(() => {
-                if (stateReactive.progress < 100) {
-                    stateReactive.progress += 10;
-                } else {
-                    clearInterval(stateReactive.interval);
-                }
-            }, 1000);
-
             useStore.playSong();
         };
-        const saveSettings = () => {
-            localStorage.setItem("songVolume", stateReactive.progressVolume);
-        };
+        // ANCHOR update time  //////////////////////////////////////////////////////
+
         const setDuration = () => {
             new Promise(function (resolve) {
                 currentSong.el.addEventListener("loadedmetadata", function () {
@@ -170,19 +196,18 @@ export default {
             stateReactive.progress =
                 ((target.value - target.min) / (target.max - target.min)) * 100;
         };
-        const renderBgSongProgress = () => {
+        const renderBgSongProgress = (value) => {
             const el = document.getElementById("songProgress");
-
+            const width = value ? value : stateReactive.progress;
             el.style.background =
                 "linear-gradient(to right, #1db954 0%, #1db954 " +
-                stateReactive.progress +
+                width +
                 "%, hsla(0, 0%, 100%, 0.3) " +
-                stateReactive.progress +
+                width +
                 "%, hsla(0, 0%, 100%, 0.3))";
         };
         const renderBgSongVolume = () => {
             const el = document.getElementById("songVolume");
-            // const progress = ((value - el.min) / (el.max - el.min)) * 100;
             return (el.style.background =
                 "linear-gradient(to right, #1db954 0%, #1db954 " +
                 stateReactive.progressVolume +
@@ -195,36 +220,60 @@ export default {
             stateReactive.progressVolume =
                 ((target.value - target.min) / (target.max - target.min)) * 100;
         };
+        const switchVolume = (e) => {
+            stateReactive.volumeOff = !stateReactive.volumeOff;
+        };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
         watch(
             () => stateReactive.progress,
-            (newProgress) => {
-                renderBgSongProgress();
+            (newVal) => {
+                renderBgSongProgress(newVal);
             }
-            // ANCHOR end progress //////////////////////////////////////////////////////
         );
+        // ANCHOR end progress //////////////////////////////////////////////////////
         watch(
             () => stateReactive.progressVolume,
-            (newVal) => {
+            (volume) => {
                 renderBgSongVolume();
-                useStore.updateSettings({ volume: newVal });
+                stateReactive.volumeOff = volume <= 1;
+                useStore.updateSettings({
+                    volume: volume,
+                    volumeOff: stateReactive.volumeOff,
+                });
             }
-            // ANCHOR end progress //////////////////////////////////////////////////////
         );
+        watch(
+            () => stateReactive.volumeOff,
+            (isOff) => {
+                if (isOff) {
+                    stateReactive.progressVolume = 0;
+                } else {
+                    stateReactive.progressVolume =
+                        localStorage.getItem("songVolume");
+                }
+            }
+        );
+        // ANCHOR end volume //////////////////////////////////////////////////////
         // !SECTION End Watch //////////////////////////////////////////////////////
 
         // SECTION return //////////////////////////////////////////////////////
         return {
+            // ANCHOR data //////////////////////////////////////////////////////
             state: toRefs(stateReactive),
+            store: storeToRefs(useStore),
+            // ANCHOR computed //////////////////////////////////////////////////////
+            renderIconPlayPause,
+            // ANCHOR methods //////////////////////////////////////////////////////
             renderBgSongProgress,
             playSong,
             onInputChangeProgress,
             currentSong,
             changeVolume,
-            store: storeToRefs(useStore),
+            switchVolume,
         };
+        // !SECTION //////////////////////////////////////////////////////
     },
 };
 </script>
@@ -281,7 +330,7 @@ export default {
                     background: hsla(0, 0%, 100%, 0.3);
                     height: 4px;
                     border-radius: 8px;
-                    width: 100%;
+                    width: 100px;
                     &::-webkit-slider-thumb {
                         width: 12px;
                         -webkit-appearance: none;
