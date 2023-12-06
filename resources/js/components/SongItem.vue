@@ -5,19 +5,28 @@
         class="song-item"
         @mouseenter="data.isHover = true"
         @mouseleave="data.isHover = false"
+        @click.stop="clickItem"
     >
         <div class="song-item-grid">
             <div class="song-item-index text-white font-semibold">
-                <span :class="{ 'd-none': data.isHover }">
+                <span
+                    v-if="!selfPlaying && !data.isHover"
+                    :class="{ acitve: data.active }"
+                >
                     {{ index + 1 }}</span
                 >
                 <v-icon
-                    icon="mdi-play --play"
-                    :class="{ 'd-none': !data.isHover }"
+                    icon="mdi-play"
+                    v-if="!selfPlaying && data.isHover"
+                    @click.stop="clickBtn"
                 ></v-icon>
-                <v-icon icon="mdi-pause --pause" class="d-none"></v-icon>
+                <v-icon
+                    icon="mdi-pause"
+                    @click.stop="clickBtn"
+                    v-if="selfPlaying && data.isHover"
+                ></v-icon>
                 <equaliser-loading
-                    :class="{ 'd-none': data.isHover || true }"
+                    v-if="selfPlaying && !data.isHover"
                     width="18px"
                     height="18px"
                 ></equaliser-loading>
@@ -39,6 +48,7 @@
 
                 <span
                     class="song-item-title flex-1 truncate ml-4 font-bold text-white"
+                    :class="{ acitve: data.active }"
                 >
                     {{ song.title }}
                 </span>
@@ -90,14 +100,16 @@
     <!-- !SECTION --------------------------------- -->
 </template>
 <script>
-import { reactive, getCurrentInstance, onMounted } from "vue";
+import { reactive, getCurrentInstance, onMounted, computed, watch } from "vue";
 import EqualiserLoading from "@/components/app/loading/EqualiserLoading.vue";
+import { useDatabaseApp } from "@/stores/database";
+import { storeToRefs } from "pinia";
 export default {
     props: ["song", "index", "isLast"],
     components: { EqualiserLoading },
     setup(props) {
         const { proxy } = getCurrentInstance();
-
+        const useStore = useDatabaseApp();
         // SECTION store //////////////////////////////////////////////////////
 
         // !SECTION
@@ -106,6 +118,7 @@ export default {
             return {
                 activeHeart: false,
                 isHover: false,
+                active: props.index == useStore.currentSong.index,
             };
         };
         const reactiveData = reactive({ ...initData() });
@@ -126,6 +139,13 @@ export default {
         });
         // !SECTION end lc //////////////////////////////////////////////////////
         // SECTION computed //////////////////////////////////////////////////////
+        const isActive = computed(() => {
+            return props.index == useStore.currentSong.index ? true : false;
+        });
+        const selfPlaying = computed(() => {
+            return isActive.value && useStore.isPlaying ? true : false;
+        });
+
         // !SECTION end compued //////////////////////////////////////////////////////
         // SECTION methods //////////////////////////////////////////////////////
         // ANCHOR get duration //////////////////////////////////////////////////////
@@ -140,7 +160,15 @@ export default {
         };
         const setHeart = (active = true) => {
             reactiveData.activeHeart = active;
-            console.log(reactiveData.activeHeart);
+        };
+        const clickItem = () => {
+            if (reactiveData.active) {
+                return useStore.playOrPause();
+            }
+            useStore.startSong(props.index);
+        };
+        const clickBtn = () => {
+            useStore.playOrPause();
         };
 
         // ANCHOR hover song item
@@ -154,6 +182,11 @@ export default {
 
         return {
             setHeart,
+            clickItem,
+            clickBtn,
+
+            selfPlaying,
+            store: storeToRefs(useStore),
             data: reactiveData,
         };
     },
@@ -196,9 +229,14 @@ export default {
         flex: 0 0 24px;
         max-width: 24px;
     }
+
     padding: 8px 19px;
     border-radius: 8px;
     cursor: pointer;
+    .acitve {
+        color: $green !important;
+        font-weight: bold !important;
+    }
     // &:first-child {
     //     padding-top: 0;
     // }

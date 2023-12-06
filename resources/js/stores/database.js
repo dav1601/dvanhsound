@@ -118,6 +118,9 @@ export const useDatabaseApp = defineStore({
                 ? localStorage.getItem("songVolume")
                 : 50,
             repeat: "unset",
+            currentTime: localStorage.getItem("currentTime")
+                ? localStorage.getItem("currentTime")
+                : 0,
         },
     }),
 
@@ -137,17 +140,57 @@ export const useDatabaseApp = defineStore({
     },
     actions: {
         setCurrentSong(payload) {
+            localStorage.setItem("currentSong", payload.index);
             const index = payload.index;
             const data = this.playlist[index];
+            console.log("set current song");
             this.currentSong.index = index;
             this.currentSong.data = data;
-            this.currentSong.el = new Audio(data.source);
+            if (this.currentSong.el !== null) {
+                this.currentSong.el.src = data.source;
+            } else {
+                this.currentSong.el = new Audio(data.source);
+            }
+            this.currentSong.el.currentTime = 0;
             this.currentSong.el.volume = this.settings.volume / 100;
             this.currentSong.el.loop = this.settings.repeat === "self";
+        },
+        shufflePlaylist() {
+            let array = this.playlist.filter((song, index) => {
+                return index != this.currentSong.index;
+            });
+            let currentIndex = array.length,
+                randomIndex;
+            // While there remain elements to shuffle.
+            while (currentIndex > 0) {
+                // Pick a remaining element.
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                // And swap it with the current element.
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex],
+                    array[currentIndex],
+                ];
+            }
+            array.unshift(this.playlist[this.currentSong.index]);
+            return (this.playlist = array);
+        },
+        repeatSong(type) {
+            this.settings.repeat = type;
+            this.currentSong.el.loop = type === "self";
+        },
+        startSong(index) {
+            this.setCurrentSong({ index: index });
+            this.playSong();
         },
         playSong() {
             this.currentSong.status = "playing";
             this.currentSong.el.play();
+        },
+        pauseSong() {
+            this.currentSong.status = "paused";
+            this.currentSong.el.pause();
         },
         updateSettings(payload) {
             if (payload.volume) {
@@ -161,9 +204,37 @@ export const useDatabaseApp = defineStore({
                     localStorage.setItem("songVolume", payload.volume);
                 }
             }
+            if (payload.currentTime) {
+                console.log(payload);
+                this.currentSong.el.currentTime = payload.currentTime;
+            }
+        },
+        nextOrPrevSong(type) {
+            let index = parseInt(this.currentSong.index);
+            console.log(index, type);
+
+            if (type === "next") {
+                index++;
+                if (index >= this.playlist.length) {
+                    index = 0;
+                }
+            } else {
+                index--;
+                if (index < 0) {
+                    index = this.playlist.length - 1;
+                }
+            }
+            return this.startSong(index);
         },
         updateStatusCurrentSong(status) {
             this.currentSong.status = status;
+        },
+        playOrPause() {
+            if (this.isPlaying) {
+                this.pauseSong();
+            } else {
+                this.playSong();
+            }
         },
     },
 });

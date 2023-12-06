@@ -42,13 +42,16 @@
                             <v-icon icon="mdi-shuffle-variant" class="white-72">
                             </v-icon>
                         </button>
-                        <button class="--controls-btn --controls-prev">
+                        <button
+                            class="--controls-btn --controls-prev"
+                            @click="nextOrPrev('prev')"
+                        >
                             <v-icon icon="mdi-skip-previous" class="white-72">
                             </v-icon>
                         </button>
                         <button
                             class="--controls-btn --controls-playOrPause"
-                            @click="playSong"
+                            @click="playOrPause"
                         >
                             <v-icon
                                 :icon="renderIconPlayPause"
@@ -56,7 +59,10 @@
                             >
                             </v-icon>
                         </button>
-                        <button class="--controls-btn --controls-next">
+                        <button
+                            class="--controls-btn --controls-next"
+                            @click="nextOrPrev('next')"
+                        >
                             <v-icon icon="mdi-skip-next" class="white-72">
                             </v-icon>
                         </button>
@@ -130,9 +136,11 @@ import { storeToRefs } from "pinia";
 export default {
     setup() {
         const { proxy } = getCurrentInstance();
+
         // SECTION Store //////////////////////////////////////////////////////
         const useStore = useDatabaseApp();
-        useStore.setCurrentSong({ index: 3 });
+
+        useStore.setCurrentSong({ index: localStorage.getItem("currentSong") });
         const currentSong = useStore.currentSong;
         // !SECTION End Store //////////////////////////////////////////////////////
 
@@ -146,8 +154,8 @@ export default {
                 playTime: 0,
             };
         };
-        const stateReactive = reactive({ ...initData() });
 
+        const stateReactive = reactive({ ...initData() });
         // !SECTION End State //////////////////////////////////////////////////////
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         onMounted(() => {
@@ -160,8 +168,12 @@ export default {
                     (currentSong.el.currentTime / currentSong.el.duration) *
                     100;
 
-                el.innerText = proxy.$formatTime(currentSong.el.currentTime);
-                stateReactive.progress = value.toFixed();
+                if (!isNaN(value)) {
+                    el.innerText = proxy.$formatTime(
+                        currentSong.el.currentTime
+                    );
+                    stateReactive.progress = value.toFixed();
+                }
             });
             // ANCHOR events //////////////////////////////////////////////////////
         });
@@ -176,8 +188,8 @@ export default {
 
         // SECTION Methods //////////////////////////////////////////////////////
         // ANCHOR play song //////////////////////////////////////////////////////
-        const playSong = () => {
-            useStore.playSong();
+        const playOrPause = (e) => {
+            useStore.playOrPause();
         };
         // ANCHOR update time  //////////////////////////////////////////////////////
 
@@ -191,11 +203,16 @@ export default {
                     proxy.$formatTime(length);
             });
         };
+        // ANCHOR change input range //////////////////////////////////////////////////////
         const onInputChangeProgress = (e) => {
             const target = e.target;
             stateReactive.progress =
                 ((target.value - target.min) / (target.max - target.min)) * 100;
+            useStore.updateSettings({
+                currentTime: (currentSong.el.duration * target.value) / 100,
+            });
         };
+        // ANCHOR render background progress and volume //////////////////////////////////////////////////////
         const renderBgSongProgress = (value) => {
             const el = document.getElementById("songProgress");
             const width = value ? value : stateReactive.progress;
@@ -215,6 +232,7 @@ export default {
                 stateReactive.progressVolume +
                 "%, hsla(0, 0%, 100%, 0.3))");
         };
+        // ANCHOR change volume //////////////////////////////////////////////////////
         const changeVolume = (e) => {
             const target = e.target;
             stateReactive.progressVolume =
@@ -223,12 +241,27 @@ export default {
         const switchVolume = (e) => {
             stateReactive.volumeOff = !stateReactive.volumeOff;
         };
+        // ANCHOR next or prev //////////////////////////////////////////////////////
+        const nextOrPrev = (type = "next") => {
+            stateReactive.progress = 0;
+            useStore.nextOrPrevSong(type);
+        };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
         watch(
+            () => currentSong.index,
+            (newIndex) => {
+                setDuration();
+            }
+        );
+
+        watch(
             () => stateReactive.progress,
             (newVal) => {
+                if (newVal === isNaN) {
+                    stateReactive.progress = 0;
+                }
                 renderBgSongProgress(newVal);
             }
         );
@@ -267,11 +300,12 @@ export default {
             renderIconPlayPause,
             // ANCHOR methods //////////////////////////////////////////////////////
             renderBgSongProgress,
-            playSong,
             onInputChangeProgress,
             currentSong,
             changeVolume,
             switchVolume,
+            playOrPause,
+            nextOrPrev,
         };
         // !SECTION //////////////////////////////////////////////////////
     },
@@ -314,6 +348,7 @@ export default {
                         border-radius: 8px;
                         width: 100%;
                         margin-bottom: 18px;
+                        transition: all 0.25s linear;
                         &::-webkit-slider-thumb {
                             width: 12px;
                             -webkit-appearance: none;

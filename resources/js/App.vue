@@ -57,8 +57,6 @@ export default {
         const useStore = useDatabaseApp();
         const { navList } = storeToRefs(useStore);
 
-        useStore.setCurrentSong({ index: 1 });
-        const currentSong = useStore.currentSong;
         // !SECTION End Store //////////////////////////////////////////////////////
 
         // SECTION State //////////////////////////////////////////////////////
@@ -80,7 +78,7 @@ export default {
         // SECTION return //////////////////////////////////////////////////////
         return {
             navList,
-            currentSong,
+
         };
     },
 };
