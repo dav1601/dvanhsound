@@ -17,7 +17,9 @@
         "vite": "^4.0.0"
     },
     "dependencies": {
+        "animate.css": "^4.1.1",
         "pinia": "^2.1.7",
+        "swiper": "^11.0.5",
         "vue-router": "^4.2.5",
         "vuetify": "^3.4.0"
     }

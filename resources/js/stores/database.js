@@ -146,6 +146,7 @@ export const useDatabaseApp = defineStore({
             console.log("set current song");
             this.currentSong.index = index;
             this.currentSong.data = data;
+            console.log(data);
             if (this.currentSong.el !== null) {
                 this.currentSong.el.src = data.source;
             } else {

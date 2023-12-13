@@ -8,19 +8,30 @@
                     class="npb-layout-start col-4 flex justify-start items-center"
                 >
                     <v-img
-                        :src="currentSong.data.image"
+                        :src="state.data.snippet.thumbnails.default.url"
                         max-width="56"
                         max-height="56"
                         class="rounded"
+                        v-if="store.loadedSong.value"
                     >
                     </v-img>
+                    <v-skeleton-loader
+                        v-else
+                        type="image"
+                        class="rounded"
+                        width="56px"
+                        height="56px"
+                        max-height="56px"
+                    ></v-skeleton-loader>
+
                     <div
                         class="title-artist flex flex-col justify-start items-start ml-4"
                     >
                         <span
-                            class="title mb-2 text-lg text-white font-semibold"
+                            class="title mb-2 text-lg text-white font-semibold truncate max-w-[250px]"
+                            v-if="store.loadedSong.value"
                         >
-                            {{ currentSong.data.title }}
+                            {{ state.data.snippet.title }}
                         </span>
                         <span class="artist text-sm font-normal white-72">
                             Allan Walker
@@ -36,7 +47,7 @@
                 <!-- ANCHOR layout center --------------------------------- -->
                 <div class="npb-layout-center col-4">
                     <div
-                        class="npb-layout-center-controls flex items-center justify-center mb-2"
+                        class="npb-layout-center-controls flex items-center justify-center mb-1"
                     >
                         <button class="--controls-btn --controls-shuffle">
                             <v-icon icon="mdi-shuffle-variant" class="white-72">
@@ -44,14 +55,14 @@
                         </button>
                         <button
                             class="--controls-btn --controls-prev"
-                            @click="nextOrPrev('prev')"
+                            @click.stop="nextOrPrev('prev')"
                         >
                             <v-icon icon="mdi-skip-previous" class="white-72">
                             </v-icon>
                         </button>
                         <button
                             class="--controls-btn --controls-playOrPause"
-                            @click="playOrPause"
+                            @click.stop="playOrPause"
                         >
                             <v-icon
                                 :icon="renderIconPlayPause"
@@ -61,7 +72,7 @@
                         </button>
                         <button
                             class="--controls-btn --controls-next"
-                            @click="nextOrPrev('next')"
+                            @click.stop="nextOrPrev('next')"
                         >
                             <v-icon icon="mdi-skip-next" class="white-72">
                             </v-icon>
@@ -76,7 +87,7 @@
                         <input
                             type="range"
                             id="songProgress"
-                            :value="state.progress.value"
+                            :value="state.progress"
                             step="1"
                             min="0"
                             max="100"
@@ -99,18 +110,18 @@
                     <div class="npb-layout-end-volume flex items-center">
                         <v-icon
                             :icon="
-                                state.volumeOff.value
+                                state.volumeOff
                                     ? 'mdi-volume-off'
                                     : 'mdi-volume-high'
                             "
                             class="mr-3"
                             size="24"
-                            @click="switchVolume"
+                            @click.stop="switchVolume"
                         ></v-icon>
                         <input
                             type="range"
                             id="songVolume"
-                            :value="state.progressVolume.value"
+                            :value="state.progressVolume"
                             min="0"
                             max="100"
                             @input="changeVolume"
@@ -126,22 +137,23 @@
 import {
     onMounted,
     reactive,
-    toRefs,
+    toRef,
     watch,
     getCurrentInstance,
     computed,
 } from "vue";
-import { useDatabaseApp } from "@/stores/database";
+import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
+
 export default {
     setup() {
         const { proxy } = getCurrentInstance();
 
         // SECTION Store //////////////////////////////////////////////////////
-        const useStore = useDatabaseApp();
+        const useStore = useSongPlay();
 
-        useStore.setCurrentSong({ index: localStorage.getItem("currentSong") });
-        const currentSong = useStore.currentSong;
+        useStore.loadSong("dm5-tn1Rug0");
+
         // !SECTION End Store //////////////////////////////////////////////////////
 
         // SECTION State //////////////////////////////////////////////////////
@@ -152,6 +164,7 @@ export default {
                 progressVolume: useStore.settings.volume,
                 volumeOff: false,
                 playTime: 0,
+                data: [],
             };
         };
 
@@ -159,22 +172,19 @@ export default {
         // !SECTION End State //////////////////////////////////////////////////////
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         onMounted(() => {
-            setDuration();
-            renderBgSongVolume();
-            console.log(useStore.isPlaying, useStore.isPaused);
-            currentSong.el.addEventListener("timeupdate", function () {
-                const el = document.getElementById("npb-layout-timeupdate");
-                const value =
-                    (currentSong.el.currentTime / currentSong.el.duration) *
-                    100;
-
-                if (!isNaN(value)) {
-                    el.innerText = proxy.$formatTime(
-                        currentSong.el.currentTime
-                    );
-                    stateReactive.progress = value.toFixed();
-                }
-            });
+            // setDuration();
+            // useStore.currentSong.el.addEventListener("timeupdate", function () {
+            //     const el = document.getElementById("npb-layout-timeupdate");
+            //     const value =
+            //         (useStore.currentSong.el.currentTime / useStore.currentSong.el.duration) *
+            //         100;
+            //     if (!isNaN(value)) {
+            //         el.innerText = proxy.$formatTime(
+            //             useStore.currentSong.el.currentTime
+            //         );
+            //         stateReactive.progress = value.toFixed();
+            //     }
+            // });
             // ANCHOR events //////////////////////////////////////////////////////
         });
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
@@ -195,9 +205,12 @@ export default {
 
         const setDuration = () => {
             new Promise(function (resolve) {
-                currentSong.el.addEventListener("loadedmetadata", function () {
-                    resolve(currentSong.el.duration);
-                });
+                useStore.currentSong.el.addEventListener(
+                    "loadedmetadata",
+                    function () {
+                        resolve(useStore.currentSong.el.duration);
+                    }
+                );
             }).then((length) => {
                 document.getElementById("npb-layout-duration").innerText =
                     proxy.$formatTime(length);
@@ -209,7 +222,8 @@ export default {
             stateReactive.progress =
                 ((target.value - target.min) / (target.max - target.min)) * 100;
             useStore.updateSettings({
-                currentTime: (currentSong.el.duration * target.value) / 100,
+                currentTime:
+                    (useStore.currentSong.el.duration * target.value) / 100,
             });
         };
         // ANCHOR render background progress and volume //////////////////////////////////////////////////////
@@ -250,12 +264,40 @@ export default {
 
         // SECTION Watch //////////////////////////////////////////////////////
         watch(
-            () => currentSong.index,
+            () => useStore.currentSong.id,
             (newIndex) => {
                 setDuration();
             }
         );
+        watch(
+            () => useStore.loadedSong,
+            (loaded) => {
+                if (loaded) {
+                    stateReactive.data = useStore.currentSong.data;
+                    setDuration();
+                    renderBgSongVolume();
+                    useStore.currentSong.el.addEventListener(
+                        "timeupdate",
+                        function () {
+                            const el = document.getElementById(
+                                "npb-layout-timeupdate"
+                            );
+                            const value =
+                                (useStore.currentSong.el.currentTime /
+                                    useStore.currentSong.el.duration) *
+                                100;
 
+                            if (!isNaN(value)) {
+                                el.innerText = proxy.$formatTime(
+                                    useStore.currentSong.el.currentTime
+                                );
+                                stateReactive.progress = value.toFixed();
+                            }
+                        }
+                    );
+                }
+            }
+        );
         watch(
             () => stateReactive.progress,
             (newVal) => {
@@ -294,14 +336,14 @@ export default {
         // SECTION return //////////////////////////////////////////////////////
         return {
             // ANCHOR data //////////////////////////////////////////////////////
-            state: toRefs(stateReactive),
+            state: toRef(stateReactive),
             store: storeToRefs(useStore),
             // ANCHOR computed //////////////////////////////////////////////////////
             renderIconPlayPause,
             // ANCHOR methods //////////////////////////////////////////////////////
             renderBgSongProgress,
             onInputChangeProgress,
-            currentSong,
+
             changeVolume,
             switchVolume,
             playOrPause,
@@ -347,7 +389,7 @@ export default {
                         height: 4px;
                         border-radius: 8px;
                         width: 100%;
-                        margin-bottom: 18px;
+                        margin-bottom: 8px;
                         transition: all 0.25s linear;
                         &::-webkit-slider-thumb {
                             width: 12px;

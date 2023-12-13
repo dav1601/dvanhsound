@@ -1,14 +1,17 @@
 import Playlist from "@/pages/Playlist.vue";
+import Home from "@/pages/Home.vue";
 const routes = [
     {
         path: "/",
-        component: Playlist,
-        props: true,
+        component: Home,
+        name: "Home",
+        props: true
     },
     {
         path: "/playlist",
         component: Playlist,
-        props: true,
+        name: "Playlist" ,
+        props: true
     },
 ];
 

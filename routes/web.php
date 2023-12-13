@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Api\YoutubeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +15,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
+Route::controller(HomeController::class)->group(function () {
+    Route::get('system/test', 'index');
+});
 Route::get('/{any}', function () {
-    return view("app");
-})->where('any', '.*')->name("application");
+    return view('app');
+})->where('any', '^(?!api\/)[\/\w\.-]*')->name("app");

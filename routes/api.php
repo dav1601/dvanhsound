@@ -1,7 +1,9 @@
 <?php
 
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\YoutubeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +18,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+Route::controller(YoutubeController::class)->prefix('youtube/')->group(function () {
+    Route::prefix("playlist/")->as("playlist.")->group(function () {
+        Route::get("info", "getPlaylistInfo")->name("info");
+        Route::get("items/{id}", "getPlaylistItems")->name("items");
+    });
+    Route::prefix("track/")->as("track.")->group(function () {
+        Route::get("{id}", "getTrack")->name("audio");
+
+    });
 });

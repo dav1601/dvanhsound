@@ -29,24 +29,31 @@
 
         <v-main style="min-height: 300px" rounded>
             <div id="app-content" class="w-100 h-100 p-8">
+                   
+
+                <MainTopBar />
                 <!-- ANCHOR route-view-app --------------------------------- -->
                 <router-view></router-view>
             </div>
         </v-main>
         <!-- ANCHOR now playing bar --------------------------------- -->
-        <NowPlayingBar  />
+        <NowPlayingBar />
     </v-layout>
 </template>
 <script>
 import { useDatabaseApp } from "@/stores/database";
 import { storeToRefs } from "pinia";
-import SidebarList from "@/components/SidebarList.vue";
 
+import SidebarList from "@/components/SidebarList.vue";
+import MainTopBar from "@/components/MainTopBar.vue";
 import NowPlayingBar from "@/components/NowPlayingBar.vue";
+
+
 export default {
     components: {
         SidebarList,
         NowPlayingBar,
+        MainTopBar,
     },
     setup() {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
@@ -57,29 +64,9 @@ export default {
         const useStore = useDatabaseApp();
         const { navList } = storeToRefs(useStore);
 
-        // !SECTION End Store //////////////////////////////////////////////////////
-
-        // SECTION State //////////////////////////////////////////////////////
-
-        // !SECTION End State //////////////////////////////////////////////////////
-
-        // SECTION Computed //////////////////////////////////////////////////////
-
-        // !SECTION End Computed //////////////////////////////////////////////////////
-
-        // SECTION Methods //////////////////////////////////////////////////////
-
-        // !SECTION End Methods //////////////////////////////////////////////////////
-
-        // SECTION Watch //////////////////////////////////////////////////////
-
-        // !SECTION End Watch //////////////////////////////////////////////////////
-
-        // SECTION return //////////////////////////////////////////////////////
-        return {
-            navList,
-
-        };
+         return {
+            navList: navList,
+         }
     },
 };
 </script>
