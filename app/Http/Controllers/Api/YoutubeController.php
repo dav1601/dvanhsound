@@ -28,12 +28,16 @@ class YoutubeController extends Controller
         $playlistId = $id;
         if (!$playlistId) return $this->errorResponse("not found playlist id", 404);
         $playlistItems = Youtube::getPlaylistItemsByPlaylistId($playlistId)['results'];
-        return $this->successResponse(collect($playlistItems)->toArray());
+        $playlistItems = collect($playlistItems)->filter(function ($item) {
+            return $item->status->privacyStatus === "public";
+        });
+        return $this->successResponse($playlistItems);
     }
 
     public function getTrack($id)
     {
         $track = Youtube::getVideoInfo($id);
+        if ($track->status->privacyStatus !== "public" || !$track) return $this->errorResponse("track not found", 404);
         $track->src = $this->getAudioByVideoId($id);
         return $this->successResponse(collect($track)->toArray());
     }

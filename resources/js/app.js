@@ -10,6 +10,7 @@ import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { createPinia } from "pinia";
 import helper from "@/helper/index.js";
+import Notifications from "@kyvg/vue3-notification";
 // ANCHOR router //////////////////////////////////////////////////////
 const router = vuerouter.createRouter({
     // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
@@ -34,4 +35,5 @@ app.use(vuetify, {
 });
 app.use(helper);
 app.use(pinia);
+app.use(Notifications);
 app.mount("#app");

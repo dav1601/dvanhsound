@@ -23,7 +23,14 @@ export default {
                 arrayPlaylist: [
                     "PLUadgMpPaifXLKV26KIqpFp6mpZiyF2l9",
                     "RDCLAK5uy_k_IE5_xCeyf-wLiFUN7akVxWE4THyq35o",
+                    "PLWrhnsc6Cvcrp7HmEWu8q0p95pRyGmpHi",
+                    "PLzLX1sCOqQZb-VP7Ncs8h09KarEvh5v8i",
+                    "PLpY7hx7jry7zc4zspi_fBhWQt8z5jrJ8z",
                     "PLw-VjHDlEOgsT_dJQiZUQRGuR1f5fmGKm",
+                    "PLlD46yrpUbIV22mq_rZ0aITj3aldb0WAg",
+                    "RDCLAK5uy_nmS3YoxSwVVQk9lEQJ0UX4ZCjXsW_psU8",
+                    "PL4fGSI1pDJn6puJdseH2Rt9sMvt9E2M4i",
+                    "RDCLAK5uy_kmPRjHDECIcuVwnKsx2Ng7fyNgFKWNJFs",
                     "PLVn0x_fJ3ZS9ivo9iv0Y9uvlV20EFKy8I",
                 ],
             };

@@ -1,4 +1,5 @@
 <template language="html">
+    <notifications position="top center" :speed="500" :duration="4000" />
     <v-layout class="rounded">
         <!-- ANCHOR left sidebar --------------------------------- -->
         <v-navigation-drawer rounded :width="271">
@@ -21,16 +22,14 @@
         </v-navigation-drawer>
 
         <!-- ANCHOR right sidebar --------------------------------- -->
-        <v-navigation-drawer location="right" rounded width="300">
+        <!-- <v-navigation-drawer location="right" rounded width="300">
             <v-list> </v-list>
-        </v-navigation-drawer>
+        </v-navigation-drawer> -->
 
         <!-- ANCHOR main app --------------------------------- -->
 
         <v-main style="min-height: 300px" rounded>
             <div id="app-content" class="w-100 h-100 p-8">
-                   
-
                 <MainTopBar />
                 <!-- ANCHOR route-view-app --------------------------------- -->
                 <router-view></router-view>
@@ -48,7 +47,6 @@ import SidebarList from "@/components/SidebarList.vue";
 import MainTopBar from "@/components/MainTopBar.vue";
 import NowPlayingBar from "@/components/NowPlayingBar.vue";
 
-
 export default {
     components: {
         SidebarList,
@@ -64,9 +62,9 @@ export default {
         const useStore = useDatabaseApp();
         const { navList } = storeToRefs(useStore);
 
-         return {
+        return {
             navList: navList,
-         }
+        };
     },
 };
 </script>

@@ -31,30 +31,28 @@
         ></v-skeleton-loader>
         <div class="frame-item-slide">
             <swiper
-                :slides-per-view="6"
-                :slidesPerGroup="3"
+                :slides-per-view="8"
+                :slidesPerGroup="4"
                 :modules="modules"
                 :id="'s-' + playlistId"
                 v-if="state.isLoadedItems"
             >
-                <swiper-slide
-                    v-for="(item) in state.items"
-                    :key="item"
-                >
-                    <card-song :item="item" :isLoaded="state.isLoadedItems"></card-song>
+                <swiper-slide v-for="item in state.items" :key="item">
+                    <card-song
+                        :item="item"
+                        :isLoaded="state.isLoadedItems"
+                        :playlistItems="state.items"
+                    ></card-song>
                 </swiper-slide>
             </swiper>
-             <swiper
-                :slides-per-view="6"
-                :slidesPerGroup="3"
+            <swiper
+                :slides-per-view="8"
+                :slidesPerGroup="4"
                 :modules="modules"
                 :id="'s-' + playlistId"
                 v-else
             >
-                <swiper-slide
-                    v-for="i in 6"
-                    :key="'slide-ske-' +i"
-                >
+                <swiper-slide v-for="i in 8" :key="'slide-ske-' + i">
                     <card-song :isLoaded="state.isLoadedItems"></card-song>
                 </swiper-slide>
             </swiper>
@@ -62,6 +60,7 @@
     </div>
 </template>
 <script>
+import { useSongPlay } from "@/stores/SongPlay";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 import { reactive, toRef, computed, onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
@@ -93,6 +92,7 @@ export default {
         };
 
         const stateReactive = reactive({ ...initData() });
+        const { setDefaultPlaylist } = useSongPlay();
         // ANCHOR use swiper //////////////////////////////////////////////////////
         onMounted(() => {});
         // ANCHOR call api //////////////////////////////////////////////////////
@@ -109,8 +109,8 @@ export default {
             PlaylistRepository.getItems(props.playlistId).then((res) => {
                 const data = res.data.data;
                 stateReactive.items = data;
-                console.log(stateReactive.items);
                 stateReactive.isLoadedItems = true;
+                setDefaultPlaylist(props.playlistId, data);
             });
         };
         fetchPlaylistItems();

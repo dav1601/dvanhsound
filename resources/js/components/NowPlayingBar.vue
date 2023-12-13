@@ -1,4 +1,4 @@
-<template>
+<template language="html">
     <v-bottom-navigation id="now-playing-bar" width="100vw" fixed>
         <div id="now-playing-bar-content" class="py-4 px-4">
             <div
@@ -18,7 +18,7 @@
                     <v-skeleton-loader
                         v-else
                         type="image"
-                        class="rounded"
+                        class="rounded-md"
                         width="56px"
                         height="56px"
                         max-height="56px"
@@ -33,9 +33,22 @@
                         >
                             {{ state.data.snippet.title }}
                         </span>
-                        <span class="artist text-sm font-normal white-72">
-                            Allan Walker
+                        <v-skeleton-loader
+                            v-else
+                            type="text"
+                            width="250px"
+                        ></v-skeleton-loader>
+                        <span
+                            class="artist text-sm font-normal white-72 max-w-[250px] truncate"
+                            v-if="store.loadedSong.value"
+                        >
+                            {{ state.data.snippet.channelTitle }}
                         </span>
+                        <v-skeleton-loader
+                            v-else
+                            type="text"
+                            width="150px"
+                        ></v-skeleton-loader>
                     </div>
                     <v-icon
                         icon="mdi-heart-outline"
@@ -67,8 +80,15 @@
                             <v-icon
                                 :icon="renderIconPlayPause"
                                 class="text-white"
+                                v-if="store.loadedSong.value"
                             >
                             </v-icon>
+                            <v-progress-circular
+                                v-else
+                                width="3"
+                                indeterminate
+                                color="#1db954"
+                            ></v-progress-circular>
                         </button>
                         <button
                             class="--controls-btn --controls-next"
@@ -144,7 +164,7 @@ import {
 } from "vue";
 import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
-
+import { notify } from "@kyvg/vue3-notification";
 export default {
     setup() {
         const { proxy } = getCurrentInstance();
@@ -152,7 +172,11 @@ export default {
         // SECTION Store //////////////////////////////////////////////////////
         const useStore = useSongPlay();
 
-        useStore.loadSong("dm5-tn1Rug0");
+        useStore.loadSong(
+            localStorage.getItem("currentSong")
+                ? localStorage.getItem("currentSong")
+                : "dm5-tn1Rug0"
+        );
 
         // !SECTION End Store //////////////////////////////////////////////////////
 
@@ -165,28 +189,15 @@ export default {
                 volumeOff: false,
                 playTime: 0,
                 data: [],
+                snackbarError: true,
+                snackbarMsg: "test",
             };
         };
 
         const stateReactive = reactive({ ...initData() });
         // !SECTION End State //////////////////////////////////////////////////////
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
-        onMounted(() => {
-            // setDuration();
-            // useStore.currentSong.el.addEventListener("timeupdate", function () {
-            //     const el = document.getElementById("npb-layout-timeupdate");
-            //     const value =
-            //         (useStore.currentSong.el.currentTime / useStore.currentSong.el.duration) *
-            //         100;
-            //     if (!isNaN(value)) {
-            //         el.innerText = proxy.$formatTime(
-            //             useStore.currentSong.el.currentTime
-            //         );
-            //         stateReactive.progress = value.toFixed();
-            //     }
-            // });
-            // ANCHOR events //////////////////////////////////////////////////////
-        });
+
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
 
         // SECTION Computed //////////////////////////////////////////////////////
@@ -199,7 +210,8 @@ export default {
         // SECTION Methods //////////////////////////////////////////////////////
         // ANCHOR play song //////////////////////////////////////////////////////
         const playOrPause = (e) => {
-            useStore.playOrPause();
+            if (!useStore.loadedSong) return;
+            return useStore.playOrPause();
         };
         // ANCHOR update time  //////////////////////////////////////////////////////
 
@@ -257,8 +269,35 @@ export default {
         };
         // ANCHOR next or prev //////////////////////////////////////////////////////
         const nextOrPrev = (type = "next") => {
+            if (!useStore.loadedSong)
+                return notify({
+                    text: "Action cannot be performed while loading",
+                    type: "error",
+                    position: "top center",
+                });
+            useStore.resetSong();
             stateReactive.progress = 0;
             useStore.nextOrPrevSong(type);
+        };
+        const listenerEvent = () => {
+            const elAudio = useStore.currentSong.el;
+
+            elAudio.addEventListener("timeupdate", function () {
+                const el = document.getElementById("npb-layout-timeupdate");
+                const value =
+                    (useStore.currentSong.el.currentTime /
+                        useStore.currentSong.el.duration) *
+                    100;
+
+                if (!isNaN(value)) {
+                    el.innerText = proxy.$formatTime(
+                        useStore.currentSong.el.currentTime
+                    );
+                    stateReactive.progress = value.toFixed();
+                }
+            });
+
+            return;
         };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
@@ -275,26 +314,8 @@ export default {
                 if (loaded) {
                     stateReactive.data = useStore.currentSong.data;
                     setDuration();
+                    listenerEvent();
                     renderBgSongVolume();
-                    useStore.currentSong.el.addEventListener(
-                        "timeupdate",
-                        function () {
-                            const el = document.getElementById(
-                                "npb-layout-timeupdate"
-                            );
-                            const value =
-                                (useStore.currentSong.el.currentTime /
-                                    useStore.currentSong.el.duration) *
-                                100;
-
-                            if (!isNaN(value)) {
-                                el.innerText = proxy.$formatTime(
-                                    useStore.currentSong.el.currentTime
-                                );
-                                stateReactive.progress = value.toFixed();
-                            }
-                        }
-                    );
                 }
             }
         );
@@ -305,6 +326,9 @@ export default {
                     stateReactive.progress = 0;
                 }
                 renderBgSongProgress(newVal);
+                if (newVal >= 100) {
+                    nextOrPrev("next");
+                }
             }
         );
         // ANCHOR end progress //////////////////////////////////////////////////////
@@ -343,7 +367,6 @@ export default {
             // ANCHOR methods //////////////////////////////////////////////////////
             renderBgSongProgress,
             onInputChangeProgress,
-
             changeVolume,
             switchVolume,
             playOrPause,
