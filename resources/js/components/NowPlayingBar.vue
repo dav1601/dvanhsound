@@ -103,7 +103,11 @@
                         </button>
                     </div>
                     <!-- ANCHOR end controls --------------------------------- -->
-                    <div class="npb-layout-center-timeLine flex-1">
+                    <div
+                        class="npb-layout-center-timeLine flex-1"
+                        @mouseenter="timeLineHover('in')"
+                        @mouseleave="timeLineHover('out')"
+                    >
                         <input
                             type="range"
                             id="songProgress"
@@ -299,6 +303,14 @@ export default {
 
             return;
         };
+        const timeLineHover = (t) => {
+            const elProgress = document.getElementById("songProgress");
+            if (t === "in") {
+                elProgress.classList.add("activeSliderThumb");
+            } else {
+                elProgress.classList.remove("activeSliderThumb");
+            }
+        };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
@@ -371,6 +383,7 @@ export default {
             switchVolume,
             playOrPause,
             nextOrPrev,
+            timeLineHover
         };
         // !SECTION //////////////////////////////////////////////////////
     },
@@ -415,9 +428,9 @@ export default {
                         margin-bottom: 8px;
                         transition: all 0.25s linear;
                         &::-webkit-slider-thumb {
-                            width: 12px;
+                            width: 0;
                             -webkit-appearance: none;
-                            height: 12px;
+                            height: 0;
                             background: white;
                             border-radius: 50%;
                         }
@@ -440,6 +453,15 @@ export default {
                     }
                 }
             }
+        }
+    }
+    .activeSliderThumb {
+        &::-webkit-slider-thumb {
+            width: 12px !important;
+            -webkit-appearance: none;
+            height: 12px !important;
+            background: white;
+            border-radius: 50%;
         }
     }
 }

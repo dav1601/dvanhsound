@@ -70,8 +70,8 @@ export default {
         // SECTION Computed //////////////////////////////////////////////////////
         const renderIcon = computed(() => {
             if (useStore.isPaused) return "mdi-play";
-            if (useStore.isPlaying && isActiveSong) return "mdi-pause";
-            if (useStore.isPlaying && !isActiveSong) return "mdi-play";
+            if (useStore.isPlaying && isActiveSong.value) return "mdi-pause";
+            if (useStore.isPlaying && !isActiveSong.value) return "mdi-play";
         });
         const isActiveSong = computed(() => {
             return useStore.isActiveSong(props.item.contentDetails.videoId);
@@ -99,7 +99,8 @@ export default {
             }
         };
         const clickPlay = (e) => {
-            if (isActiveSong) return useStore.playOrPause();
+
+            if (isActiveSong.value) return useStore.playOrPause();
             useStore.loadSong(props.item.contentDetails.videoId, true);
             useStore.setCurrentPlaylistItems(props.playlistItems);
         };

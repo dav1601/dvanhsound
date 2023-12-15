@@ -11,14 +11,21 @@
             </span>
             <div class="flex items-center justify-end mr-6">
                 <v-btn
+                    variant="outlined"
+                    size="small"
+                    :to="{ name: 'Playlist', params: { id: playlistId } }"
+                >
+                    Xem them
+                </v-btn>
+                <v-btn
                     icon="mdi-chevron-left"
+                    class="mx-4"
                     @click.stop="nextOrPrev('p')"
                     size="small"
                 ></v-btn>
                 <v-btn
                     icon="mdi-chevron-right"
                     @click.stop="nextOrPrev()"
-                    class="ml-4"
                     size="small"
                 ></v-btn>
             </div>

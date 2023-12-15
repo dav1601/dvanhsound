@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon"
-        href="https://res.cloudinary.com/vanh-tech/image/upload/v1699740025/dvanhsound/images/favicon_amhwfa.png">
+    <link rel="icon" type="image/x-icon" href="{{ env('SM_LOGO') }}">
     <title>Dvanh Sound</title>
 
     <script>
         window.assetUrl = {{ Js::from(Storage::disk('public')->url('/')) }};
+        window.ogLogo = {{ Js::from(env('OG_LOGO')) }};
+        window.smLogo = {{ Js::from(env('SM_LOGO')) }}
     </script>
 </head>
 

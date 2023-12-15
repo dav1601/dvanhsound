@@ -13,7 +13,10 @@ const myPlugin = {
             seconds = seconds >= 10 ? seconds : "0" + seconds;
             return minutes + ":" + seconds;
         };
-
+        app.config.globalProperties.$getLogo = (type = "og") => {
+            if (type === "og") return window.ogLogo;
+            return window.smLogo;
+        };
     },
 };
 

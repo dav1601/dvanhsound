@@ -1,6 +1,5 @@
-<template>
-    <div id="playlist">
-
+<template lang>
+    <div id="wp-playlist">
         <!-- ANCHOR start astist --------------------------------- -->
         <div
             id="artist"
@@ -114,8 +113,7 @@ export default {
 };
 </script>
 <style lang="scss">
-#playlist {
-
+#wp-playlist {
     #artist {
         position: relative;
         border-radius: 12px;

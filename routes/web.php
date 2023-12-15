@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\YoutubeController;
 Route::controller(HomeController::class)->group(function () {
     Route::get('system/test', 'index');
 });
+// Route::get('/{any}', function () {
+//     return view('app');
+// })->where('any', '^(?!api\/)[\/\w\.-]*')->name("app");
 Route::get('/{any}', function () {
     return view('app');
-})->where('any', '^(?!api\/)[\/\w\.-]*')->name("app");
+})->where('any', '.*');
