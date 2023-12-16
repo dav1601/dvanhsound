@@ -3,6 +3,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\SpotifyController;
 use App\Http\Controllers\Api\YoutubeController;
 
 /*
@@ -21,7 +22,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::controller(YoutubeController::class)->prefix('youtube/')->group(function () {
     Route::prefix("playlist/")->as("playlist.")->group(function () {
-        Route::get("info", "getPlaylistInfo")->name("info");
+        Route::get("info/{id}", "getPlaylistInfo")->name("info");
+        Route::get("items/{id}", "getPlaylistItems")->name("items");
+    });
+    Route::prefix("track/")->as("track.")->group(function () {
+        Route::get("{id}", "getTrack")->name("audio");
+
+    });
+});
+Route::controller(SpotifyController::class)->prefix('spotify/')->group(function () {
+    Route::prefix("playlist/")->as("playlist.")->group(function () {
+        Route::get("info/{id}", "getPlaylistInfo")->name("info");
         Route::get("items/{id}", "getPlaylistItems")->name("items");
     });
     Route::prefix("track/")->as("track.")->group(function () {

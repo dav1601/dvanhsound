@@ -7,13 +7,16 @@
             <span
                 class="frame-item-title d-inline text-white leading-[38px] text-2xl truncate flex-1"
             >
-                {{ state.info.snippet.title }}
+                {{ frameTitle }}
             </span>
             <div class="flex items-center justify-end mr-6">
                 <v-btn
                     variant="outlined"
                     size="small"
-                    :to="{ name: 'Playlist', params: { id: playlistId } }"
+                    :to="{
+                        name: 'Playlist',
+                        params: { id: playlistId, plf: plf },
+                    }"
                 >
                     Xem them
                 </v-btn>
@@ -49,6 +52,7 @@
                         :item="item"
                         :isLoaded="state.isLoadedItems"
                         :playlistItems="state.items"
+                        :plf="plf"
                     ></card-song>
                 </swiper-slide>
             </swiper>
@@ -69,7 +73,7 @@
 <script>
 import { useSongPlay } from "@/stores/SongPlay";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
-import { reactive, toRef, computed, onMounted } from "vue";
+import { reactive, toRef, computed } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { useSwiper } from "swiper/vue";
 import CardSong from "@/components/Card/CardSong.vue";
@@ -80,8 +84,9 @@ import "swiper/css/pagination";
 import "swiper/css/scrollbar";
 
 const PlaylistRepository = RepositoryFactory.get("playlist");
+const StPlaylistRepository = RepositoryFactory.get("StPlaylist");
 export default {
-    props: ["playlistId"],
+    props: ["playlistId", "plf"],
     components: {
         Swiper,
         SwiperSlide,
@@ -101,26 +106,49 @@ export default {
         const stateReactive = reactive({ ...initData() });
         const { setDefaultPlaylist } = useSongPlay();
         // ANCHOR use swiper //////////////////////////////////////////////////////
-        onMounted(() => {});
+
         // ANCHOR call api //////////////////////////////////////////////////////
+        const setInfo = (res) => {
+            const data = res.data.data;
+            stateReactive.info = data;
+            stateReactive.isLoadedInfo = true;
+        };
+        const setItems = (res) => {
+            const data = res.data.data;
+            stateReactive.items = data;
+            stateReactive.isLoadedItems = true;
+            setDefaultPlaylist(props.playlistId, data);
+        };
         const fetchPlaylistInfo = () => {
             PlaylistRepository.getInfo(props.playlistId).then((res) => {
-                const data = res.data.data;
-                stateReactive.info = data;
-                stateReactive.isLoadedInfo = true;
-                console.log(stateReactive.info);
+                setInfo(res);
             });
         };
-        fetchPlaylistInfo();
         const fetchPlaylistItems = () => {
             PlaylistRepository.getItems(props.playlistId).then((res) => {
+                setItems(res);
+            });
+        };
+        const spotifyFetchPlaylistInfo = () => {
+            StPlaylistRepository.getInfo(props.playlistId).then((res) => {
+                setInfo(res);
+            });
+        };
+        const spotifyFetchPlaylistItems = () => {
+            StPlaylistRepository.getItems(props.playlistId).then((res) => {
                 const data = res.data.data;
-                stateReactive.items = data;
+                stateReactive.items = data.items;
                 stateReactive.isLoadedItems = true;
                 setDefaultPlaylist(props.playlistId, data);
             });
         };
-        fetchPlaylistItems();
+        if (props.plf === "yt") {
+            fetchPlaylistInfo();
+            fetchPlaylistItems();
+        } else if (props.plf === "st") {
+            spotifyFetchPlaylistInfo();
+            spotifyFetchPlaylistItems();
+        }
         const nextOrPrev = (t = "n") => {
             const el = document.getElementById("s-" + props.playlistId).swiper;
             if (t === "n") return el.slideNext();
@@ -139,7 +167,15 @@ export default {
         // !SECTION End State //////////////////////////////////////////////////////
 
         // SECTION Computed //////////////////////////////////////////////////////
+        const frameTitle = computed(() => {
+            switch (props.plf) {
+                case "st":
+                    return stateReactive.info.name;
 
+                default:
+                    return stateReactive.info.snippet.title;
+            }
+        });
         // !SECTION End Computed //////////////////////////////////////////////////////
 
         // SECTION Methods //////////////////////////////////////////////////////
@@ -157,6 +193,7 @@ export default {
             state: toRef(stateReactive),
             modules: [Scrollbar, A11y, EffectCoverflow, Pagination],
             nextOrPrev,
+            frameTitle,
         };
     },
 };

@@ -11,7 +11,7 @@
             @click.stop="clickPlay"
         ></v-btn>
         <v-img
-            :src="item.snippet.thumbnails.medium.url"
+            :src="cardInfo.image"
             height="150"
             width="150"
             class="rounded-[5.152px]"
@@ -31,9 +31,9 @@
             v-if="isLoaded"
         >
             <v-tooltip activator="parent" location="bottom start">{{
-                item.snippet.title
+                cardInfo.title
             }}</v-tooltip>
-            {{ item.snippet.title }}
+            {{ cardInfo.title }}
         </span>
         <v-skeleton-loader
             v-else
@@ -43,17 +43,17 @@
         <span
             class="card-song-desc line-clamp-2 text-[#B3B3B3] text-[14px]"
             v-if="isLoaded"
-            >{{ item.snippet.channelTitle }}
+            >{{ cardInfo.description }}
         </span>
         <v-skeleton-loader v-else type="text"></v-skeleton-loader>
     </div>
 </template>
 <script>
 import { useSongPlay } from "@/stores/SongPlay";
-import { computed } from "vue";
+import { computed, reactive, watch } from "vue";
 import "animate.css";
 export default {
-    props: ["item", "isLoaded", "playlistItems"],
+    props: ["item", "isLoaded", "playlistItems", "plf"],
     setup(props) {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
 
@@ -73,10 +73,38 @@ export default {
             if (useStore.isPlaying && isActiveSong.value) return "mdi-pause";
             if (useStore.isPlaying && !isActiveSong.value) return "mdi-play";
         });
+        const artistsName = computed(() => {
+            if (props.plf === "st") {
+                let name = [];
+                props.item.track.artists.forEach((item) => {
+                    name.push(item.name);
+                });
+                return name.toString();
+            }
+            return;
+        });
         const isActiveSong = computed(() => {
             return useStore.isActiveSong(props.item.contentDetails.videoId);
         });
+        const cardInfo = computed(() => {
+            if (props.isLoaded) {
+                switch (props.plf) {
+                    case "st":
+                        return {
+                            image: props.item.track.album.images[1].url,
+                            title: props.item.track.name,
+                            description: artistsName.value,
+                        };
 
+                    default:
+                        return {
+                            image: props.item.snippet.thumbnails.medium.url,
+                            title: props.item.snippet.title,
+                            description: props.item.snippet.channelTitle,
+                        };
+                }
+            }
+        });
         // !SECTION End Computed //////////////////////////////////////////////////////
 
         // SECTION Methods //////////////////////////////////////////////////////
@@ -99,7 +127,6 @@ export default {
             }
         };
         const clickPlay = (e) => {
-
             if (isActiveSong.value) return useStore.playOrPause();
             useStore.loadSong(props.item.contentDetails.videoId, true);
             useStore.setCurrentPlaylistItems(props.playlistItems);
@@ -117,6 +144,7 @@ export default {
             hoverOut,
             clickPlay,
             renderIcon,
+            cardInfo,
         };
     },
 };

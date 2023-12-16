@@ -9,7 +9,7 @@ const routes = [
         props: true,
     },
     {
-        path: "/playlist/:id",
+        path: "/playlist/:plf/:id",
         component: Playlist,
         name: "Playlist",
         props: true,
