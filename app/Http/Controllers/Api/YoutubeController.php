@@ -12,37 +12,48 @@ use Symfony\Component\Process\Process;
 class YoutubeController extends Controller
 {
     use Responser;
-    public $youtube;
+    public $plf;
     public function __construct()
     {
+        $this->plf = "yt";
     }
     // ANCHOR get playlist  //////////////////////////////////////////////////////
     public function getPlaylistInfo($id, Request $request)
     {
-        $playlistId = $id;
-        if (!$playlistId) return $this->errorResponse("not found playlist id", 404);
-        $playlist = Youtube::getPlaylistById($playlistId);
-        $playlist->plf = "yt";
-        return $this->successResponse($playlist);
+        try {
+            $playlist = Youtube::getPlaylistById($id);
+            $playlist->plf = $this->plf;
+            return $this->successResponse($playlist);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
     }
-    public function getPlaylistItems($id)
+    public function getPlaylistItems($id, Request $request)
     {
-        $playlistId = $id;
-        if (!$playlistId) return $this->errorResponse("not found playlist id", 404);
-        $playlistItems = Youtube::getPlaylistItemsByPlaylistId($playlistId)['results'];
-        $playlistItems = collect($playlistItems)->filter(function ($item) {
-            return $item->status->privacyStatus === "public";
-        });
-        return $this->successResponse($playlistItems);
+        $limit = 100;
+        if ($request->has("limit")) $limit = (int) $request->limit;
+        try {
+            $playlistItems = Youtube::getPlaylistItemsByPlaylistId($id, "", $limit)['results'];
+            $playlistItems = collect($playlistItems)->filter(function ($item) {
+                return $item->status->privacyStatus === "public";
+            });
+            return $this->successResponse($playlistItems);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
     }
 
     public function getTrack($id)
     {
-        $track = Youtube::getVideoInfo($id);
-        if ($track->status->privacyStatus !== "public" || !$track) return $this->errorResponse("track not found", 404);
-        $track->src = $this->getPlayable($id);
-        $track->plf = "yt";
-        return $this->successResponse(collect($track)->toArray());
+        try {
+            $track = Youtube::getVideoInfo($id);
+            $track->src = $this->getPlayable($id);
+            if (!$track || $track->status->privacyStatus !== "public" || !$track->src) report("track not available");
+            $track->plf = $this->plf;
+            return $this->successResponse($track);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
     }
     public function getPlayable($id)
     {

@@ -8,7 +8,7 @@
                     class="npb-layout-start col-4 flex justify-start items-center"
                 >
                     <v-img
-                        :src="state.data.snippet.thumbnails.default.url"
+                        :src="state.info.image"
                         max-width="56"
                         max-height="56"
                         class="rounded"
@@ -31,7 +31,7 @@
                             class="title mb-2 text-lg text-white font-semibold truncate max-w-[250px]"
                             v-if="store.loadedSong.value"
                         >
-                            {{ state.data.snippet.title }}
+                            {{ state.info.title }}
                         </span>
                         <v-skeleton-loader
                             v-else
@@ -42,7 +42,7 @@
                             class="artist text-sm font-normal white-72 max-w-[250px] truncate"
                             v-if="store.loadedSong.value"
                         >
-                            {{ state.data.snippet.channelTitle }}
+                            {{ state.info.description }}
                         </span>
                         <v-skeleton-loader
                             v-else
@@ -158,14 +158,7 @@
     </v-bottom-navigation>
 </template>
 <script>
-import {
-    onMounted,
-    reactive,
-    toRef,
-    watch,
-    getCurrentInstance,
-    computed,
-} from "vue";
+import { reactive, toRef, watch, getCurrentInstance, computed } from "vue";
 import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
 import { notify } from "@kyvg/vue3-notification";
@@ -175,12 +168,12 @@ export default {
 
         // SECTION Store //////////////////////////////////////////////////////
         const useStore = useSongPlay();
-
-        useStore.loadSong(
-            localStorage.getItem("currentSong")
-                ? localStorage.getItem("currentSong")
-                : "dm5-tn1Rug0"
-        );
+        const storeCurrentSong = localStorage.getItem("currentSong")
+            ? JSON.parse(localStorage.getItem("currentSong"))
+            : null;
+        if (storeCurrentSong) {
+            useStore.loadSong(storeCurrentSong.id, false, storeCurrentSong.plf);
+        }
 
         // !SECTION End Store //////////////////////////////////////////////////////
 
@@ -195,6 +188,7 @@ export default {
                 data: [],
                 snackbarError: true,
                 snackbarMsg: "test",
+                info: {},
             };
         };
 
@@ -205,6 +199,7 @@ export default {
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
 
         // SECTION Computed //////////////////////////////////////////////////////
+
         const renderIconPlayPause = computed(() => {
             if (useStore.isPlaying) return "mdi-pause-circle";
             if (useStore.isPaused) return "mdi-play-circle";
@@ -216,6 +211,21 @@ export default {
         const playOrPause = (e) => {
             if (!useStore.loadedSong) return;
             return useStore.playOrPause();
+        };
+        const setInfo = () => {
+            stateReactive.info = useStore.currentSong.info;
+            switch (stateReactive.info.plf) {
+                case "st":
+                    stateReactive.info["image"] =
+                        stateReactive.info.images[2].url;
+                    break;
+
+                default:
+                    stateReactive.info["image"] =
+                        stateReactive.info.images.default.url;
+
+                    break;
+            }
         };
         // ANCHOR update time  //////////////////////////////////////////////////////
 
@@ -325,6 +335,7 @@ export default {
             (loaded) => {
                 if (loaded) {
                     stateReactive.data = useStore.currentSong.data;
+                    setInfo();
                     setDuration();
                     listenerEvent();
                     renderBgSongVolume();
@@ -376,6 +387,7 @@ export default {
             store: storeToRefs(useStore),
             // ANCHOR computed //////////////////////////////////////////////////////
             renderIconPlayPause,
+
             // ANCHOR methods //////////////////////////////////////////////////////
             renderBgSongProgress,
             onInputChangeProgress,
@@ -383,7 +395,7 @@ export default {
             switchVolume,
             playOrPause,
             nextOrPrev,
-            timeLineHover
+            timeLineHover,
         };
         // !SECTION //////////////////////////////////////////////////////
     },

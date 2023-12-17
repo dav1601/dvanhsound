@@ -9,13 +9,17 @@ use App\Http\Controllers\Controller;
 use Symfony\Component\Process\Process;
 use Alaouy\Youtube\Facades\Youtube;
 
+use function PHPUnit\Framework\throwException;
+
 class SpotifyController extends Controller
 {
     use Responser;
     public $spotify;
+    public $plf;
     public function __construct()
     {
         $this->spotify = new Spotify(config("spotify.default_config"));
+        $this->plf = "st";
     }
     // ANCHOR get playlist  //////////////////////////////////////////////////////
     public function getPlaylistInfo($id, Request $request)
@@ -25,25 +29,34 @@ class SpotifyController extends Controller
         if ($request->has("loadTracks")) {
             $fields .= "tracks";
         }
-        if (!$playlistId) return $this->errorResponse("not found playlist id", 404);
-        $playlist = $this->spotify->playlist($playlistId)->fields($fields)->get();
-        $playlist['plf'] = "st";
-        return $this->successResponse($playlist);
+        try {
+            $playlist = $this->spotify->playlist($playlistId)->fields($fields)->get();
+            $playlist['plf'] = $this->plf;
+            return $this->successResponse($playlist);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
     }
     public function getPlaylistItems($id, Request $request)
     {
-        $playlistId = $id;
-        if (!$playlistId) return $this->errorResponse("not found playlist id", 404);
-        $playlistItems = $this->spotify->playlistTracks($playlistId)->get();
-        return $this->successResponse($playlistItems);
+        try {
+            $playlistItems = $this->spotify->playlistTracks($id)->limit(20)->get();
+            return $this->successResponse($playlistItems);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
     }
 
     public function getTrack($id)
     {
-        $track = $this->spotify->track($id)->get();
-        $track['src'] = $this->getPlayable($id);
-        $track['plf'] = "st";
-        return $this->successResponse($track);
+        try {
+            $track = $this->spotify->track($id)->get();
+            $track['src'] = $this->getPlayable($id);
+            $track['plf'] = $this->plf;
+            return $this->successResponse($track);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
     }
     public function getPlayable($id)
     {
@@ -51,6 +64,7 @@ class SpotifyController extends Controller
         $process =  Process::fromShellCommandline("python3 -m spotdl url https://open.spotify.com/track/" . $id);
         $process->run();
         $string = $process->getOutput();
+        return $string;
         $rs  = explode("\n", $string);
         $audio = $rs[1];
         return $audio;

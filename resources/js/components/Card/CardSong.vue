@@ -11,7 +11,7 @@
             @click.stop="clickPlay"
         ></v-btn>
         <v-img
-            :src="cardInfo.image"
+            :src="cardImage"
             height="150"
             width="150"
             class="rounded-[5.152px]"
@@ -30,10 +30,10 @@
             class="card-song-title text-white truncate font-bold mt-[17.17px] mb-[12.88px] leading-4 d-block"
             v-if="isLoaded"
         >
-            <v-tooltip activator="parent" location="bottom start">{{
-                cardInfo.title
-            }}</v-tooltip>
-            {{ cardInfo.title }}
+            <v-tooltip activator="parent" location="bottom start">
+                {{ state.info.title }}</v-tooltip
+            >
+            {{ state.info.title }}
         </span>
         <v-skeleton-loader
             v-else
@@ -43,17 +43,29 @@
         <span
             class="card-song-desc line-clamp-2 text-[#B3B3B3] text-[14px]"
             v-if="isLoaded"
-            >{{ cardInfo.description }}
+        >
+            {{ state.info.description }}
         </span>
         <v-skeleton-loader v-else type="text"></v-skeleton-loader>
     </div>
 </template>
 <script>
 import { useSongPlay } from "@/stores/SongPlay";
-import { computed, reactive, watch } from "vue";
+import { computed, reactive, watch, toRefs, toRef, ref } from "vue";
 import "animate.css";
 export default {
-    props: ["item", "isLoaded", "playlistItems", "plf"],
+    props: {
+        item: null,
+        isLoaded: {
+            type: Boolean,
+            default: false,
+        },
+        playlistItems: null,
+        plf: {
+            type: String,
+            default: "yt",
+        },
+    },
     setup(props) {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
 
@@ -64,47 +76,57 @@ export default {
         // !SECTION End Store //////////////////////////////////////////////////////
 
         // SECTION State //////////////////////////////////////////////////////
+        const initData = () => {
+            return {
+                info: {},
+            };
+        };
+
+        const stateReactive = reactive({ ...initData() });
 
         // !SECTION End State //////////////////////////////////////////////////////
-
+        const { isLoaded } = toRefs(props);
         // SECTION Computed //////////////////////////////////////////////////////
+        const isActiveSong = computed(() => {
+            return useStore.isActiveSong(stateReactive.info.id);
+        });
+
         const renderIcon = computed(() => {
             if (useStore.isPaused) return "mdi-play";
             if (useStore.isPlaying && isActiveSong.value) return "mdi-pause";
             if (useStore.isPlaying && !isActiveSong.value) return "mdi-play";
         });
-        const artistsName = computed(() => {
-            if (props.plf === "st") {
-                let name = [];
-                props.item.track.artists.forEach((item) => {
-                    name.push(item.name);
-                });
-                return name.toString();
-            }
-            return;
-        });
-        const isActiveSong = computed(() => {
-            return useStore.isActiveSong(props.item.contentDetails.videoId);
-        });
-        const cardInfo = computed(() => {
-            if (props.isLoaded) {
+        const cardImage = computed(() => {
+            let url = "";
+            if (isLoaded) {
                 switch (props.plf) {
                     case "st":
-                        return {
-                            image: props.item.track.album.images[1].url,
-                            title: props.item.track.name,
-                            description: artistsName.value,
-                        };
+                        url = stateReactive.info.images[1].url;
+                        break;
 
                     default:
-                        return {
-                            image: props.item.snippet.thumbnails.medium.url,
-                            title: props.item.snippet.title,
-                            description: props.item.snippet.channelTitle,
-                        };
+                        url = stateReactive.info.images.medium.url;
+                        break;
                 }
             }
+
+            return url;
         });
+
+        const setInfo = () => {
+            let item;
+            switch (props.plf) {
+                case "st":
+                    item = props.item.track;
+                    break;
+
+                default:
+                    item = props.item;
+                    break;
+            }
+            stateReactive.info = useStore.getInfoSongByPlf(item, props.plf);
+        };
+
         // !SECTION End Computed //////////////////////////////////////////////////////
 
         // SECTION Methods //////////////////////////////////////////////////////
@@ -128,13 +150,24 @@ export default {
         };
         const clickPlay = (e) => {
             if (isActiveSong.value) return useStore.playOrPause();
-            useStore.loadSong(props.item.contentDetails.videoId, true);
+            useStore.loadSong(stateReactive.info.id, true, props.plf);
             useStore.setCurrentPlaylistItems(props.playlistItems);
         };
 
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
+        watch(
+            isLoaded,
+            (loaded) => {
+                if (loaded) {
+                    setInfo();
+                }
+            },
+            {
+                immediate: true, // Not lazy anymore
+            }
+        );
 
         // !SECTION End Watch //////////////////////////////////////////////////////
 
@@ -144,7 +177,8 @@ export default {
             hoverOut,
             clickPlay,
             renderIcon,
-            cardInfo,
+            state: toRef(stateReactive),
+            cardImage,
         };
     },
 };

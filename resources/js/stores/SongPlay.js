@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 const PlaylistRepo = RepositoryFactory.get("playlist");
 const TrackRepo = RepositoryFactory.get("track");
+const StTrackRepo = RepositoryFactory.get("StTrack");
 export const useSongPlay = defineStore({
     id: "SongPLay",
     state: () => ({
@@ -11,9 +12,9 @@ export const useSongPlay = defineStore({
         playlistQueue: [],
         currentSong: {
             status: "paused",
-            id: null,
             el: null,
             data: {},
+            info: {},
         },
         settings: {
             volume: localStorage.getItem("songVolume")
@@ -42,10 +43,16 @@ export const useSongPlay = defineStore({
     },
     actions: {
         setCurrentSong(payload) {
-            localStorage.setItem("currentSong", payload.id);
-            this.currentSong.id = payload.id;
+            const plf = payload.hasOwnProperty("plf") ? payload.plf : "yt";
+            localStorage.setItem(
+                "currentSong",
+                JSON.stringify({
+                    id: payload.id,
+                    plf: plf,
+                })
+            );
             this.currentSong.data = payload;
-
+            this.currentSong.info = this.getInfoSongByPlf(payload, plf);
             if (this.currentSong.el !== null) {
                 this.currentSong.el.src = payload.src;
             } else {
@@ -68,10 +75,22 @@ export const useSongPlay = defineStore({
         },
 
         // ANCHOR end set area //////////////////////////////////////////////////////
-        loadSong(id, playing = false) {
+        loadSong(id, playing = false, plf = "yt") {
             this.loadedSong = false;
-            TrackRepo.getTrack(id).then((res) => {
+            let api;
+            switch (plf) {
+                case "st":
+                    api = StTrackRepo.getTrack(id);
+                    break;
+
+                default:
+                    api = TrackRepo.getTrack(id);
+                    break;
+            }
+            api.then((res) => {
                 const payload = res.data.data;
+                console.log(payload);
+                console.log({ getTrackData: payload });
                 payload.playing = playing;
                 this.setCurrentSong(payload);
             });
@@ -169,7 +188,47 @@ export const useSongPlay = defineStore({
             }
         },
         isActiveSong(id) {
-            return this.currentSong.id == id;
+            return this.currentSong.info.id === id;
+        },
+        getInfoSongByPlf(songData, plf = "yt") {
+            const info = {
+                title: "",
+                description: "",
+                images: [],
+                id: "",
+                plf: plf,
+            };
+
+            if (!songData) return info;
+            switch (plf) {
+                case "st":
+                    let artists = [];
+                    songData.artists.forEach((item) => {
+                        artists.push(item.name);
+                    });
+
+                    (info.images = songData.album.images),
+                        (info.title = songData.name),
+                        (info.description = artists.toString()),
+                        (info.id = songData.id);
+
+                    break;
+                case "yt":
+                    (info.images = songData.snippet.thumbnails),
+                        (info.title = songData.snippet.title),
+                        (info.description = songData.snippet.channelTitle),
+                        (info.id = songData.contentDetails.hasOwnProperty(
+                            "videoId"
+                        )
+                            ? songData.contentDetails.videoId
+                            : songData.id);
+                    break;
+
+                default:
+                    break;
+            }
+
+            return info;
         },
     },
 });
