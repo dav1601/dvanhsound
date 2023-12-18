@@ -51,7 +51,7 @@
 </template>
 <script>
 import { useSongPlay } from "@/stores/SongPlay";
-import { computed, reactive, watch, toRefs, toRef, ref } from "vue";
+import { computed, reactive, watch, toRefs, toRef } from "vue";
 import "animate.css";
 export default {
     props: {
@@ -64,6 +64,9 @@ export default {
         plf: {
             type: String,
             default: "yt",
+        },
+        playlistId: {
+            default: null,
         },
     },
     setup(props) {
@@ -90,6 +93,9 @@ export default {
         const isActiveSong = computed(() => {
             return useStore.isActiveSong(stateReactive.info.id);
         });
+        const currSongLoading = computed(() => {
+            return !useStore.loadedSong && isActiveSong.value;
+        });
 
         const renderIcon = computed(() => {
             if (useStore.isPaused) return "mdi-play";
@@ -114,17 +120,10 @@ export default {
         });
 
         const setInfo = () => {
-            let item;
-            switch (props.plf) {
-                case "st":
-                    item = props.item.track;
-                    break;
-
-                default:
-                    item = props.item;
-                    break;
-            }
-            stateReactive.info = useStore.getInfoSongByPlf(item, props.plf);
+            stateReactive.info = useStore.getInfoSongByPlf(
+                props.item,
+                props.plf
+            );
         };
 
         // !SECTION End Computed //////////////////////////////////////////////////////
@@ -151,7 +150,10 @@ export default {
         const clickPlay = (e) => {
             if (isActiveSong.value) return useStore.playOrPause();
             useStore.loadSong(stateReactive.info.id, true, props.plf);
-            useStore.setCurrentPlaylistItems(props.playlistItems);
+            useStore.setCurrentPlaylistItems(
+                props.playlistItems,
+                props.playlistId
+            );
         };
 
         // !SECTION End Methods //////////////////////////////////////////////////////
@@ -179,6 +181,8 @@ export default {
             renderIcon,
             state: toRef(stateReactive),
             cardImage,
+            isActiveSong,
+            currSongLoading,
         };
     },
 };

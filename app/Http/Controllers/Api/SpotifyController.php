@@ -40,7 +40,13 @@ class SpotifyController extends Controller
     public function getPlaylistItems($id, Request $request)
     {
         try {
-            $playlistItems = $this->spotify->playlistTracks($id)->limit(20)->get();
+            $plf = $this->plf;
+            $playlistItems = $this->spotify->playlistTracks($id)->limit(20)->get()['items'];
+            $playlistItems = collect($playlistItems)->map(function ($item) use ($plf) {
+                $newItem = collect($item['track']);
+                $newItem->put("plf", $plf);
+                return $newItem;
+            });
             return $this->successResponse($playlistItems);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), $e->getCode());
@@ -64,7 +70,6 @@ class SpotifyController extends Controller
         $process =  Process::fromShellCommandline("python3 -m spotdl url https://open.spotify.com/track/" . $id);
         $process->run();
         $string = $process->getOutput();
-        return $string;
         $rs  = explode("\n", $string);
         $audio = $rs[1];
         return $audio;

@@ -17,6 +17,10 @@ const myPlugin = {
             if (type === "og") return window.ogLogo;
             return window.smLogo;
         };
+        app.config.globalProperties.$getPlfName = (type = "yt") => {
+            if (type === "yt") return "Youtube";
+            if (type === "st") return "Spotify";
+        };
     },
 };
 

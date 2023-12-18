@@ -1,9 +1,21 @@
 <template>
     <div id="dvas-home">
+        <v-alert
+            v-model="state.alert"
+            type="info"
+            text="Music from YouTube will LOAD FASTER THAN Spotify"
+            elevation="2"
+            class="mb-2"
+            variant="tonal"
+            border="start"
+            border-color="info"
+            closable
+            close-label="Close Alert"
+        ></v-alert>
         <div id="wp-frame-list">
             <div class="frame-list">
                 <frame-item
-                    v-for="item in state.arrayPlaylist.value"
+                    v-for="item in state.arrayPlaylist"
                     :playlistId="item.id"
                     :plf="item.plf"
                     :key="item"
@@ -13,7 +25,7 @@
     </div>
 </template>
 <script>
-import { reactive, toRefs } from "vue";
+import { reactive, toRef } from "vue";
 import FrameItem from "@/components/FrameItem.vue";
 
 export default {
@@ -27,10 +39,24 @@ export default {
                         plf: "yt",
                     },
                     {
-                        id: "37i9dQZF1DWVKJhbs54cBh",
+                        id: "37i9dQZEVXbLdGSmz6xilI",
                         plf: "st",
                     },
+                    {
+                        id: "37i9dQZF1DX4g8Gs5nUhpp",
+                        plf: "st",
+                    },
+                    {
+                        id: "37i9dQZF1DX0F4i7Q9pshJ",
+                        plf: "st",
+                    },
+                    {
+                        id: "37i9dQZEVXbL1G1MbPav3j",
+                        plf: "st",
+                    },
+
                 ],
+                alert: true,
             };
         };
 
@@ -62,7 +88,7 @@ export default {
 
         // SECTION return //////////////////////////////////////////////////////
         return {
-            state: toRefs(stateReactive),
+            state: toRef(stateReactive),
         };
     },
 };

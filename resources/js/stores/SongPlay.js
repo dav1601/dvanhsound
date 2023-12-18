@@ -9,13 +9,16 @@ export const useSongPlay = defineStore({
         loadedSong: false,
         defaultPlaylist: [],
         currentPlaylistItems: [],
+        currentPlaylistId: null,
         playlistQueue: [],
         currentSong: {
             status: "paused",
             el: null,
             data: {},
             info: {},
+            progress: 0,
         },
+
         settings: {
             volume: localStorage.getItem("songVolume")
                 ? localStorage.getItem("songVolume")
@@ -42,15 +45,36 @@ export const useSongPlay = defineStore({
         },
     },
     actions: {
-        setCurrentSong(payload) {
-            const plf = payload.hasOwnProperty("plf") ? payload.plf : "yt";
+        loadStorage() {
+            this.loadedSong = false;
+            const currentSong = localStorage.getItem("currentSong");
+            const currentPlaylist = localStorage.getItem("currentPlaylist");
+            if (currentSong) {
+                this.loadSong(
+                    JSON.parse(currentSong).id,
+                    false,
+                    JSON.parse(currentSong).plf
+                );
+            }
+            if (currentPlaylist) {
+                this.setCurrentPlaylistItems(JSON.parse(currentPlaylist));
+            }
+        },
+        storageData() {
             localStorage.setItem(
                 "currentSong",
                 JSON.stringify({
-                    id: payload.id,
-                    plf: plf,
+                    id: this.currentSong.info.id,
+                    plf: this.currentSong.data.plf,
                 })
             );
+            localStorage.setItem(
+                "currentPlaylist",
+                JSON.stringify(this.currentPlaylistItems)
+            );
+        },
+        setCurrentSong(payload) {
+            const plf = payload.hasOwnProperty("plf") ? payload.plf : "yt";
             this.currentSong.data = payload;
             this.currentSong.info = this.getInfoSongByPlf(payload, plf);
             if (this.currentSong.el !== null) {
@@ -66,7 +90,8 @@ export const useSongPlay = defineStore({
                 this.playSong();
             }
         },
-        setCurrentPlaylistItems(items) {
+        setCurrentPlaylistItems(items, playlistId) {
+            this.currentPlaylistId = playlistId;
             if (items) this.currentPlaylistItems = items;
         },
         setDefaultPlaylist(id, items) {
@@ -87,17 +112,17 @@ export const useSongPlay = defineStore({
                     api = TrackRepo.getTrack(id);
                     break;
             }
+
             api.then((res) => {
                 const payload = res.data.data;
-                console.log(payload);
-                console.log({ getTrackData: payload });
                 payload.playing = playing;
                 this.setCurrentSong(payload);
+                this.storageData();
             });
         },
         shufflePlaylist() {
             let array = this.playlist.filter((song, index) => {
-                return index != this.currentSong.id;
+                return index != this.currentSong.info.id;
             });
             let currentIndex = array.length,
                 randomIndex;
@@ -113,7 +138,7 @@ export const useSongPlay = defineStore({
                     array[currentIndex],
                 ];
             }
-            array.unshift(this.playlist[this.currentSong.id]);
+            array.unshift(this.playlist[this.currentSong.info.id]);
             return (this.playlist = array);
         },
         repeatSong(type) {
@@ -159,7 +184,7 @@ export const useSongPlay = defineStore({
                 this.currentPlaylistItems = this.defaultPlaylist[0].items;
             }
             index = this.currentPlaylistItems.findIndex((item) => {
-                return item.contentDetails.videoId == this.currentSong.id;
+                return item.id === this.currentSong.info.id;
             });
             if (index === -1) {
                 index = 0;
@@ -172,10 +197,9 @@ export const useSongPlay = defineStore({
                     if (index < 0) index = this.currentPlaylistItems.length - 1;
                 }
             }
-            this.loadSong(
-                this.currentPlaylistItems[index].contentDetails.videoId,
-                true
-            );
+            const song = this.currentPlaylistItems[index];
+            console.log({ song: song });
+            this.loadSong(song.id, true, song.plf);
         },
         updateStatusCurrentSong(status) {
             this.currentSong.status = status;
@@ -217,11 +241,7 @@ export const useSongPlay = defineStore({
                     (info.images = songData.snippet.thumbnails),
                         (info.title = songData.snippet.title),
                         (info.description = songData.snippet.channelTitle),
-                        (info.id = songData.contentDetails.hasOwnProperty(
-                            "videoId"
-                        )
-                            ? songData.contentDetails.videoId
-                            : songData.id);
+                        (info.id = songData.id);
                     break;
 
                 default:

@@ -7,7 +7,7 @@
             <span
                 class="frame-item-title d-inline text-white leading-[38px] text-2xl truncate flex-1"
             >
-                {{ frameTitle }}
+               {{ $getPlfName(plf) }} - {{ frameTitle }}
             </span>
             <div class="flex items-center justify-end mr-6">
                 <v-btn
@@ -53,6 +53,7 @@
                         :isLoaded="state.isLoadedItems"
                         :playlistItems="state.items"
                         :plf="plf"
+                        :playlistId="playlistId"
                     ></card-song>
                 </swiper-slide>
             </swiper>
@@ -137,7 +138,7 @@ export default {
         const spotifyFetchPlaylistItems = () => {
             StPlaylistRepository.getItems(props.playlistId).then((res) => {
                 const data = res.data.data;
-                stateReactive.items = data.items;
+                stateReactive.items = data;
                 stateReactive.isLoadedItems = true;
                 setDefaultPlaylist(props.playlistId, data);
             });

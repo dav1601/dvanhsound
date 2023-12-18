@@ -33,9 +33,16 @@ class YoutubeController extends Controller
         $limit = 100;
         if ($request->has("limit")) $limit = (int) $request->limit;
         try {
-            $playlistItems = Youtube::getPlaylistItemsByPlaylistId($id, "", $limit)['results'];
-            $playlistItems = collect($playlistItems)->filter(function ($item) {
+            $playlistItems = collect(Youtube::getPlaylistItemsByPlaylistId($id, "", $limit)['results']);
+            $playlistItems = $playlistItems->filter(function ($item) {
                 return $item->status->privacyStatus === "public";
+            });
+            $plf = $this->plf;
+            $playlistItems = $playlistItems->map(function ($item) use ($plf) {
+                $newItem = collect($item);
+                $newItem->put("id", $item->contentDetails->videoId);
+                $newItem->put("plf", $plf);
+                return $newItem;
             });
             return $this->successResponse($playlistItems);
         } catch (\Exception $e) {

@@ -167,16 +167,16 @@ export default {
         const { proxy } = getCurrentInstance();
 
         // SECTION Store //////////////////////////////////////////////////////
-        const useStore = useSongPlay();
-        const storeCurrentSong = localStorage.getItem("currentSong")
-            ? JSON.parse(localStorage.getItem("currentSong"))
-            : null;
-        if (storeCurrentSong) {
-            useStore.loadSong(storeCurrentSong.id, false, storeCurrentSong.plf);
-        }
+
+        // const storeCurrentSong = localStorage.getItem("currentSong")
+        //     ? JSON.parse(localStorage.getItem("currentSong"))
+        //     : null;
+        // if (storeCurrentSong) {
+        //     useStore.loadSong(storeCurrentSong.id, false, storeCurrentSong.plf);
+        // }
 
         // !SECTION End Store //////////////////////////////////////////////////////
-
+        const useStore = useSongPlay();
         // SECTION State //////////////////////////////////////////////////////
         const initData = () => {
             return {
@@ -193,7 +193,11 @@ export default {
         };
 
         const stateReactive = reactive({ ...initData() });
+
         // !SECTION End State //////////////////////////////////////////////////////
+
+        useStore.loadStorage();
+
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
 
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
@@ -321,6 +325,7 @@ export default {
                 elProgress.classList.remove("activeSliderThumb");
             }
         };
+
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////

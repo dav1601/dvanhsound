@@ -43,6 +43,7 @@
                     max-height="54"
                     height="54"
                     width="54"
+                    
                     cover
                 ></v-img>
 
