@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use App\Models\Playable;
+
 trait Responser
 {
     protected $ERROR = 0;
@@ -60,5 +62,14 @@ trait Responser
     protected function backValidate($validator)
     {
         return redirect()->back()->withErrors($validator)->withInput();
+    }
+    protected function savePlayable($plf_id = "", $plf = "", $src = "")
+    {
+        try {
+            $playable = Playable::create(['plf' => $plf, 'src' => $src, 'plf_id' => $plf_id]);
+            return $playable;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

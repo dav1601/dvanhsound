@@ -45,6 +45,11 @@ export const useSongPlay = defineStore({
         },
     },
     actions: {
+        // ANCHOR load playlist info //////////////////////////////////////////////////////
+        loadPlaylist(id, plf) {
+
+        },
+        // ANCHOR load storage //////////////////////////////////////////////////////
         loadStorage() {
             this.loadedSong = false;
             const currentSong = localStorage.getItem("currentSong");

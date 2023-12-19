@@ -66,8 +66,13 @@
 
         <!-- ANCHOR main app --------------------------------- -->
 
-        <v-main style="min-height: 300px" id="dvs-main" rounded>
-            <div id="app-content" class="w-100 h-100 p-8">
+        <v-main
+            style="min-height: 300px"
+            id="dvs-main"
+            :class="classMainContent"
+            rounded
+        >
+            <div id="app-content" class="w-100 h-100">
                 <!-- ANCHOR route-view-app --------------------------------- -->
                 <router-view></router-view>
             </div>
@@ -82,7 +87,8 @@ import { storeToRefs } from "pinia";
 import SidebarList from "@/components/SidebarList.vue";
 import MainTopBar from "@/components/MainTopBar.vue";
 import NowPlayingBar from "@/components/NowPlayingBar.vue";
-import { reactive, computed, toRef } from "vue";
+import { useRoute } from "vue-router";
+import { reactive, computed, watch, ref } from "vue";
 export default {
     components: {
         SidebarList,
@@ -91,6 +97,8 @@ export default {
     },
     setup() {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
+        const route = useRoute();
+
 
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
         const initData = () => {
@@ -106,6 +114,12 @@ export default {
             }
             return "!bg-transparent";
         });
+        const classMainContent = computed(() => {
+            if (route.name === "Playlist" || route.name === "Track")
+                return "pt-0";
+            return "";
+        });
+
         const activeScroll = computed(() => {
             stateReactive.scrollTop > 10;
         });
@@ -120,6 +134,7 @@ export default {
             scrollApp,
             classAppBar,
             activeScroll,
+            classMainContent,
         };
     },
 };

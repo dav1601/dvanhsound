@@ -1,68 +1,7 @@
 <template lang>
     <div id="wp-playlist">
         <!-- ANCHOR start astist --------------------------------- -->
-        <div
-            id="artist"
-            class="mb-8"
-            :style="{
-                backgroundImage: 'url(' + $assetImg('bg-artist.jpg') + ')',
-            }"
-        >
-            <!-- <img
-                :src="$assetImg('ed.png')"
-                class="position-absolute artist-image"
-                alt="artist"
-            /> -->
-            <div class="artist-info">
-                <div class="artist-info-verified">
-                    <v-icon
-                        density="default"
-                        icon="mdi-check-decagram"
-                        class="--icon"
-                    >
-                    </v-icon>
-                    <span class="ml-3 text-white font-bold">
-                        Verified Artist
-                    </span>
-                </div>
-                <h2 class="artist-info-name mb-4">Allan Walker</h2>
-                <div class="artist-info-listeners mb-8">
-                    <v-icon
-                        density="default"
-                        icon="mdi-headphones"
-                        class="--icon"
-                    >
-                    </v-icon>
-                    <span class="pl-3 font-semibold">
-                        28.885.533
-                        <span class="pl-1">monthly listeners</span>
-                    </span>
-                </div>
-                <div class="artist-info-actions">
-                    <!-- <button
-                        class="--play px-6 py-3 text-white font-bold text-uppercase"
-                    >
-                        Play
-                    </button> -->
-                    <v-btn
-                        icon="mdi-play"
-                        class="dva-bg-green"
-                        size="large"
-                    ></v-btn>
-                    <!-- ml-3 py-3 pl-4 pr-6 -->
-                    <button class="--following ml-3 py-3 pl-4 pr-6">
-                        <v-icon
-                            density="default"
-                            icon="mdi-check"
-                            class="--icon"
-                        >
-                        </v-icon>
-                        <span>Following</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
+        <content-header></content-header>
         <!-- ANCHOR end artist --------------------------------- -->
         <!-- ANCHOR start popular --------------------------------- -->
         <div id="wp-popular">
@@ -79,7 +18,7 @@
                     >
                 </div>
                 <!-- ANCHOR popular list --------------------------------- -->
-                <div id="music-list">
+                <!-- <div id="music-list">
                     <song-item
                         v-for="(item, index) in playlist"
                         :key="'music-item-' + item.id"
@@ -87,7 +26,7 @@
                         :index="index"
                         :isLast="index === playlist.length - 1"
                     ></song-item>
-                </div>
+                </div> -->
 
                 <!-- ANCHOR end popular list --------------------------------- -->
             </div>
@@ -97,18 +36,20 @@
     </div>
 </template>
 <script>
-import { useDatabaseApp } from "@/stores/database";
+import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
+import { useRoute } from "vue-router";
 import SongItem from "@/components/SongItem.vue";
+import ContentHeader from "@/components/ContentHeader.vue";
 
 export default {
-    components: { SongItem },
+    components: { SongItem, ContentHeader },
     setup() {
-        const userStore = useDatabaseApp();
-        const { playlist } = storeToRefs(userStore);
-        return {
-            playlist,
-        };
+        const route = useRoute();
+        const plf = route.params.plf;
+        const id = route.params.id;
+
+        return {};
     },
 };
 </script>

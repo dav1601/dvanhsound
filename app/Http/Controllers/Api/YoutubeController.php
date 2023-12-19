@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Traits\Responser;
+use App\Models\Playable;
 
+use App\Traits\Responser;
 use Illuminate\Http\Request;
 use Alaouy\Youtube\Facades\Youtube;
 use App\Http\Controllers\Controller;
@@ -54,7 +55,13 @@ class YoutubeController extends Controller
     {
         try {
             $track = Youtube::getVideoInfo($id);
-            $track->src = $this->getPlayable($id);
+            $playble = Playable::where("plf_id", '=', $id)->where("plf", '=', $this->plf)->first();
+            if ($playble) {
+                $track->src = $playble->src;
+            } else {
+                $track->src = $this->getPlayable($id);
+                $this->savePlayable($id, $this->plf, $track->src);
+            }
             if (!$track || $track->status->privacyStatus !== "public" || !$track->src) report("track not available");
             $track->plf = $this->plf;
             return $this->successResponse($track);
