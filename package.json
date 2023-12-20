@@ -19,6 +19,7 @@
     "dependencies": {
         "@kyvg/vue3-notification": "^3.1.0",
         "animate.css": "^4.1.1",
+        "colorthief": "^2.4.0",
         "pinia": "^2.1.7",
         "swiper": "^11.0.5",
         "vue-router": "^4.2.5",

@@ -18,6 +18,7 @@
                     :src="$getLogo()"
                 ></v-img>
             </router-link>
+
             <sidebar-list
                 v-for="(nav, index) in navList"
                 :key="'sidebar-left-' + index"
@@ -89,6 +90,7 @@ import MainTopBar from "@/components/MainTopBar.vue";
 import NowPlayingBar from "@/components/NowPlayingBar.vue";
 import { useRoute } from "vue-router";
 import { reactive, computed, watch, ref } from "vue";
+
 export default {
     components: {
         SidebarList,

@@ -1,11 +1,11 @@
 <template>
-    <div id="dvas-home">
+    <div id="dvas-home" class="content-spacing">
         <v-alert
             v-model="state.alert"
             type="info"
             text="Music from YouTube will LOAD FASTER THAN Spotify"
             elevation="2"
-            class="mb-2"
+            class="my-4"
             variant="tonal"
             border="start"
             border-color="info"

@@ -59,12 +59,14 @@ class SpotifyController extends Controller
         try {
             $track = $this->spotify->track($id)->get();
             $playble = Playable::where("plf_id", '=', $id)->where("plf", '=', $this->plf)->first();
-            if ($playble) {
-                $track['src'] = $playble->src;
-            } else {
-                $track['src'] = $this->getPlayable($id);
-                $this->savePlayable($id, $this->plf, $track['src']);
-            }
+            // if ($playble) {
+            //     $track['src'] = $playble->src;
+            // } else {
+            //     $track['src'] = $this->getPlayable($id);
+            //     $this->savePlayable($id, $this->plf, $track['src']);
+            // }
+            $track['src'] = $this->getPlayable($id);
+            $this->savePlayable($id, $this->plf, $track['src']);
             $track['plf'] = $this->plf;
             return $this->successResponse($track);
         } catch (\Exception $e) {

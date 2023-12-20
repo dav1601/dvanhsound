@@ -55,13 +55,15 @@ class YoutubeController extends Controller
     {
         try {
             $track = Youtube::getVideoInfo($id);
-            $playble = Playable::where("plf_id", '=', $id)->where("plf", '=', $this->plf)->first();
-            if ($playble) {
-                $track->src = $playble->src;
-            } else {
-                $track->src = $this->getPlayable($id);
-                $this->savePlayable($id, $this->plf, $track->src);
-            }
+            $track->src = $this->getPlayable($id);
+            $this->savePlayable($id, $this->plf, $track->src);
+            // $playble = Playable::where("plf_id", '=', $id)->where("plf", '=', $this->plf)->first();
+            // if ($playble) {
+            //     $track->src = $playble->src;
+            // } else {
+            //     $track->src = $this->getPlayable($id);
+            //     $this->savePlayable($id, $this->plf, $track->src);
+            // }
             if (!$track || $track->status->privacyStatus !== "public" || !$track->src) report("track not available");
             $track->plf = $this->plf;
             return $this->successResponse($track);
