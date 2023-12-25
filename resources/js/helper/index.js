@@ -13,6 +13,18 @@ const myPlugin = {
             seconds = seconds >= 10 ? seconds : "0" + seconds;
             return minutes + ":" + seconds;
         };
+        app.config.globalProperties.$sToHm = (d) => {
+            d = Number(d);
+            let h = Math.floor(d / 3600);
+            let m = Math.floor((d % 3600) / 60);
+            let s = Math.floor((d % 3600) % 60);
+
+            let hDisplay = h > 0 ? h + (h == 1 ? " giờ " : " giờ ") : "";
+            let mDisplay =
+                m > 0 ? m + (m == 1 ? " phút" : " phút ") : "";
+
+            return hDisplay + mDisplay;
+        };
         app.config.globalProperties.$getLogo = (type = "og") => {
             if (type === "og") return window.ogLogo;
             return window.smLogo;

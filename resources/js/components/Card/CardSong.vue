@@ -76,6 +76,7 @@ export default {
 
         // SECTION Store //////////////////////////////////////////////////////
         const useStore = useSongPlay();
+
         // !SECTION End Store //////////////////////////////////////////////////////
 
         // SECTION State //////////////////////////////////////////////////////
@@ -120,10 +121,9 @@ export default {
         });
 
         const setInfo = () => {
-            stateReactive.info = useStore.getInfoSongByPlf(
-                props.item,
-                props.plf
-            );
+            stateReactive.info = {
+                ...useStore.getInfoSongByPlf(props.item, props.plf),
+            };
         };
 
         // !SECTION End Computed //////////////////////////////////////////////////////

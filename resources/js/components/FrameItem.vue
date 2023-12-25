@@ -128,6 +128,7 @@ export default {
         const fetchPlaylistItems = () => {
             PlaylistRepository.getItems(props.playlistId).then((res) => {
                 setItems(res);
+                console.log(res.data.data);
             });
         };
         const spotifyFetchPlaylistInfo = () => {
@@ -139,6 +140,7 @@ export default {
             StPlaylistRepository.getItems(props.playlistId).then((res) => {
                 const data = res.data.data;
                 stateReactive.items = data;
+
                 stateReactive.isLoadedItems = true;
                 setDefaultPlaylist(props.playlistId, data);
             });

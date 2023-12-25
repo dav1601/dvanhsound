@@ -11,4 +11,9 @@ export default {
             params: params,
         });
     },
+    convertImage(url) {
+        return RepositoryBase.post("youtube/convert_image", {
+            url: url,
+        });
+    }
 };

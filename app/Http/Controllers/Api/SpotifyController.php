@@ -27,9 +27,10 @@ class SpotifyController extends Controller
     {
         $playlistId = $id;
         $fields = "collaborative,description,id,images,name,owner,primary_color,public,type,";
-        if ($request->has("loadTracks")) {
+        if ($request['loadTrack']) {
             $fields .= "tracks";
         }
+
         try {
             $playlist = $this->spotify->playlist($playlistId)->fields($fields)->get();
             $playlist['plf'] = $this->plf;
@@ -40,11 +41,13 @@ class SpotifyController extends Controller
     }
     public function getPlaylistItems($id, Request $request)
     {
+        $limit = $request['limit'] ? (int) $request['limit'] : 20;
         try {
             $plf = $this->plf;
-            $playlistItems = $this->spotify->playlistTracks($id)->limit(20)->get()['items'];
+            $playlistItems = $this->spotify->playlistTracks($id)->limit($limit)->get()['items'];
             $playlistItems = collect($playlistItems)->map(function ($item) use ($plf) {
                 $newItem = collect($item['track']);
+                $newItem->put("duration", (int) $newItem['duration_ms'] / 1000);
                 $newItem->put("plf", $plf);
                 return $newItem;
             });
@@ -58,13 +61,6 @@ class SpotifyController extends Controller
     {
         try {
             $track = $this->spotify->track($id)->get();
-            $playble = Playable::where("plf_id", '=', $id)->where("plf", '=', $this->plf)->first();
-            // if ($playble) {
-            //     $track['src'] = $playble->src;
-            // } else {
-            //     $track['src'] = $this->getPlayable($id);
-            //     $this->savePlayable($id, $this->plf, $track['src']);
-            // }
             $track['src'] = $this->getPlayable($id);
             $this->savePlayable($id, $this->plf, $track['src']);
             $track['plf'] = $this->plf;

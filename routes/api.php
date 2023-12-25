@@ -27,8 +27,8 @@ Route::controller(YoutubeController::class)->prefix('youtube/')->group(function 
     });
     Route::prefix("track/")->as("track.")->group(function () {
         Route::get("{id}", "getTrack")->name("audio");
-
     });
+    Route::post("convert_image" , "convertImage")->name("yt.convert_image");
 });
 Route::controller(SpotifyController::class)->prefix('spotify/')->group(function () {
     Route::prefix("playlist/")->as("playlist.")->group(function () {

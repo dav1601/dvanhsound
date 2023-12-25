@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Alaouy\Youtube\Facades\Youtube;
 use App\Http\Controllers\Controller;
 use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\Storage;
 
 class YoutubeController extends Controller
 {
@@ -31,7 +32,7 @@ class YoutubeController extends Controller
     }
     public function getPlaylistItems($id, Request $request)
     {
-        $limit = 100;
+        $limit = 50;
         if ($request->has("limit")) $limit = (int) $request->limit;
         try {
             $playlistItems = collect(Youtube::getPlaylistItemsByPlaylistId($id, "", $limit)['results']);
@@ -46,24 +47,21 @@ class YoutubeController extends Controller
                 return $newItem;
             });
             return $this->successResponse($playlistItems);
+
+            return $this->successResponse($playlistItems);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), $e->getCode());
         }
     }
 
-    public function getTrack($id)
+    public function getTrack($id, Request $request)
     {
+        $onlyDuration = $request->has("onlyDuration");
         try {
             $track = Youtube::getVideoInfo($id);
+            if ($onlyDuration) return (int) $this->ISO8601ToSeconds($track->contentDetails->duration);
             $track->src = $this->getPlayable($id);
             $this->savePlayable($id, $this->plf, $track->src);
-            // $playble = Playable::where("plf_id", '=', $id)->where("plf", '=', $this->plf)->first();
-            // if ($playble) {
-            //     $track->src = $playble->src;
-            // } else {
-            //     $track->src = $this->getPlayable($id);
-            //     $this->savePlayable($id, $this->plf, $track->src);
-            // }
             if (!$track || $track->status->privacyStatus !== "public" || !$track->src) report("track not available");
             $track->plf = $this->plf;
             return $this->successResponse($track);
@@ -80,5 +78,18 @@ class YoutubeController extends Controller
         $rs  = explode("\n", $string);
         $audio = $rs[1];
         return $audio;
+    }
+
+    public function convertImage(Request $request)
+    {
+        try {
+            $url = $request->url;
+            $contents = file_get_contents($url);
+            $name = "temp." . pathinfo($url)["extension"];
+            $path =  Storage::disk("public")->put($name, $contents);
+            return Storage::disk("public")->url($name);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
     }
 }

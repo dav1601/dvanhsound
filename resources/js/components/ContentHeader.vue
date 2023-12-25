@@ -8,7 +8,7 @@
             v-if="isLoaded"
         >
             <img
-                class="rounded-md w-[232px] h-[232px]"
+                class="rounded-md w-[232px] h-[232px] object-cover object-center drop-shadow-lg"
                 :src="image"
                 id="content-header-image"
             />
@@ -20,14 +20,23 @@
                 >
                     {{ title }}
                 </h1>
-                <span class="text-[#BEBEBD] text-sm mb-2">{{
-                    description
-                }}</span>
+                <span
+                    class="text-[#BEBEBD] text-sm mb-2"
+                    v-html="description"
+                    v-if="description"
+                >
+                </span>
                 <div class="flex justify-start items-center">
                     <slot></slot>
                 </div>
             </div>
         </div>
+        <!-- skeleton -->
+        <div
+            class="w-full h-full bg-gray-700 animate-pulse dva-abs-full bg-opacity-25 z-[2]"
+            v-else
+        ></div>
+
         <div
             class="dva-abs-full z-[-1] content-header-mask"
             :style="bgColor"
@@ -46,6 +55,8 @@ import {
     nextTick,
     onUpdated,
 } from "vue";
+import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+const PlaylistRepository = RepositoryFactory.get("playlist");
 export default {
     props: {
         title: {
@@ -67,6 +78,10 @@ export default {
         isLoaded: {
             type: Boolean,
             default: false,
+        },
+        plf: {
+            typeof: String,
+            default: "yt",
         },
     },
     setup(props) {
@@ -95,15 +110,29 @@ export default {
                 Math.min(max_width / width, max_height / height) + "em"
             );
         };
-        const loadBg = () => {
+        const getColor = (url) => {
             const colorThief = new ColorThief();
+            const img = new Image();
+            img.src = url;
+            img.crossOrigin = "";
+            img.onload = () => {
+                const pallet = colorThief.getPalette(img);
+                stateReact.mainColor = pallet[pallet.length - 1];
+            };
+        };
+        const loadBg = () => {
+            switch (props.plf) {
+                case "yt":
+                    PlaylistRepository.convertImage(props.image).then((res) => {
+                        const { data } = res;
+                        getColor(data);
+                    });
+                    break;
 
-            const img = document.getElementById("content-header-image");
-            img.setAttribute("crossOrigin", "*");
-            img.addEventListener("load", function () {
-                const color = colorThief.getColor(img);
-                stateReact.mainColor = color;
-            });
+                default:
+                    getColor(props.image);
+                    break;
+            }
         };
         onMounted(() => {});
 

@@ -7,6 +7,7 @@ export const useSongPlay = defineStore({
     id: "SongPLay",
     state: () => ({
         loadedSong: false,
+        loadedPlaylistItems: false,
         defaultPlaylist: [],
         currentPlaylistItems: [],
         currentPlaylistId: null,
@@ -46,20 +47,17 @@ export const useSongPlay = defineStore({
     },
     actions: {
         // ANCHOR load playlist info //////////////////////////////////////////////////////
-        loadPlaylist(id, plf) {
-
-        },
+        loadPlaylist(id, plf) {},
         // ANCHOR load storage //////////////////////////////////////////////////////
         loadStorage() {
             this.loadedSong = false;
             const currentSong = localStorage.getItem("currentSong");
             const currentPlaylist = localStorage.getItem("currentPlaylist");
             if (currentSong) {
-                this.loadSong(
-                    JSON.parse(currentSong).id,
-                    false,
-                    JSON.parse(currentSong).plf
-                );
+                const parse = JSON.parse(currentSong);
+                if (parse.id) {
+                    this.loadSong(parse.id, false, JSON.parse(currentSong).plf);
+                }
             }
             if (currentPlaylist) {
                 this.setCurrentPlaylistItems(JSON.parse(currentPlaylist));
@@ -89,12 +87,12 @@ export const useSongPlay = defineStore({
             }
             this.currentSong.el.currentTime = 0;
             this.currentSong.el.volume = this.settings.volume / 100;
-            this.currentSong.el.loop = this.settings.repeat === "self";
             this.loadedSong = true;
             if (payload.playing) {
                 this.playSong();
             }
         },
+
         setCurrentPlaylistItems(items, playlistId) {
             this.currentPlaylistId = playlistId;
             if (items) this.currentPlaylistItems = items;
@@ -126,9 +124,13 @@ export const useSongPlay = defineStore({
             });
         },
         shufflePlaylist() {
-            let array = this.playlist.filter((song, index) => {
-                return index != this.currentSong.info.id;
+            if (this.currentPlaylistItems.length <= 0) {
+                return;
+            }
+            let array = this.currentPlaylistItems.filter((song) => {
+                return song.id !== this.currentSong.info.id;
             });
+
             let currentIndex = array.length,
                 randomIndex;
             // While there remain elements to shuffle.
@@ -143,8 +145,18 @@ export const useSongPlay = defineStore({
                     array[currentIndex],
                 ];
             }
-            array.unshift(this.playlist[this.currentSong.info.id]);
-            return (this.playlist = array);
+            let currentSongIndex = this.currentPlaylistItems.findIndex(
+                (song) => {
+                    return song.id === this.currentSong.info.id;
+                }
+            );
+            array.unshift(this.currentPlaylistItems[currentSongIndex]);
+            return (this.currentPlaylistItems = array);
+        },
+        loopSong() {
+            this.currentSong.el.currentTime = 0;
+            this.currentSong.el.loop = true;
+            this.playSong();
         },
         repeatSong(type) {
             this.settings.repeat = type;
@@ -168,7 +180,6 @@ export const useSongPlay = defineStore({
         },
         updateSettings(payload) {
             if (payload.volume) {
-                console.log(payload.volume);
                 if (payload.volume <= 1) {
                     payload.volume = 0;
                 }
@@ -179,7 +190,6 @@ export const useSongPlay = defineStore({
                 }
             }
             if (payload.currentTime) {
-                console.log(payload);
                 this.currentSong.el.currentTime = payload.currentTime;
             }
         },
@@ -203,7 +213,6 @@ export const useSongPlay = defineStore({
                 }
             }
             const song = this.currentPlaylistItems[index];
-            console.log({ song: song });
             this.loadSong(song.id, true, song.plf);
         },
         updateStatusCurrentSong(status) {
@@ -247,6 +256,7 @@ export const useSongPlay = defineStore({
                         (info.title = songData.snippet.title),
                         (info.description = songData.snippet.channelTitle),
                         (info.id = songData.id);
+
                     break;
 
                 default:

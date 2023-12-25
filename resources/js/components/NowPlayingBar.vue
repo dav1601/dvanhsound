@@ -11,7 +11,10 @@
                         :src="state.info.image"
                         max-width="56"
                         max-height="56"
-                        class="rounded"
+                        width="56"
+                        height="56"
+                        class="rounded-md"
+                        cover
                         v-if="store.loadedSong.value"
                     >
                     </v-img>
@@ -62,15 +65,24 @@
                     <div
                         class="npb-layout-center-controls flex items-center justify-center mb-1"
                     >
-                        <button class="--controls-btn --controls-shuffle">
-                            <v-icon icon="mdi-shuffle-variant" class="white-72">
+                        <button
+                            class="--controls-btn --controls-shuffle"
+                            @click.stop="shuffle"
+                        >
+                            <v-icon
+                                icon="mdi-shuffle-variant"
+                                class="white-72 hover:text-white hover:font-bold"
+                            >
                             </v-icon>
                         </button>
                         <button
                             class="--controls-btn --controls-prev"
                             @click.stop="nextOrPrev('prev')"
                         >
-                            <v-icon icon="mdi-skip-previous" class="white-72">
+                            <v-icon
+                                icon="mdi-skip-previous"
+                                class="white-72 hover:text-white hover:font-bold"
+                            >
                             </v-icon>
                         </button>
                         <button
@@ -94,11 +106,20 @@
                             class="--controls-btn --controls-next"
                             @click.stop="nextOrPrev('next')"
                         >
-                            <v-icon icon="mdi-skip-next" class="white-72">
+                            <v-icon
+                                icon="mdi-skip-next"
+                                class="white-72 hover:text-white hover:font-bold"
+                            >
                             </v-icon>
                         </button>
-                        <button class="--controls-btn --controls-repeat">
-                            <v-icon icon="mdi-repeat" class="white-72">
+                        <button
+                            class="--controls-btn --controls-repeat"
+                            @click="setRepeat"
+                        >
+                            <v-icon
+                                :icon="renderIconRepeat"
+                                class="white"
+                            >
                             </v-icon>
                         </button>
                     </div>
@@ -189,6 +210,10 @@ export default {
                 snackbarError: true,
                 snackbarMsg: "test",
                 info: {},
+                repeat: "playlist",
+                shuffle: localStorage.getItem("shuffle")
+                    ? localStorage.getItem("shuffle")
+                    : "off",
             };
         };
 
@@ -208,6 +233,15 @@ export default {
             if (useStore.isPlaying) return "mdi-pause-circle";
             if (useStore.isPaused) return "mdi-play-circle";
         });
+        const renderIconRepeat = computed(() => {
+            switch (stateReactive.repeat) {
+                case "song":
+                    return "mdi-repeat-once";
+
+                default:
+                    return "mdi-repeat";
+            }
+        });
         // !SECTION End Computed //////////////////////////////////////////////////////
 
         // SECTION Methods //////////////////////////////////////////////////////
@@ -226,7 +260,7 @@ export default {
 
                 default:
                     stateReactive.info["image"] =
-                        stateReactive.info.images.default.url;
+                        stateReactive.info.images.medium.url;
 
                     break;
             }
@@ -297,6 +331,14 @@ export default {
             stateReactive.progress = 0;
             useStore.nextOrPrevSong(type);
         };
+        const shuffle = () => {
+            useStore.shufflePlaylist();
+            return notify({
+                text: "Mixed playlist",
+                type: "success",
+                position: "top center",
+            });
+        };
         const listenerEvent = () => {
             const elAudio = useStore.currentSong.el;
 
@@ -325,6 +367,11 @@ export default {
                 elProgress.classList.remove("activeSliderThumb");
             }
         };
+        const setRepeat = () => {
+            if (stateReactive.repeat === "playlist")
+                return (stateReactive.repeat = "song");
+            return (stateReactive.repeat = "playlist");
+        };
 
         // !SECTION End Methods //////////////////////////////////////////////////////
 
@@ -350,12 +397,16 @@ export default {
         watch(
             () => stateReactive.progress,
             (newVal) => {
-                if (newVal === isNaN) {
+                if (newVal === isNaN || newVal >= 100) {
                     stateReactive.progress = 0;
                 }
                 renderBgSongProgress(newVal);
                 if (newVal >= 100) {
-                    nextOrPrev("next");
+                    if (stateReactive.repeat === "song") {
+                        useStore.loopSong();
+                    } else {
+                        nextOrPrev("next");
+                    }
                 }
             }
         );
@@ -392,7 +443,7 @@ export default {
             store: storeToRefs(useStore),
             // ANCHOR computed //////////////////////////////////////////////////////
             renderIconPlayPause,
-
+            renderIconRepeat,
             // ANCHOR methods //////////////////////////////////////////////////////
             renderBgSongProgress,
             onInputChangeProgress,
@@ -401,6 +452,8 @@ export default {
             playOrPause,
             nextOrPrev,
             timeLineHover,
+            shuffle,
+            setRepeat,
         };
         // !SECTION //////////////////////////////////////////////////////
     },

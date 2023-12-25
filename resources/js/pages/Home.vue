@@ -54,7 +54,6 @@ export default {
                         id: "37i9dQZEVXbL1G1MbPav3j",
                         plf: "st",
                     },
-
                 ],
                 alert: true,
             };
