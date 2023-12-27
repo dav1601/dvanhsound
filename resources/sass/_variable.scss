@@ -1,60 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;200;300;400;500;600;700;800;900&display=swap");
-html {
-    font-family: "Circular Spotify Text", sans-serif !important;
-    font-size: 16px;
-    word-wrap: break-word;
-    color: white;
-    scroll-behavior: smooth;
-}
-
-input {
-    all: unset;
-}
+$reset: false;
 $green: #1db954;
 $heightBottom: 88px;
 $white-72: rgba(255, 255, 255, 0.72);
 $secondary: #212121;
 $dvs-black: #121212;
-:root {
-    --spotify-green: $green !important;
-    --background-noise: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=";
-}
-.v-main {
-    padding-bottom: $heightBottom !important;
-}
-.col-4 {
-    flex: 0 0 33%;
-    max-width: 33%;
-}
-.white-72 {
-    color: rgba(255, 255, 255, 0.72);
-}
-.grey-font {
-    font-weight: 500;
-    color: $white-72;
-}
-.dva-text-green {
-    color: $green;
-}
-.dva-text-green {
-    color: $green;
-}
-.dva-bg-green {
-    background: $green !important;
-}
-.v-skeleton-loader {
-    background: transparent !important;
-}
-.content-spacing {
-    margin: 0;
-    padding: 0 30px;
-}
-.dva-abs-full {
-    display: block;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-}
+$heightBarBottom: 88px;
+$gray: #a2a2a2;

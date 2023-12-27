@@ -38,8 +38,12 @@
         ></div>
 
         <div
-            class="dva-abs-full z-[-1] content-header-mask"
-            :style="bgColor"
+            class="dva-abs-full bg-gradient-to-b z-[-1] transition-colors ease-in-out delay-[2000]"
+            :style="bgColor(0.45)"
+        ></div>
+        <div
+            class="z-[-1] block left-0 bg-gradient-to-b opacity-25 absolute bottom-[-232px] h-[232px] w-full transition-colors ease-in-out delay-[2000]"
+            :style="bgColor(0)"
         ></div>
     </div>
 </template>
@@ -87,27 +91,30 @@ export default {
     setup(props) {
         const initData = () => {
             return {
-                mainColor: [40, 40, 40],
+                mainColor: "#121212",
+                mainRbg: [18, 18, 18],
             };
         };
         const stateReact = reactive({ ...initData() });
         const { isLoaded } = toRefs(props);
-        const bgColor = computed(() => {
-            return {
-                background: `rgb(${stateReact.mainColor[0]} ,${stateReact.mainColor[1]},${stateReact.mainColor[2]} )`,
-            };
-        });
+        const bgColor = (opacity = 0) => {
+            return (
+                `--tw-gradient-from: ${stateReact.mainColor} var(--tw-gradient-from-position);` +
+                `--tw-gradient-to: rgb(${stateReact.mainRbg[0]} ${stateReact.mainRbg[1]} ${stateReact.mainRbg[2]} / ${opacity}) var(--tw-gradient-to-position);` +
+                "--tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);"
+            );
+        };
 
         const resize2fit = () => {
             const el = document.getElementById("el");
             if (!el.parentElement) return;
-            el.style.setProperty("--font-size", "1em");
+            el.style.setProperty("--font-size", "1rem");
             const { width: max_width, height: max_height } =
                 el.getBoundingClientRect();
             const { width, height } = el.children[0].getBoundingClientRect();
             el.style.setProperty(
                 "--font-size",
-                Math.min(max_width / width, max_height / height) + "em"
+                Math.min(max_width / width, max_height / height) + "rem"
             );
         };
         const getColor = (url) => {
@@ -117,7 +124,13 @@ export default {
             img.crossOrigin = "";
             img.onload = () => {
                 const pallet = colorThief.getPalette(img);
-                stateReact.mainColor = pallet[pallet.length - 1];
+                const color = pallet[pallet.length - 1];
+                stateReact.mainRbg = color;
+                stateReact.mainColor =
+                    "#" +
+                    ((1 << 24) | (color[0] << 16) | (color[1] << 8) | color[2])
+                        .toString(16)
+                        .slice(1);
             };
         };
         const loadBg = () => {
@@ -157,16 +170,9 @@ export default {
 </script>
 <style lang="scss">
 .content-header-mask {
-    -webkit-mask-image: linear-gradient(
-        to top,
-        rgba(18, 18, 18, 0.5),
-        rgba(18, 18, 18, 1)
-    );
-    mask-image: linear-gradient(
-        to top,
-        rgba(18, 18, 18, 0.2),
-        rgba(18, 18, 18, 1)
-    );
+    --tw-gradient-from: red var(--tw-gradient-from-position);
+    --tw-gradient-to: rgb(18 18 18 / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 .stat {
     position: relative;

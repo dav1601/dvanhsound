@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" id="html">
+<html lang="en" id="html" >
 
 <head>
     <meta charset="UTF-8">
@@ -17,7 +17,7 @@
 <body>
 
     <div id="app"></div>
-    @vite(['resources/sass/app.scss', 'resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
 
 </body>
 

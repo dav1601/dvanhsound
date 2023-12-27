@@ -31,13 +31,13 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": "/resources/js",
-            
+
         },
     },
     css: {
         preprocessorOptions: {
             scss: {
-                additionalData: `@import "/resources/sass/_variable.scss";@import "/resources/sass/_mixin.scss";`,
+                additionalData: `@import "/resources/sass/_variable.scss";@import "/resources/sass/_mixin.scss";@import "/resources/sass/global.scss";`,
             },
         },
     },

@@ -62,7 +62,7 @@ class SpotifyController extends Controller
         try {
             $track = $this->spotify->track($id)->get();
             $track['src'] = $this->getPlayable($id);
-            $this->savePlayable($id, $this->plf, $track['src']);
+            $track['duration'] = (int) $track['duration_ms'] / 1000;
             $track['plf'] = $this->plf;
             return $this->successResponse($track);
         } catch (\Exception $e) {
@@ -78,5 +78,11 @@ class SpotifyController extends Controller
         $rs  = explode("\n", $string);
         $audio = $rs[1];
         return $audio;
+    }
+    public function syncPlaylist($userId, Request $request)
+    {
+
+        $allPlaylist = $this->spotify->userPlaylists($userId)->offset(0)->limit(50)->get();
+        return $allPlaylist;
     }
 }

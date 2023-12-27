@@ -11,4 +11,11 @@ export default {
             params: params,
         });
     },
+    syncPlaylist(userId, params = {}) {
+        params["ytId"] = listId.ytId;
+        params["stId"] = listId.stId;
+        return RepositoryBase.get(`${resoure}/sync/${userId}`, {
+            params: params,
+        });
+    },
 };

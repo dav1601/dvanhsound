@@ -79,7 +79,7 @@ export const useSongPlay = defineStore({
         setCurrentSong(payload) {
             const plf = payload.hasOwnProperty("plf") ? payload.plf : "yt";
             this.currentSong.data = payload;
-            this.currentSong.info = this.getInfoSongByPlf(payload, plf);
+            this.currentSong.info = this.getInfoStandards(payload, plf);
             if (this.currentSong.el !== null) {
                 this.currentSong.el.src = payload.src;
             } else {
@@ -124,7 +124,7 @@ export const useSongPlay = defineStore({
             });
         },
         shufflePlaylist() {
-            if (this.currentPlaylistItems.length <= 0) {
+            if (this.currentPlaylistItems.length <= 1) {
                 return;
             }
             let array = this.currentPlaylistItems.filter((song) => {
@@ -228,7 +228,7 @@ export const useSongPlay = defineStore({
         isActiveSong(id) {
             return this.currentSong.info.id === id;
         },
-        getInfoSongByPlf(songData, plf = "yt") {
+        getInfoStandards(data, plf = "yt", type = "song") {
             const info = {
                 title: "",
                 description: "",
@@ -237,25 +237,36 @@ export const useSongPlay = defineStore({
                 plf: plf,
             };
 
-            if (!songData) return info;
+            if (_.isEmpty(data)) return info;
             switch (plf) {
                 case "st":
-                    let artists = [];
-                    songData.artists.forEach((item) => {
-                        artists.push(item.name);
-                    });
+                    switch (type) {
+                        case "playlist":
+                            (info.images = data.images),
+                                (info.title = data.name),
+                                (info.description = data.description),
+                                (info.id = data.id);
+                            break;
 
-                    (info.images = songData.album.images),
-                        (info.title = songData.name),
-                        (info.description = artists.toString()),
-                        (info.id = songData.id);
+                        default:
+                            let artists = [];
+                            data.artists.forEach((item) => {
+                                artists.push(item.name);
+                            });
+
+                            (info.images = data.album.images),
+                                (info.title = data.name),
+                                (info.description = artists.toString()),
+                                (info.id = data.id);
+                            break;
+                    }
 
                     break;
                 case "yt":
-                    (info.images = songData.snippet.thumbnails),
-                        (info.title = songData.snippet.title),
-                        (info.description = songData.snippet.channelTitle),
-                        (info.id = songData.id);
+                    (info.images = data.snippet.thumbnails),
+                        (info.title = data.snippet.title),
+                        (info.description = data.snippet.channelTitle),
+                        (info.id = data.id);
 
                     break;
 

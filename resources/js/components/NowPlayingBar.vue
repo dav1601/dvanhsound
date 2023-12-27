@@ -461,7 +461,7 @@ export default {
 </script>
 <style lang="scss">
 #now-playing-bar {
-    z-index: 1000000 !important;
+    z-index: 1020 !important;
     width: 100% !important;
     left: 0 !important;
     background: rgba(18, 18, 18, 0.64);

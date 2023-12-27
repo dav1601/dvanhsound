@@ -3,11 +3,11 @@
         <!-- ANCHOR header --------------------------------- -->
         <content-header
             :isLoaded="state.loadedInfo"
-            :title="state.info.title"
-            :description="state.info.description"
-            :image="state.info.image"
+            :title="info.title"
+            :description="info.description"
+            :image="image"
             :type="route.name"
-            :plf="route.params.plf"
+            :plf="state.plf"
         >
             <div class="flex justify-start items-center">
                 <span class="text-gray-200 font-semibold" id="total"
@@ -15,18 +15,17 @@
                 >
                 <span
                     class="text-gray-200 font-semibold"
-                    v-if="state.info.duration !== 0"
+                    v-if="state.playlist !== 0"
                     ><v-icon icon="mdi-circle-small"></v-icon
                 ></span>
                 <span class="text-gray-200 font-semibold" id="duration">{{
-                    $sToHm(state.info.duration)
+                    $sToHm(state.playlist.duration)
                 }}</span>
             </div>
         </content-header>
 
         <!-- ANCHOR playlist --------------------------------- -->
         <div id="playlist" class="relative w-full h-full">
-            <div class="absolute"></div>
             <div id="playlist-content" class="content-spacing">
                 <div
                     class="actions-bar flex justify-start items-center mt-6 mb-8"
@@ -48,10 +47,7 @@
                         class="cursor-pointer hover:text-white text-gray-500"
                     ></v-icon>
                 </div>
-                <grid-items
-                    :items="state.playlist.items"
-                    :plf="route.params.plf"
-                ></grid-items>
+                <grid-items :items="state.items" :plf="state.plf"></grid-items>
             </div>
         </div>
     </div>
@@ -79,9 +75,8 @@ export default {
     setup() {
         const initData = () => {
             return {
-                playlist: {
-                    items: [],
-                },
+                playlist: {},
+                items: [],
                 loadedInfo: false,
                 loadedItems: false,
                 errorFetch: false,
@@ -91,20 +86,19 @@ export default {
                     image: "",
                     duration: 0,
                 },
+                plf: "",
             };
         };
 
         const stateReactive = reactive({ ...initData() });
         const route = useRoute();
+        stateReactive.plf = route.params.plf;
         const songPlay = useSongPlay();
         const fetchPlaylistSt = () => {
             StPlaylistRepository.getInfo(route.params.id)
                 .then((res) => {
                     const data = res.data.data;
                     stateReactive.playlist = data;
-                    stateReactive.info.title = data.name;
-                    stateReactive.info.description = data.description;
-                    stateReactive.info.image = data.images[0].url;
                     stateReactive.loadedInfo = true;
                 })
                 .catch((err) => {
@@ -113,12 +107,11 @@ export default {
             StPlaylistRepository.getItems(route.params.id, { limit: 100 })
                 .then((res) => {
                     const data = res.data.data;
-                    stateReactive.playlist.items = data;
-                    console.log(data.length);
+                    stateReactive.items = data;
                     stateReactive.loadedItems = true;
                     songPlay.loadedPlaylistItems = true;
-                    stateReactive.info.duration =
-                        stateReactive.playlist.items.reduce(
+                    stateReactive.playlist.duration =
+                        stateReactive.items.reduce(
                             (duration, item) => duration + item.duration,
                             0
                         );
@@ -132,10 +125,6 @@ export default {
                 .then((res) => {
                     const { data } = res.data;
                     stateReactive.playlist = data;
-                    stateReactive.info.title = data.snippet.title;
-                    stateReactive.info.description = data.snippet.description;
-                    stateReactive.info.image =
-                        data.snippet.thumbnails.medium.url;
                     stateReactive.loadedInfo = true;
                 })
                 .catch((err) => {
@@ -144,7 +133,7 @@ export default {
             PlaylistRepository.getItems(route.params.id)
                 .then((res) => {
                     const { data } = res.data;
-                    stateReactive.playlist.items = data;
+                    stateReactive.items = data;
                     stateReactive.loadedItems = true;
                     songPlay.loadedPlaylistItems = true;
                 })
@@ -158,7 +147,7 @@ export default {
 
             // default: playlist
             default:
-                switch (route.params.plf) {
+                switch (stateReactive.plf) {
                     case "st":
                         fetchPlaylistSt();
                         break;
@@ -171,12 +160,35 @@ export default {
         }
         // ANCHOR computed //////////////////////////////////////////////////////
         const totalSong = computed(() => {
-            return stateReactive.playlist.hasOwnProperty("items")
-                ? Object.keys(stateReactive.playlist.items).length
+            return stateReactive.loadedItems
+                ? Object.keys(stateReactive.items).length
                 : 0;
         });
+        const info = computed(() => {
+            return songPlay.getInfoStandards(
+                stateReactive.playlist,
+                stateReactive.plf,
+                "playlist"
+            );
+        });
+        const image = computed(() => {
+            let url = "";
+            if (stateReactive.loadedInfo) {
+                switch (stateReactive.plf) {
+                    case "st":
+                        url = info.value.images[0].url;
+                        break;
+
+                    default:
+                        url = info.value.images.medium.url;
+                        break;
+                }
+            }
+
+            return url;
+        });
         watch(
-            () => stateReactive.playlist.items,
+            () => stateReactive.items,
             (items) => {
                 if (items) {
                     if (Object.keys(items).length > 0) {
@@ -190,6 +202,8 @@ export default {
             route,
             state: toRef(stateReactive),
             totalSong,
+            info,
+            image,
         };
     },
 };

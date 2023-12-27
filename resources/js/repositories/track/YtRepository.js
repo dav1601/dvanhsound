@@ -6,4 +6,5 @@ export default {
             params: params,
         });
     },
+    
 };

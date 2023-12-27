@@ -1,20 +1,45 @@
 <template>
     <div
-        class="playlist-grid-td flex justify-start items-center cursor-pointer pl-5 rounded-md py-2"
+        class="playlist-grid-td group flex justify-start items-center cursor-pointer rounded-md py-2"
+        @mouseenter="setHover(true)"
+        @mouseleave="setHover(false)"
+        @dblclick.stop="dbClick"
     >
-        <div class="flex-1 max-w-[2%]">
-            <span
-                class="w-[24px] h-[24px] block text-white font-semibold"
+        <div
+            class="grid-pl-col-1 overflow-hidden "
+        >
+            <!-- index -->
+            <div
+                class="w-full h-full flex items-center justify-center"
                 v-if="isLoaded"
             >
-                {{ index }}
-            </span>
+                <div
+                    v-if="!showEqua"
+                    class="ml-4 block group-hover:hidden text-white font-semibold"
+                >
+                    {{ index }}
+                </div>
+                <v-icon
+                    v-if="!showEqua"
+                    size="24"
+                    class="block"
+                    :icon="renderPlayOrPause"
+                    @click.stop="dbClick"
+                ></v-icon>
+                <equaliser-loading
+                    v-if="showEqua"
+                    width="18px"
+                    height="18px"
+                ></equaliser-loading>
+            </div>
             <div
                 class="w-[24px] h-[24px] animate-pulse bg-gray-500 rounded"
                 v-else
             ></div>
         </div>
-        <div class="flex-1 max-w-[53%] pr-10 flex items-center justify-start">
+        <div
+            class="grid-pl-col-2 ml-2 flex items-center justify-start"
+        >
             <v-img
                 width="40"
                 height="40"
@@ -25,12 +50,13 @@
                 :src="songImage"
                 v-if="isLoaded"
             ></v-img>
+            <!-- ske -->
             <div
                 v-else
                 class="w-[40px] h-[40px] rounded bg-gray-500 animate-pulse"
             ></div>
             <div
-                class="flex-1 flex flex-col justify-center items-start ml-3 overflow-hidden"
+                class="flex flex-col justify-center items-start ml-3 w-100 mr-10 truncate"
             >
                 <!-- title -->
                 <span
@@ -50,26 +76,47 @@
                     v-if="isLoaded"
                     >{{ item.plf === "yt" ? "" : state.info.description }}</span
                 >
+                <!-- ske -->
                 <div
                     v-if="!isLoaded"
                     class="w-[200px] h-[10px] mt-1 rounded bg-gray-500 animate-pulse"
                 ></div>
             </div>
         </div>
-        <div class="flex-1 max-w-[27%] overflow-hidden">
+        <div class="grid-pl-col-3">
+            <!-- album -->
             <span
                 v-if="isLoaded"
                 class="text-sm font-normal text-gray-500 truncate d-block"
             >
                 {{ albumOrChannel }}
             </span>
+            <!-- ske -->
             <div
                 v-else
                 class="w-[100%] h-[20px] rounded-xl bg-gray-500 animate-pulse"
             ></div>
         </div>
-        <div class="flex-1 max-w-[18%] flex justify-end pr-4">
-            <div class="w-full h-full" v-if="isLoaded"></div>
+        <!-- duration actions -->
+        <div
+            class="grid-pl-col-4 flex justify-end pr-2 overflow-hidden"
+        >
+            <div
+                class="w-full h-full flex items-center justify-end"
+                v-if="isLoaded"
+            >
+                <HeartIcon
+                    class="text-gray-500 invisible group-hover:visible"
+                ></HeartIcon>
+                <!-- ---- -->
+                <span class="mr-2 ml-7">{{ $formatTime(state.duration) }}</span>
+                <!-- ---- -->
+                <v-icon
+                    icon="mdi-dots-horizontal"
+                    class="text-gray-500 hover:text-white invisible group-hover:visible"
+                ></v-icon>
+            </div>
+            <!-- ske -->
             <div class="flex justify-end items-center" v-else>
                 <div
                     v-for="i in 3"
@@ -83,8 +130,12 @@
 <script>
 import { reactive, onMounted, computed, watch, toRefs, toRef } from "vue";
 import EqualiserLoading from "@/components/app/loading/EqualiserLoading.vue";
+import HeartIcon from "@/components/actions/HeartIcon.vue";
 import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
+import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+import { VListItemSubtitle } from "vuetify/lib/components/index.mjs";
+const YtRepo = RepositoryFactory.get("track");
 export default {
     props: {
         item: null,
@@ -93,22 +144,45 @@ export default {
             type: Boolean,
             default: false,
         },
+        type: {
+            type: String,
+            default: "td",
+        },
     },
+    components: { HeartIcon, EqualiserLoading },
     setup(props) {
         const initData = () => {
             return {
                 isHover: false,
                 info: {},
+                duration: 0,
+                isHover: false,
             };
         };
         const stateReactive = reactive({ ...initData() });
         const storeSongPlay = useSongPlay();
+
         const { isLoaded } = toRefs(props);
         const setInfo = () => {
             stateReactive.info = {
-                ...storeSongPlay.getInfoSongByPlf(props.item, props.item.plf),
+                ...storeSongPlay.getInfoStandards(props.item, props.item.plf),
             };
+            if (props.item.plf === "yt") getDuration();
+            if (props.item.plf === "st")
+                stateReactive.duration = props.item.duration;
         };
+        const getDuration = () => {
+            YtRepo.getTrack(props.item.id, { onlyDuration: true }).then(
+                (res) => {
+                    const { data } = res;
+                    stateReactive.duration = data;
+                }
+            );
+        };
+        const setHover = (hover) => {
+            return (stateReactive.isHover = hover);
+        };
+
         const songImage = computed(() => {
             let url = "";
             if (isLoaded) {
@@ -138,7 +212,36 @@ export default {
             }
             return string;
         });
-
+        const isActive = computed(() => {
+            return storeSongPlay.isActiveSong(props.item.id);
+        });
+        const renderPlayOrPause = computed(() => {
+            if (
+                isActive.value &&
+                storeSongPlay.isPlaying &&
+                stateReactive.isHover
+            )
+                return "mdi-pause";
+            if (
+                isActive.value &&
+                storeSongPlay.isPaused &&
+                stateReactive.isHover
+            )
+                return "mdi-play";
+            if (!isActive.value && stateReactive.isHover) return "mdi-play";
+            return "";
+        });
+        const showEqua = computed(() => {
+            return (
+                isActive.value &&
+                storeSongPlay.isPlaying &&
+                !stateReactive.isHover
+            );
+        });
+        const dbClick = (e) => {
+            if (isActive.value) return storeSongPlay.playOrPause();
+            storeSongPlay.loadSong(stateReactive.info.id, true, props.item.plf);
+        };
         watch(
             isLoaded,
             (loaded) => {
@@ -154,6 +257,11 @@ export default {
             state: toRef(stateReactive),
             songImage,
             albumOrChannel,
+            isActive,
+            setHover,
+            showEqua,
+            renderPlayOrPause,
+            dbClick,
         };
     },
 };

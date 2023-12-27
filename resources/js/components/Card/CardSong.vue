@@ -122,7 +122,7 @@ export default {
 
         const setInfo = () => {
             stateReactive.info = {
-                ...useStore.getInfoSongByPlf(props.item, props.plf),
+                ...useStore.getInfoStandards(props.item, props.plf),
             };
         };
 

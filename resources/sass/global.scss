@@ -1,0 +1,112 @@
+@import "./variable";
+
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;200;300;400;500;600;700;800;900&display=swap");
+html {
+    scroll-behavior: smooth;
+}
+body {
+    font-family: "Circular Spotify Text", sans-serif !important;
+    font-size: 16px;
+    word-wrap: break-word;
+    color: white;
+    line-height: 1.6;
+}
+
+input {
+    all: unset;
+}
+.custom-scroll {
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    /* Track */
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    /* Handle */
+    &::-webkit-scrollbar-thumb {
+        background: #606060;
+        border-radius: 8px;
+        visibility: hidden;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        visibility: visible;
+    }
+}
+:root {
+    --spotify-green: $green !important;
+    --background-noise: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=";
+}
+.dvs-bg-gray {
+    background: $gray;
+}
+.v-main {
+    padding-bottom: $heightBottom !important;
+}
+.col-4 {
+    flex: 0 0 33%;
+    max-width: 33%;
+}
+.dvs-dark-bg {
+    background: #2a2a2a !important;
+}
+.vtf-def {
+    background: rgb(var(--v-theme-surface)) !important;
+}
+.white-72 {
+    color: rgba(255, 255, 255, 0.72);
+}
+.grey-font {
+    font-weight: 500;
+    color: $white-72;
+}
+.dva-text-green {
+    color: $green;
+}
+.dva-text-green {
+    color: $green;
+}
+.dva-bg-green {
+    background: $green !important;
+}
+.v-skeleton-loader {
+    background: transparent !important;
+}
+.content-spacing {
+    margin: 0;
+    padding: 0 30px;
+}
+.dva-abs-full {
+    display: block;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+@mixin col($width: 100%) {
+    flex: 0 0 auto;
+    width: $width;
+    max-width: $width;
+}
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.grid-pl-col-1 {
+    @include col(2%);
+}
+.grid-pl-col-2 {
+    @include col(53%);
+}
+.grid-pl-col-3 {
+    @include col(27%);
+}
+.grid-pl-col-4 {
+    @include col(18%);
+}

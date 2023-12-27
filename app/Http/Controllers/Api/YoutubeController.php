@@ -61,6 +61,7 @@ class YoutubeController extends Controller
             $track = Youtube::getVideoInfo($id);
             if ($onlyDuration) return (int) $this->ISO8601ToSeconds($track->contentDetails->duration);
             $track->src = $this->getPlayable($id);
+            $track->duration =  $this->ISO8601ToSeconds($track->contentDetails->duration);
             $this->savePlayable($id, $this->plf, $track->src);
             if (!$track || $track->status->privacyStatus !== "public" || !$track->src) report("track not available");
             $track->plf = $this->plf;
@@ -72,7 +73,7 @@ class YoutubeController extends Controller
     public function getPlayable($id)
     {
         $audio = "";
-        $process =  Process::fromShellCommandline("yt-dlp -g https://www.youtube.com/watch?v=" . $id);
+        $process =  Process::fromShellCommandline("yt-dlp --get-url https://www.youtube.com/watch?v=" . $id);
         $process->run();
         $string = $process->getOutput();
         $rs  = explode("\n", $string);
@@ -86,10 +87,17 @@ class YoutubeController extends Controller
             $url = $request->url;
             $contents = file_get_contents($url);
             $name = "temp." . pathinfo($url)["extension"];
-            $path =  Storage::disk("public")->put($name, $contents);
-            return Storage::disk("public")->url($name);
+            $storage = Storage::disk("public");
+            $path =  $storage->put($name, $contents);
+            return $storage->url($name);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), $e->getCode());
         }
+    }
+    public function syncPlaylist($channelId, Request $request)
+    {
+
+        $allPlaylist = Youtube::getPlaylistsByChannelId($channelId)['results'];
+        return $allPlaylist;
     }
 }
