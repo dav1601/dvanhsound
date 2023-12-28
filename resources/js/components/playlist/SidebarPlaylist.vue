@@ -77,16 +77,23 @@
             >
         </div>
         <!-- list playlist -->
-        <div id="listPlaylist"></div>
+        <div id="listPlaylist">
+            <list-item
+                title="Icons can be used for the primary content of a button. They are commonly u"
+                class="mx-4"
+                icon="mdi-home"
+            ></list-item>
+        </div>
     </div>
 </template>
 <script>
 import { reactive, toRef } from "vue";
 import TextField from "@/components/layouts/forms/TextField.vue";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+import ListItem from "@/components/app/ListItem.vue";
 const UserRepo = RepositoryFactory.get("user");
 export default {
-    components: { TextField },
+    components: { TextField, ListItem },
     setup() {
         const initData = () => {
             return {

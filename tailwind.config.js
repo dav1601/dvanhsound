@@ -7,8 +7,9 @@ module.exports = {
     ],
     theme: {
         colors: {
-            
+            "dvs-gray-1": "#2a2a2a",
         },
     },
+
     plugins: [],
 };
