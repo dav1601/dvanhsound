@@ -8,6 +8,7 @@
             :image="image"
             :type="route.name"
             :plf="state.plf"
+            :id="route.params.id"
         >
             <div class="flex justify-start items-center">
                 <span class="text-gray-200 font-semibold" id="total"
@@ -47,7 +48,12 @@
                         class="cursor-pointer hover:text-white text-gray-500"
                     ></v-icon>
                 </div>
-                <grid-items :items="state.items" :plf="state.plf"></grid-items>
+                <grid-items
+                    :items="state.items"
+                    :plf="state.plf"
+                    :id="route.params.id"
+                    @update-duration="updateDuration"
+                ></grid-items>
             </div>
         </div>
     </div>
@@ -135,6 +141,7 @@ export default {
                     stateReactive.items = data;
                     stateReactive.loadedItems = true;
                     songPlay.loadedPlaylistItems = true;
+                    stateReactive.playlist.duration = 0;
                 })
                 .catch((err) => {
                     stateReactive.loadedItems = true;
@@ -144,6 +151,7 @@ export default {
         };
         const loadPlaylist = () => {
             stateReactive.plf = route.params.plf;
+            console.log(stateReactive.loadedInfo, stateReactive.loadedItems);
             switch (route.name) {
                 case "Track":
                     break;
@@ -161,6 +169,9 @@ export default {
                     }
                     break;
             }
+        };
+        const updateDuration = (e) => {
+            stateReactive.playlist.duration += e;
         };
 
         // init
@@ -207,10 +218,11 @@ export default {
         );
         watch(
             () => route.params.id,
-            (newId) => {
-                const newReactive = reactive(initData());
-                Object.assign(stateReactive, newReactive);
-                console.log(stateReactive);
+            async (newId) => {
+                stateReactive.loadedInfo = false;
+                stateReactive.loadedItems = false;
+                songPlay.loadedPlaylistItems = false;
+                console.log({ new: newId });
                 loadPlaylist();
             }
         );
@@ -220,6 +232,7 @@ export default {
             totalSong,
             info,
             image,
+            updateDuration,
         };
     },
 };

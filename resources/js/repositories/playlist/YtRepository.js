@@ -11,9 +11,10 @@ export default {
             params: params,
         });
     },
-    convertImage(url) {
+    convertImage(url, id) {
         return RepositoryBase.post("youtube/convert_image", {
             url: url,
+            id: id,
         });
-    }
+    },
 };

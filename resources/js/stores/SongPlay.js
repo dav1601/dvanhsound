@@ -12,6 +12,8 @@ export const useSongPlay = defineStore({
 
         myPlaylist: [],
 
+        myPlaylistRender: [],
+
         defaultPlaylist: [],
 
         currentPlaylistItems: [],
@@ -52,7 +54,6 @@ export const useSongPlay = defineStore({
                 state.currentSong.status === "paused"
             );
         },
-        
     },
     actions: {
         // ANCHOR load playlist info //////////////////////////////////////////////////////
@@ -62,14 +63,22 @@ export const useSongPlay = defineStore({
             this.loadedSong = false;
             const currentSong = localStorage.getItem("currentSong");
             const currentPlaylist = localStorage.getItem("currentPlaylist");
+            const currentPlaylistId = localStorage.getItem("currentPlaylistId");
             if (currentSong) {
                 const parse = JSON.parse(currentSong);
+                const playlist = { items: [], id: null };
                 if (parse.id) {
-                    this.loadSong(parse.id, false, JSON.parse(currentSong).plf);
+                    if (currentPlaylist) {
+                        playlist.items = JSON.parse(currentPlaylist);
+                        playlist.id = currentPlaylistId;
+                    }
+                    this.loadSong(
+                        parse.id,
+                        false,
+                        JSON.parse(currentSong).plf,
+                        playlist
+                    );
                 }
-            }
-            if (currentPlaylist) {
-                this.setCurrentPlaylistItems(JSON.parse(currentPlaylist));
             }
         },
         storageData() {
@@ -84,6 +93,7 @@ export const useSongPlay = defineStore({
                 "currentPlaylist",
                 JSON.stringify(this.currentPlaylistItems)
             );
+            localStorage.setItem("currentPlaylistId", this.currentPlaylistId);
         },
         setCurrentSong(payload) {
             const plf = payload.hasOwnProperty("plf") ? payload.plf : "yt";
@@ -104,7 +114,7 @@ export const useSongPlay = defineStore({
 
         setCurrentPlaylistItems(items, playlistId) {
             this.currentPlaylistId = playlistId;
-            if (items) this.currentPlaylistItems = items;
+            this.currentPlaylistItems = items;
         },
         setDefaultPlaylist(id, items) {
             const payload = { id: id, items: items };
@@ -112,7 +122,12 @@ export const useSongPlay = defineStore({
         },
 
         // ANCHOR end set area //////////////////////////////////////////////////////
-        loadSong(id, playing = false, plf = "yt") {
+        loadSong(
+            id,
+            playing = false,
+            plf = "yt",
+            playlist = { id: null, items: [] }
+        ) {
             this.loadedSong = false;
             let api;
             switch (plf) {
@@ -129,6 +144,8 @@ export const useSongPlay = defineStore({
                 const payload = res.data.data;
                 payload.playing = playing;
                 this.setCurrentSong(payload);
+                if (!playlist.items) playlist.items.push(payload);
+                this.setCurrentPlaylistItems(playlist.items, playlist.id);
                 this.storageData();
             });
         },
@@ -239,6 +256,15 @@ export const useSongPlay = defineStore({
         },
         setMyPlaylist(payload) {
             return (this.myPlaylist = payload);
+        },
+        setMyPlaylistRender(payload) {
+            return (this.myPlaylistRender = payload);
+        },
+        filterRenderPlaylist(type = "all") {
+            if (type === "all")
+                return (this.myPlaylistRender = this.myPlaylist);
+            this.myPlaylistRender = {};
+            return (this.myPlaylistRender[type] = this.myPlaylist[type]);
         },
 
         getInfoStandards(data, plf = "yt", type = "song") {

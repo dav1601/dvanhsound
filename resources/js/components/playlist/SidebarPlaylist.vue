@@ -84,6 +84,7 @@
                 :key="item"
                 :type="index"
                 class="vtf-def mx-1"
+                @click="state.activePlf = index"
                 :class="{ active: state.activePlf === index }"
                 >{{ item }}</v-btn
             >
@@ -96,7 +97,7 @@
             <div v-if="usersStore.loadedSync.value">
                 <div v-if="!isEmpty">
                     <div
-                        v-for="(listPlaylist, index) in myPlaylist"
+                        v-for="(listPlaylist, index) in myPlaylistRender"
                         :key="listPlaylist"
                     >
                         <sidebar-playlist-item
@@ -137,7 +138,7 @@ import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 import { useSongPlay } from "@/stores/SongPlay";
 import { useUsers } from "@/stores/Users";
 import { storeToRefs } from "pinia";
-
+import { useRoute } from "vue-router";
 const UserRepo = RepositoryFactory.get("user");
 export default {
     components: { TextField, SidebarPlaylistItem, ListItem },
@@ -160,7 +161,9 @@ export default {
         const stateReactive = reactive({ ...initData() });
         const storeSongPlay = useSongPlay();
         const storeUsers = useUsers();
-        const { myPlaylist, getInfoStandards } = storeToRefs(storeSongPlay);
+        const router = useRoute();
+        const { myPlaylistRender, getInfoStandards } =
+            storeToRefs(storeSongPlay);
         const stId = computed({
             get() {
                 return storeUsers.sync.stId;
@@ -178,7 +181,7 @@ export default {
             },
         });
         const isEmpty = computed(() => {
-            return storeSongPlay.myPlaylist.length <= 0;
+            return storeSongPlay.myPlaylistRender.length <= 0;
         });
 
         const syncPlaylist = () => {
@@ -191,6 +194,12 @@ export default {
                 }
             }
         );
+        watch(
+            () => stateReactive.activePlf,
+            (newPlf) => {
+                storeSongPlay.filterRenderPlaylist(newPlf);
+            }
+        );
         return {
             state: toRef(stateReactive),
             usersStore: storeToRefs(storeUsers),
@@ -198,7 +207,7 @@ export default {
             stId,
             ytId,
             isEmpty,
-            myPlaylist,
+            myPlaylistRender,
             getInfoStandards,
         };
     },

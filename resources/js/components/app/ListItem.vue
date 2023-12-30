@@ -24,8 +24,7 @@
         </div>
         <div class="flex-1">
             <button
-                class="rounded-full w-[24px] group-hover:flex h-[24px] items-center justify-center bg-white"
-                :class="{ ['flex']: isActive, hidden: !isActive }"
+                class="rounded-full w-[24px] hidden group-hover:flex h-[24px] items-center justify-center bg-white"
             >
                 <v-icon size="small" icon="mdi-play"></v-icon>
             </button>

@@ -9,7 +9,7 @@
                 >
             </div>
             <div
-                class="grid-pl-col-2 pr-4  flex items-center justify-start font-bold text-white"
+                class="grid-pl-col-2 pr-4 flex items-center justify-start font-bold text-white"
             >
                 tieu de
             </div>
@@ -23,20 +23,23 @@
             </div>
         </div>
         <v-divider class="my-3"></v-divider>
-        <div v-if="songPlay.loadedPlaylistItems.value">
+        <div v-if="loadedPlaylistItems">
             <song-item
                 v-for="(item, index) in items"
                 :key="item"
                 :item="item"
                 :index="parseInt(index) + 1"
-                :isLoaded="songPlay.loadedPlaylistItems.value"
+                :playlistItems="items"
+                :playlistId="id"
+                :isLoaded="loadedPlaylistItems"
+                @update-duration="updateDuration"
             ></song-item>
         </div>
         <div v-else>
             <song-item
                 v-for="i in 6"
                 :key="'grsks-' + i"
-                :isLoaded="songPlay.loadedPlaylistItems.value"
+                :isLoaded="loadedPlaylistItems"
             ></song-item>
         </div>
     </div>
@@ -58,11 +61,20 @@ export default {
             type: String,
             default: "yt",
         },
+        id: {
+            type: String,
+            default: null,
+        },
     },
-    setup(props) {
+    setup(props , ctx) {
         const songPlay = useSongPlay();
+        const { loadedPlaylistItems } = storeToRefs(songPlay);
+       const updateDuration = (e) => {
+           return ctx.emit("update-duration" , e);
+       }
         return {
-            songPlay: storeToRefs(songPlay),
+            loadedPlaylistItems,
+            updateDuration
         };
     },
 };

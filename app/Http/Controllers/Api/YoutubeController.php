@@ -84,11 +84,21 @@ class YoutubeController extends Controller
     public function convertImage(Request $request)
     {
         try {
-            $url = $request->url;
-            $contents = file_get_contents($url);
-            $name = "temp." . pathinfo($url)["extension"];
             $storage = Storage::disk("public");
-            $path =  $storage->put($name, $contents);
+            $url = $request->url;
+            $id = $request->id;
+            $folder = "convert/image/";
+            $files =  $storage->allFiles($folder);
+
+            // Delete Files
+            if ($files) {
+                $storage->delete($files);
+            }
+
+            $contents = file_get_contents($url);
+
+            $name = $folder . $id . "." .  pathinfo($url)["extension"];
+            $storage->put($name, $contents);
             return $storage->url($name);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), $e->getCode());

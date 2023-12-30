@@ -116,10 +116,7 @@
                             class="--controls-btn --controls-repeat"
                             @click="setRepeat"
                         >
-                            <v-icon
-                                :icon="renderIconRepeat"
-                                class="white"
-                            >
+                            <v-icon :icon="renderIconRepeat" class="white">
                             </v-icon>
                         </button>
                     </div>

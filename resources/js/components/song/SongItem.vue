@@ -5,9 +5,7 @@
         @mouseleave="setHover(false)"
         @dblclick.stop="dbClick"
     >
-        <div
-            class="grid-pl-col-1 overflow-hidden "
-        >
+        <div class="grid-pl-col-1 overflow-hidden">
             <!-- index -->
             <div
                 class="w-full h-full flex items-center justify-center"
@@ -37,9 +35,7 @@
                 v-else
             ></div>
         </div>
-        <div
-            class="grid-pl-col-2 ml-2 flex items-center justify-start"
-        >
+        <div class="grid-pl-col-2 ml-2 flex items-center justify-start">
             <v-img
                 width="40"
                 height="40"
@@ -98,9 +94,7 @@
             ></div>
         </div>
         <!-- duration actions -->
-        <div
-            class="grid-pl-col-4 flex justify-end pr-2 overflow-hidden"
-        >
+        <div class="grid-pl-col-4 flex justify-end pr-2 overflow-hidden">
             <div
                 class="w-full h-full flex items-center justify-end"
                 v-if="isLoaded"
@@ -148,9 +142,15 @@ export default {
             type: String,
             default: "td",
         },
+        playlistItems: {
+            default: [],
+        },
+        playlistId: {
+            default: null,
+        },
     },
     components: { HeartIcon, EqualiserLoading },
-    setup(props) {
+    setup(props, ctx) {
         const initData = () => {
             return {
                 isHover: false,
@@ -176,6 +176,7 @@ export default {
                 (res) => {
                     const { data } = res;
                     stateReactive.duration = data;
+                    ctx.emit("update-duration", data);
                 }
             );
         };
@@ -240,7 +241,12 @@ export default {
         });
         const dbClick = (e) => {
             if (isActive.value) return storeSongPlay.playOrPause();
-            storeSongPlay.loadSong(stateReactive.info.id, true, props.item.plf);
+            storeSongPlay.loadSong(
+                stateReactive.info.id,
+                true,
+                props.item.plf,
+                { items: props.playlistItems, id: props.playlistId }
+            );
         };
         watch(
             isLoaded,

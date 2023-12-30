@@ -8,8 +8,11 @@
             class="bg-[#121212]"
             :class="{ 'pt-16': activeScroll, 'py-2': !activeScroll }"
             id="nav-drawer-left"
+            v-if="!hiddenAllNav"
         >
-            <div class="h-full flex flex-col justify-start items-start mx-2 overflow-hidden">
+            <div
+                class="h-full flex flex-col justify-start items-start mx-2 overflow-hidden"
+            >
                 <!-- ANCHOR logo --------------------------------- -->
                 <!-- ANCHOR list main --------------------------------- -->
                 <router-link :to="{ name: 'Home' }" v-if="!activeScroll">
@@ -42,7 +45,9 @@
                     </left-item>
                 </v-list>
                 <!-- divider -->
-                <v-divider class="mb-2 w-full flex-shrink-1 h-[10%]"></v-divider>
+                <v-divider
+                    class="mb-2 w-full flex-shrink-1 h-[10%]"
+                ></v-divider>
                 <!-- sidebar playlist -->
                 <SidebarPlaylist />
                 <!-- list playlist -->
@@ -55,6 +60,7 @@
             fixed
             class="!shadow-none !left-0 !w-full z-50"
             :class="classAppBar"
+            v-if="!hiddenAllNav"
         >
             <AppBarContent />
             <!-- <MainTopBar /> -->
@@ -74,7 +80,7 @@
             </div>
         </v-main>
         <!-- ANCHOR now playing bar --------------------------------- -->
-        <NowPlayingBar />
+        <NowPlayingBar v-if="!hiddenAllNav" />
     </v-layout>
 </template>
 <script>
@@ -130,6 +136,9 @@ export default {
                 return "pt-0";
             return "";
         });
+        const hiddenAllNav = computed(() => {
+            return route.name === "Login" || route.name === "Register";
+        });
 
         const activeScroll = computed(() => {
             stateReactive.scrollTop > 10;
@@ -145,6 +154,7 @@ export default {
             activeScroll,
             classMainContent,
             state: toRef(stateReactive),
+            hiddenAllNav,
         };
     },
 };

@@ -4,6 +4,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;200;300;400;500;600;700;800;900&display=swap");
 html {
     scroll-behavior: smooth;
+    // overflow-x: hidden;
+    // overflow-y: auto;
 }
 body {
     font-family: "Circular Spotify Text", sans-serif !important;

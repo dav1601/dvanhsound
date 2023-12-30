@@ -1,5 +1,9 @@
 <template>
-    <list-item :to="{ name: 'Playlist', params: { plf: plf, id: item.id } }">
+    <list-item
+        :isActive="active"
+        :to="{ name: 'Playlist', params: { plf: plf, id: item.id } }"
+        class="mr-2"
+    >
         <template v-slot:center>
             <span
                 class="block truncate font-semibold text-white leading-[1.25rem]"
@@ -17,6 +21,7 @@
 import ListItem from "@/components/app/ListItem.vue";
 import { computed } from "vue";
 import { useSongPlay } from "@/stores/SongPlay";
+import { useRoute } from "vue-router";
 export default {
     props: {
         item: null,
@@ -28,6 +33,7 @@ export default {
     components: { ListItem },
     setup(props) {
         const storeSongPlay = useSongPlay();
+        const route = useRoute();
         const info = computed(() => {
             return storeSongPlay.getInfoStandards(
                 props.item,
@@ -35,9 +41,14 @@ export default {
                 "playlist"
             );
         });
+        const active = computed(() => {
+            if (route.name !== "Playlist") return false;
+            return route.params.id === info.value.id;
+        });
         console.log(info);
         return {
             info,
+            active,
         };
     },
 };

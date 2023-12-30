@@ -31,6 +31,7 @@ export const useUsers = defineStore({
                     const { data } = res.data;
                     console.log(data);
                     storeSongPlay.setMyPlaylist(data);
+                    storeSongPlay.setMyPlaylistRender(data);
                     this.storageSync();
                     this.loadedSync = true;
                     return notify({
