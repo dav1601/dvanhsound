@@ -104,6 +104,7 @@ export default {
                 "--tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);"
             );
         };
+        // FIXME change computed
 
         const resize2fit = () => {
             const el = document.getElementById("el");
@@ -134,6 +135,7 @@ export default {
             };
         };
         const loadBg = () => {
+            console.log("loadBg");
             switch (props.plf) {
                 case "yt":
                     PlaylistRepository.convertImage(props.image).then((res) => {
@@ -151,9 +153,8 @@ export default {
 
         watch(
             isLoaded,
-            async (loaded) => {
+            (loaded) => {
                 if (loaded) {
-                    await nextTick();
                     loadBg();
                 }
             },

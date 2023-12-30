@@ -9,7 +9,7 @@
             :class="{ 'pt-16': activeScroll, 'py-2': !activeScroll }"
             id="nav-drawer-left"
         >
-            <div class="h-full flex flex-col justify-start items-start mx-2">
+            <div class="h-full flex flex-col justify-start items-start mx-2 overflow-hidden">
                 <!-- ANCHOR logo --------------------------------- -->
                 <!-- ANCHOR list main --------------------------------- -->
                 <router-link :to="{ name: 'Home' }" v-if="!activeScroll">
@@ -23,7 +23,7 @@
 
                 <!-- ANCHOR items library --------------------------------- -->
 
-                <v-list class="nav-left mb-1 w-full">
+                <v-list class="nav-left mb-1 w-full flex-shrink-1 h-[10%]">
                     <left-item
                         icon="mdi-home"
                         :to="{ name: 'Home' }"
@@ -42,11 +42,10 @@
                     </left-item>
                 </v-list>
                 <!-- divider -->
-                <v-divider class="mb-2 w-full"></v-divider>
+                <v-divider class="mb-2 w-full flex-shrink-1 h-[10%]"></v-divider>
                 <!-- sidebar playlist -->
                 <SidebarPlaylist />
                 <!-- list playlist -->
-                <div class="flex-1"></div>
             </div>
         </v-navigation-drawer>
 
@@ -79,8 +78,6 @@
     </v-layout>
 </template>
 <script>
-import { useDatabaseApp } from "@/stores/database";
-import { storeToRefs } from "pinia";
 import SidebarList from "@/components/SidebarList.vue";
 import MainTopBar from "@/components/MainTopBar.vue";
 import NowPlayingBar from "@/components/NowPlayingBar.vue";
@@ -89,7 +86,7 @@ import LeftItem from "@/components/layouts/sidebar/LeftItem.vue";
 import SidebarPlaylist from "./components/playlist/SidebarPlaylist.vue";
 import { useRoute } from "vue-router";
 import { reactive, computed, toRef } from "vue";
-
+import { useUsers } from "./stores/Users";
 export default {
     components: {
         SidebarList,
@@ -120,6 +117,8 @@ export default {
         };
 
         const stateReactive = reactive({ ...initData() });
+        const storeUsers = useUsers();
+        storeUsers.syncPlaylist();
         const classAppBar = computed(() => {
             if (stateReactive.scrollTop > 10) {
                 return "fixed-scroll";
@@ -136,13 +135,11 @@ export default {
             stateReactive.scrollTop > 10;
         });
         // SECTION Store //////////////////////////////////////////////////////
-        const useStore = useDatabaseApp();
-        const { navList } = storeToRefs(useStore);
+
         const scrollApp = (e) => {
             stateReactive.scrollTop = document.getElementById("html").scrollTop;
         };
         return {
-            navList: navList,
             scrollApp,
             classAppBar,
             activeScroll,

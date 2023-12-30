@@ -1,7 +1,7 @@
 <template>
     <div class="playlist-grid">
         <div
-            class="playlist-grid-th flex justify-start items-center pl-4 capitalize"
+            class="playlist-grid-th flex justify-start items-center pl-2 capitalize"
         >
             <div class="grid-pl-col-1">
                 <span class="w-[24px] h-[24px] block font-bold text-white"

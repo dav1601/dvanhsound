@@ -6,10 +6,11 @@
                     <v-row>
                         <v-col cols="12">
                             <text-field
-                                v-model="state.sync.idYt"
+                                v-model="ytId"
                                 placeholder="UCAZr_Rl77VZqRTq50imPAAQ"
                                 label="Mã nhận dạng kênh Youtube"
                                 class="mt-2"
+                                :value="ytId"
                             >
                                 <template v-slot:prev>
                                     <a
@@ -23,8 +24,9 @@
                         </v-col>
                         <v-col cols="12">
                             <text-field
-                                v-model="state.sync.idSpotify"
-                                placeholder="UCAZr_Rl77VZqRTq50imPAAQ"
+                                v-model="stId"
+                                :value="stId"
+                                placeholder="31ehvaevf7cvi6qkbhw5dxzci"
                                 label="Tên người dùng Spotify"
                                 class="mt-2"
                             >
@@ -43,29 +45,39 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-
-                <v-btn color="blue-darken-1" variant="text"> Đồng bộ </v-btn>
+                <v-btn text="Close" @click="state.dialogSync = false"></v-btn>
+                <v-btn
+                    color="blue-darken-1"
+                    variant="text"
+                    :loading="!usersStore.loadedSync.value"
+                    @click="syncPlaylist"
+                >
+                    Đồng bộ
+                </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
     <!-- content -->
-    <div class="sidebar-playlist mt-2 w-full">
-        <v-btn
-            class="rounded-full vtf-def mx-auto mb-4 capitalize flex items-center"
-            @click="state.dialogSync = true"
-        >
-            <v-icon icon="mdi-sync mr-2"></v-icon>
-            <span class="mt-1">Đồng bộ playlist</span>
-        </v-btn>
-        <v-btn
-            class="rounded-full vtf-def mx-auto mb-4 capitalize flex items-center"
-        >
-            <v-icon icon="mdi-plus mr-2"></v-icon>
-            <span class="mt-1">Danh sách phát mới</span>
-        </v-btn>
-        <div
-            class="flex justify-start items-center overflow-x-auto pb-2 custom-scroll"
-        >
+    <div
+        class="sidebar-playlist mt-2 w-full flex flex-col flex-shrink-1 h-[80%]"
+    >
+        <div class="flex-shrink-1 h-[15%]">
+            <v-btn
+                class="rounded-full vtf-def mx-auto mb-4 capitalize flex items-center"
+                @click="state.dialogSync = true"
+            >
+                <v-icon icon="mdi-sync mr-2"></v-icon>
+                <span class="mt-1">Đồng bộ playlist</span>
+            </v-btn>
+            <v-btn
+                class="rounded-full vtf-def mx-auto capitalize flex items-center"
+            >
+                <v-icon icon="mdi-plus mr-2"></v-icon>
+                <span class="mt-1">Danh sách phát mới</span>
+            </v-btn>
+        </div>
+        <!-- btn -->
+        <div class="flex justify-start items-center pb-2 flex-shrink-1 h-[10%]">
             <v-btn
                 size="small"
                 v-for="(item, index) in state.listPlf"
@@ -77,23 +89,58 @@
             >
         </div>
         <!-- list playlist -->
-        <div id="listPlaylist">
-            <list-item
-                title="Icons can be used for the primary content of a button. They are commonly u"
-                class="mx-4"
-                icon="mdi-home"
-            ></list-item>
+        <div
+            id="listPlaylist"
+            class="flex-shrink-1 flex-1 overflow-auto custom-scroll"
+        >
+            <div v-if="usersStore.loadedSync.value">
+                <div v-if="!isEmpty">
+                    <div
+                        v-for="(listPlaylist, index) in myPlaylist"
+                        :key="listPlaylist"
+                    >
+                        <sidebar-playlist-item
+                            v-for="item in listPlaylist"
+                            :key="item"
+                            :item="item"
+                            :plf="index"
+                        ></sidebar-playlist-item>
+                    </div>
+                </div>
+                <span v-else class="font-bold text-center">
+                    Hiện chưa có danh sách phát nào
+                </span>
+            </div>
+
+            <!-- ske -->
+            <div v-else class="max-h-[100%] overflow-y-auto custom-scroll">
+                <list-item v-for="i in 9" :key="'ske-list-item-' + i">
+                    <template v-slot:center>
+                        <div
+                            class="w-full h-[12px] rounded animate-pulse bg-gray-500"
+                        ></div>
+                        <div
+                            class="w-[50%] h-[12px] rounded animate-pulse bg-gray-500 mt-1"
+                        ></div>
+                    </template>
+                </list-item>
+            </div>
         </div>
     </div>
 </template>
 <script>
-import { reactive, toRef } from "vue";
+import { reactive, toRef, watch, computed } from "vue";
 import TextField from "@/components/layouts/forms/TextField.vue";
-import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 import ListItem from "@/components/app/ListItem.vue";
+import SidebarPlaylistItem from "@/components/playlist/SidebarPlaylistItem.vue";
+import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+import { useSongPlay } from "@/stores/SongPlay";
+import { useUsers } from "@/stores/Users";
+import { storeToRefs } from "pinia";
+
 const UserRepo = RepositoryFactory.get("user");
 export default {
-    components: { TextField, ListItem },
+    components: { TextField, SidebarPlaylistItem, ListItem },
     setup() {
         const initData = () => {
             return {
@@ -107,18 +154,52 @@ export default {
                     dvs: "Dvanhsound",
                 },
                 dialogSync: false,
-                synchronized: false,
-                sync: {
-                    idSpotify: "",
-                    idYt: "",
-                },
             };
         };
 
         const stateReactive = reactive({ ...initData() });
+        const storeSongPlay = useSongPlay();
+        const storeUsers = useUsers();
+        const { myPlaylist, getInfoStandards } = storeToRefs(storeSongPlay);
+        const stId = computed({
+            get() {
+                return storeUsers.sync.stId;
+            },
+            set(val) {
+                storeUsers.sync.stId = val;
+            },
+        });
+        const ytId = computed({
+            get() {
+                return storeUsers.sync.ytId;
+            },
+            set(val) {
+                storeUsers.sync.ytId = val;
+            },
+        });
+        const isEmpty = computed(() => {
+            return storeSongPlay.myPlaylist.length <= 0;
+        });
 
+        const syncPlaylist = () => {
+            storeUsers.syncPlaylist();
+        };
+        watch(
+            () => stateReactive.dialogSync,
+            (open) => {
+                if (open) {
+                }
+            }
+        );
         return {
             state: toRef(stateReactive),
+            usersStore: storeToRefs(storeUsers),
+            syncPlaylist,
+            stId,
+            ytId,
+            isEmpty,
+            myPlaylist,
+            getInfoStandards,
         };
     },
 };

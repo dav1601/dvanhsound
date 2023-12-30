@@ -7,11 +7,19 @@ export const useSongPlay = defineStore({
     id: "SongPLay",
     state: () => ({
         loadedSong: false,
+
         loadedPlaylistItems: false,
+
+        myPlaylist: [],
+
         defaultPlaylist: [],
+
         currentPlaylistItems: [],
+
         currentPlaylistId: null,
+
         playlistQueue: [],
+
         currentSong: {
             status: "paused",
             el: null,
@@ -44,6 +52,7 @@ export const useSongPlay = defineStore({
                 state.currentSong.status === "paused"
             );
         },
+        
     },
     actions: {
         // ANCHOR load playlist info //////////////////////////////////////////////////////
@@ -228,6 +237,10 @@ export const useSongPlay = defineStore({
         isActiveSong(id) {
             return this.currentSong.info.id === id;
         },
+        setMyPlaylist(payload) {
+            return (this.myPlaylist = payload);
+        },
+
         getInfoStandards(data, plf = "yt", type = "song") {
             const info = {
                 title: "",
@@ -244,7 +257,9 @@ export const useSongPlay = defineStore({
                         case "playlist":
                             (info.images = data.images),
                                 (info.title = data.name),
-                                (info.description = data.description),
+                                (info.description = data.description
+                                    ? data.description
+                                    : data.owner.display_name),
                                 (info.id = data.id);
                             break;
 

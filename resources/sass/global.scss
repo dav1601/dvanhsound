@@ -33,7 +33,7 @@ input {
         border-radius: 8px;
         visibility: hidden;
     }
-    &::-webkit-scrollbar-thumb:hover {
+    &:hover::-webkit-scrollbar-thumb {
         visibility: visible;
     }
 }

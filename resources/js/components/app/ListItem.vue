@@ -3,6 +3,7 @@
         class="dvs-li max-w-full overflow-hidden min-h-12 hover:bg-dvs-gray-1 transition-all px-4 py-2 relative flex font-normal rounded-md items-center leading-6 justify-between cursor-pointer group"
         :class="{ ['bg-dvs-gray-1 border-l-4 border-l-[#1db954] ']: isActive }"
         v-bind="$attrs"
+        @click.stop="clickEvent"
     >
         <div
             class="flex flex-shrink-1 items-center justify-start w-full h-full max-w-[90%] pr-2"
@@ -32,6 +33,7 @@
     </div>
 </template>
 <script>
+import { useRouter } from "vue-router";
 export default {
     inheritAttrs: false,
     props: {
@@ -52,6 +54,19 @@ export default {
             type: Boolean,
             default: false,
         },
+    },
+    setup(props) {
+        const router = useRouter();
+        const clickEvent = async () => {
+            if (!props.to) return;
+
+            return router.push(props.to).catch((err) => {
+                console.log(err);
+            });
+        };
+        return {
+            clickEvent,
+        };
     },
 };
 </script>

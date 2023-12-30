@@ -58,10 +58,9 @@
 </template>
 <script>
 import { useSongPlay } from "@/stores/SongPlay";
-import { storeToRefs } from "pinia";
-import { reactive, toRef, computed, watch } from "vue";
+import { reactive, toRef, computed, watch, toRefs } from "vue";
 import { useRoute } from "vue-router";
-import SongItem from "@/components/SongItem.vue";
+
 import ContentHeader from "@/components/ContentHeader.vue";
 import HeartIcon from "@/components/actions/HeartIcon.vue";
 import GridItems from "../components/playlist/GridItems.vue";
@@ -71,7 +70,7 @@ const PlaylistRepository = RepositoryFactory.get("playlist");
 const StPlaylistRepository = RepositoryFactory.get("StPlaylist");
 
 export default {
-    components: { SongItem, ContentHeader, FetchFail, HeartIcon, GridItems },
+    components: { ContentHeader, FetchFail, HeartIcon, GridItems },
     setup() {
         const initData = () => {
             return {
@@ -92,7 +91,7 @@ export default {
 
         const stateReactive = reactive({ ...initData() });
         const route = useRoute();
-        stateReactive.plf = route.params.plf;
+
         const songPlay = useSongPlay();
         const fetchPlaylistSt = () => {
             StPlaylistRepository.getInfo(route.params.id)
@@ -138,26 +137,35 @@ export default {
                     songPlay.loadedPlaylistItems = true;
                 })
                 .catch((err) => {
-                    stateReactive.errorFetch = true;
+                    stateReactive.loadedItems = true;
+                    songPlay.loadedPlaylistItems = true;
+                    // stateReactive.errorFetch = true;
                 });
         };
-        switch (route.name) {
-            case "Track":
-                break;
+        const loadPlaylist = () => {
+            stateReactive.plf = route.params.plf;
+            switch (route.name) {
+                case "Track":
+                    break;
 
-            // default: playlist
-            default:
-                switch (stateReactive.plf) {
-                    case "st":
-                        fetchPlaylistSt();
-                        break;
-                    // default yt
-                    default:
-                        fetchPlaylistYt();
-                        break;
-                }
-                break;
-        }
+                // default: playlist
+                default:
+                    switch (stateReactive.plf) {
+                        case "st":
+                            fetchPlaylistSt();
+                            break;
+                        // default yt
+                        default:
+                            fetchPlaylistYt();
+                            break;
+                    }
+                    break;
+            }
+        };
+
+        // init
+        loadPlaylist();
+
         // ANCHOR computed //////////////////////////////////////////////////////
         const totalSong = computed(() => {
             return stateReactive.loadedItems
@@ -197,7 +205,15 @@ export default {
                 }
             }
         );
-
+        watch(
+            () => route.params.id,
+            (newId) => {
+                const newReactive = reactive(initData());
+                Object.assign(stateReactive, newReactive);
+                console.log(stateReactive);
+                loadPlaylist();
+            }
+        );
         return {
             route,
             state: toRef(stateReactive),
