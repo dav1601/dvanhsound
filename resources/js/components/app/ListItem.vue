@@ -22,7 +22,7 @@
                 <slot name="center"></slot>
             </div>
         </div>
-        <div class="flex-1">
+        <div class="flex-1" v-if="playBtn">
             <button
                 class="rounded-full w-[24px] hidden group-hover:flex h-[24px] items-center justify-center bg-white"
             >
@@ -54,10 +54,10 @@ export default {
             default: false,
         },
     },
-    setup(props) {
+    setup(props, ctx) {
         const router = useRouter();
         const clickEvent = async () => {
-            if (!props.to) return;
+            if (!props.to) return ctx.emit("click");
 
             return router.push(props.to).catch((err) => {
                 console.log(err);

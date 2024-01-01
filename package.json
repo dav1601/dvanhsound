@@ -20,8 +20,10 @@
         "@kyvg/vue3-notification": "^3.1.0",
         "animate.css": "^4.1.1",
         "colorthief": "^2.4.0",
+        "js-cookie": "^3.0.5",
         "pinia": "^2.1.7",
         "swiper": "^11.0.5",
+        "tw-elements": "^1.1.0",
         "vue-router": "^4.2.5",
         "vuetify": "^3.4.8"
     }

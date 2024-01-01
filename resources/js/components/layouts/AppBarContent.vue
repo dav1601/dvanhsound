@@ -27,16 +27,60 @@
                 >
                     <span class="mt-1"> cai dat ung dung</span>
                 </v-btn>
-                <v-btn
-                    density="comfortable"
-                    class="ml-2 dvs-dark-bg"
-                    icon="mdi-account-outline"
-                ></v-btn>
+                <!-- menu -->
+                <v-menu transition="slide-x-transition" v-if="isAuthenticated">
+                    <template v-slot:activator="{ props }">
+                        <v-btn
+                            density="comfortable"
+                            class="dvs-dark-bg ml-4"
+                            icon="mdi-account-outline"
+                            v-bind="props"
+                        >
+                        </v-btn>
+                    </template>
+                    <v-list class="w-[200px] mt-3">
+                        <list-item
+                            icon="mdi-logout"
+                            title="Đăng Xuất"
+                            class="h-[40px]"
+                            @click="logout"
+                        ></list-item>
+                    </v-list>
+                </v-menu>
+                <!-- login  -->
+                <div class="flex items-center" v-else>
+                    <v-btn
+                        class="capitalize rounded-full mx-4 text-center text-sm dvs-dark-bg"
+                        :to="{ name: 'Register' }"
+                        >Đăng ký</v-btn
+                    >
+                    <v-btn
+                        class="capitalize rounded-full text-center text-sm dvs-dark-bg"
+                        :to="{ name: 'Login' }"
+                        >Đăng nhập</v-btn
+                    >
+                </div>
             </div>
         </div>
     </div>
 </template>
 <script>
-export default {};
+import { useAuthStore } from "@/stores/AuthStore";
+import { storeToRefs } from "pinia";
+import ListItem from "@/components/app/ListItem.vue";
+export default {
+    components: { ListItem },
+    setup(props) {
+        const auth = useAuthStore();
+        const { isAuthenticated } = storeToRefs(auth);
+        const logout = () => {
+            auth.logout();
+        };
+        return {
+            isAuthenticated,
+            logout,
+        };
+    },
+};
 </script>
 <style lang=""></style>

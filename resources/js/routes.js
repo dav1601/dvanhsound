@@ -1,5 +1,6 @@
 import Playlist from "@/pages/Playlist.vue";
 import TheLogin from "@/pages/TheLogin.vue";
+import TheRegister from "@/pages/TheRegister.vue";
 import Home from "@/pages/Home.vue";
 import PageNotFound from "@/pages/errors/PageNotFound.vue";
 const routes = [
@@ -19,6 +20,12 @@ const routes = [
         path: "/login",
         component: TheLogin,
         name: "Login",
+        props: true,
+    },
+    {
+        path: "/register",
+        component: TheRegister,
+        name: "Register",
         props: true,
     },
 

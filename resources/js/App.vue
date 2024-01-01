@@ -8,6 +8,7 @@
             class="bg-[#121212]"
             :class="{ 'pt-16': activeScroll, 'py-2': !activeScroll }"
             id="nav-drawer-left"
+            :disable-resize-watcher="true"
             v-if="!hiddenAllNav"
         >
             <div
@@ -26,7 +27,7 @@
 
                 <!-- ANCHOR items library --------------------------------- -->
 
-                <v-list class="nav-left mb-1 w-full flex-shrink-1 h-[10%]">
+                <v-list class="nav-left mb-1 w-full flex-shrink-1 max-h-[10%]">
                     <left-item
                         icon="mdi-home"
                         :to="{ name: 'Home' }"
@@ -93,6 +94,7 @@ import SidebarPlaylist from "./components/playlist/SidebarPlaylist.vue";
 import { useRoute } from "vue-router";
 import { reactive, computed, toRef } from "vue";
 import { useUsers } from "./stores/Users";
+import { useAuthStore } from "@/stores/AuthStore";
 export default {
     components: {
         SidebarList,
@@ -105,7 +107,8 @@ export default {
     setup() {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         const route = useRoute();
-
+        const auth = useAuthStore();
+        auth.fetchUserInfo();
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
         const initData = () => {
             return {
@@ -124,7 +127,6 @@ export default {
 
         const stateReactive = reactive({ ...initData() });
         const storeUsers = useUsers();
-        storeUsers.syncPlaylist();
         const classAppBar = computed(() => {
             if (stateReactive.scrollTop > 10) {
                 return "fixed-scroll";

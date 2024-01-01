@@ -43,7 +43,20 @@
                                 Or
                             </p>
                         </div>
-
+                        <!-- name input -->
+                        <div class="relative mb-6" data-te-input-wrapper-init>
+                            <text-field
+                                placeholder="Tên người dùng"
+                                type="text"
+                                v-model="name"
+                            ></text-field>
+                            <span
+                                class="d-block text-danger-600 mt-2"
+                                v-if="validator.name"
+                            >
+                                {{ validator.name[0] }}
+                            </span>
+                        </div>
                         <!-- Email input -->
                         <div class="relative mb-6" data-te-input-wrapper-init>
                             <text-field
@@ -74,26 +87,20 @@
                             </span>
                         </div>
 
-                        <div class="mb-6 flex items-center justify-between">
-                            <a href="#!">Forgot password?</a>
-                        </div>
-
                         <!-- Login button -->
                         <div class="text-center lg:text-left">
                             <v-btn
                                 class="bg-blue-500 mb-2"
                                 @click="clickBtn"
                                 :loading="isLoading"
-                                >Đăng nhập</v-btn
+                                >Đăng ký</v-btn
                             >
-
-                            <!-- Register link -->
                             <p class="mb-0 mt-2 pt-1 text-sm font-semibold">
-                                Don't have an account?
+                                Bạn đã có tài khoản?
                                 <router-link
-                                    :to="{ name: 'Register' }"
+                                    :to="{ name: 'Login' }"
                                     class="text-blue transition duration-150 ease-in-out hover:text-blue-600 focus:text-blue-600 active:text-blue-700"
-                                    >Đăng ký</router-link
+                                    >Đăng Nhập</router-link
                                 >
                             </p>
                             <p class="mb-0 mt-2 pt-1 text-sm font-semibold">
@@ -104,6 +111,7 @@
                                     >Trang chủ</router-link
                                 >
                             </p>
+                            <!-- Register link -->
                         </div>
                     </form>
                 </div>
@@ -124,14 +132,16 @@ export default {
     setup() {
         const email = ref("");
         const password = ref("");
+        const name = ref("");
         const auth = useAuthStore();
         const { isLoading, validator } = storeToRefs(auth);
         const clickBtn = () => {
-            auth.login(email.value, password.value);
+            auth.register(name.value, email.value, password.value);
         };
         return {
             email,
             password,
+            name,
             isLoading,
             clickBtn,
             validator,

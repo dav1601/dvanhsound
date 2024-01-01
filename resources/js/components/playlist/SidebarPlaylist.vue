@@ -77,7 +77,9 @@
             </v-btn>
         </div>
         <!-- btn -->
-        <div class="flex justify-start items-center pb-2 flex-shrink-1 h-[10%]">
+        <div
+            class="flex justify-start items-center pb-2 flex-shrink-1 mt-2 max-h-[10%] overflow-x-auto custom-scroll"
+        >
             <v-btn
                 size="small"
                 v-for="(item, index) in state.listPlf"
@@ -92,7 +94,7 @@
         <!-- list playlist -->
         <div
             id="listPlaylist"
-            class="flex-shrink-1 flex-1 overflow-auto custom-scroll"
+            class="flex-shrink-1 flex-1 overflow-auto custom-scroll mt-2"
         >
             <div v-if="usersStore.loadedSync.value">
                 <div v-if="!isEmpty">

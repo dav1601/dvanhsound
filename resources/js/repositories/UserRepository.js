@@ -1,10 +1,18 @@
 import RepositoryBase from "./RepositoryBase";
 const resoure = "users";
+const sync = resoure + "/sync";
 export default {
     syncPlaylist(listId = {}, params = {}) {
         params["ytId"] = listId.ytId;
         params["stId"] = listId.stId;
-        return RepositoryBase.get(`${resoure}/playlist/sync`, {
+        return RepositoryBase.get(`${sync}/playlist`, {
+            params: params,
+        });
+    },
+    saveSync(listId = {}, params = {}) {
+        params["ytId"] = listId.ytId;
+        params["stId"] = listId.stId;
+        return RepositoryBase.get(`${sync}/save`, {
             params: params,
         });
     },

@@ -63,7 +63,7 @@ class YoutubeController extends Controller
             $track->src = $this->getPlayable($id);
             $track->duration =  $this->ISO8601ToSeconds($track->contentDetails->duration);
             $this->savePlayable($id, $this->plf, $track->src);
-            if (!$track || $track->status->privacyStatus !== "public" || !$track->src) report("track not available");
+            if (!$track || $track->status->privacyStatus !== "public" || !$track->src) throw new \Exception("track not available");
             $track->plf = $this->plf;
             return $this->successResponse($track);
         } catch (\Exception $e) {

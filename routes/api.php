@@ -1,6 +1,6 @@
 <?php
 
-
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SpotifyController;
@@ -19,11 +19,23 @@ use App\Models\User;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+Route::controller(AuthController::class)->group(function () {
+    Route::post("login", 'login')->name("login");
+    Route::post("register", 'register')->name("register");
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post("logout", 'logout')->name("logout");
+        Route::get("user", 'user')->name("user");
+    });
 });
+
+
 Route::controller(UserController::class)->as("users.")->prefix('users/')->group(function () {
-    Route::get("playlist/sync", 'syncPlaylist')->name("sync_playlist");
+    Route::get("sync/playlist", 'syncPlaylist')->name("sync_playlist");
+    Route::post("sync/save", 'saveSync')->name("save_sync");
+    Route::get("search/{id?}", 'search')->name("search");
 });
 
 Route::controller(YoutubeController::class)->as("yt.")->prefix('youtube/')->group(function () {
