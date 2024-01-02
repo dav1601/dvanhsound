@@ -12,14 +12,17 @@
             <div
                 class="bg-[#282828cc] flex justify-start items-center ml-8 w-[480px] relative border-solid border border-[rgba(255 , 255 ,255 , 0.15)] h-[40px] rounded-lg p-3 text-[#595656]"
                 id="dvs-search-box"
+                v-if="$route.name === 'Search'"
             >
                 <v-icon icon="mdi-magnify mr-2"></v-icon>
                 <input
                     type="text"
                     class="flex-1 text-sm focus:!text-white focus:font-semibold"
                     placeholder="Tìm bài hát, nghệ sĩ, podcast..."
+                    v-model="kw"
                 />
             </div>
+            <div v-else></div>
             <div class="flex justify-end items-center mr-10">
                 <v-btn
                     class="capitalize rounded-full text-center text-sm dvs-dark-bg"
@@ -68,17 +71,33 @@
 import { useAuthStore } from "@/stores/AuthStore";
 import { storeToRefs } from "pinia";
 import ListItem from "@/components/app/ListItem.vue";
+import { useRoute } from "vue-router";
+import { ref, watch } from "vue";
+import { debounce } from "lodash";
+import { useSongPlay } from "@/stores/SongPlay";
 export default {
     components: { ListItem },
     setup(props) {
         const auth = useAuthStore();
+        const route = useRoute();
+        const storeSong = useSongPlay();
+        const kw = ref(route.params.kw);
         const { isAuthenticated } = storeToRefs(auth);
+
         const logout = () => {
             auth.logout();
         };
+        const search = debounce((newKw) => {
+            storeSong.search(newKw);
+        }, 300);
+        watch(kw, (newKw) => {
+            search(newKw);
+        });
+
         return {
             isAuthenticated,
             logout,
+            kw,
         };
     },
 };

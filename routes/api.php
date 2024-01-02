@@ -34,8 +34,8 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(UserController::class)->as("users.")->prefix('users/')->group(function () {
     Route::get("sync/playlist", 'syncPlaylist')->name("sync_playlist");
-    Route::post("sync/save", 'saveSync')->name("save_sync");
-    Route::get("search/{id?}", 'search')->name("search");
+    Route::get("search/{kw?}", 'search')->name("search");
+    Route::post("sync/save", "saveSync")->middleware('auth:sanctum')->name("save_sync");
 });
 
 Route::controller(YoutubeController::class)->as("yt.")->prefix('youtube/')->group(function () {

@@ -45,7 +45,7 @@ export default {
             if (route.name !== "Playlist") return false;
             return route.params.id === info.value.id;
         });
-        console.log(info);
+
         return {
             info,
             active,

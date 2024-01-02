@@ -59,7 +59,7 @@
     </v-dialog>
     <!-- content -->
     <div
-        class="sidebar-playlist mt-2 w-full flex flex-col flex-shrink-1 h-[80%]"
+        class="sidebar-playlist mt-2 w-full flex flex-col flex-shrink-1 h-[75%]"
     >
         <div class="flex-shrink-1 h-[15%]">
             <v-btn
@@ -76,21 +76,8 @@
                 <span class="mt-1">Danh sách phát mới</span>
             </v-btn>
         </div>
-        <!-- btn -->
-        <div
-            class="flex justify-start items-center pb-2 flex-shrink-1 mt-2 max-h-[10%] overflow-x-auto custom-scroll"
-        >
-            <v-btn
-                size="small"
-                v-for="(item, index) in state.listPlf"
-                :key="item"
-                :type="index"
-                class="vtf-def mx-1"
-                @click="state.activePlf = index"
-                :class="{ active: state.activePlf === index }"
-                >{{ item }}</v-btn
-            >
-        </div>
+
+        <PlfTag @change-plf="clickTag" />
         <!-- list playlist -->
         <div
             id="listPlaylist"
@@ -141,21 +128,16 @@ import { useSongPlay } from "@/stores/SongPlay";
 import { useUsers } from "@/stores/Users";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
+import PlfTag from "@/components/actions/PlfTag.vue";
 const UserRepo = RepositoryFactory.get("user");
 export default {
-    components: { TextField, SidebarPlaylistItem, ListItem },
+    components: { TextField, SidebarPlaylistItem, ListItem, PlfTag },
     setup() {
         const initData = () => {
             return {
                 rootListPlaylist: [],
                 renderListPlaylist: [],
-                activePlf: "all",
-                listPlf: {
-                    all: "All",
-                    yt: "Yt Music",
-                    st: "Spotify",
-                    dvs: "Dvanhsound",
-                },
+                currentIndex: "",
                 dialogSync: false,
             };
         };
@@ -189,6 +171,9 @@ export default {
         const syncPlaylist = () => {
             storeUsers.syncPlaylist();
         };
+        const clickTag = (index) => {
+            stateReactive.currentIndex = index;
+        };
         watch(
             () => stateReactive.dialogSync,
             (open) => {
@@ -197,7 +182,7 @@ export default {
             }
         );
         watch(
-            () => stateReactive.activePlf,
+            () => stateReactive.currentIndex,
             (newPlf) => {
                 storeSongPlay.filterRenderPlaylist(newPlf);
             }
@@ -211,6 +196,7 @@ export default {
             isEmpty,
             myPlaylistRender,
             getInfoStandards,
+            clickTag,
         };
     },
 };

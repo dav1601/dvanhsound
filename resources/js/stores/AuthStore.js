@@ -29,7 +29,9 @@ export const useAuthStore = defineStore({
                 })
                     .then(async (res) => {
                         const data = res.data.data;
-                        Cookies.set("dvanhsound_token", data.token);
+                        Cookies.set("dvanhsound_token", data.token, {
+                            expires: 365,
+                        });
                         await this.fetchUserInfo({ name: "Home" }, true);
                     })
                     .catch((err) => {
@@ -70,7 +72,8 @@ export const useAuthStore = defineStore({
 
         fetchUserInfo(to = {}, loginAction = false) {
             const user = useUsers();
-            if (!this.isAuthenticated && !loginAction) {
+            const token = Cookies.get("dvanhsound_token");
+            if (!token && !loginAction) {
                 return user.initUser(null);
             }
             return api

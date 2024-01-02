@@ -12,7 +12,10 @@ export default {
     saveSync(listId = {}, params = {}) {
         params["ytId"] = listId.ytId;
         params["stId"] = listId.stId;
-        return RepositoryBase.get(`${sync}/save`, {
+        return RepositoryBase.post(`${sync}/save`, params);
+    },
+    search(kw, params = {}) {
+        return RepositoryBase.get(`${resoure}/search/` + kw, {
             params: params,
         });
     },

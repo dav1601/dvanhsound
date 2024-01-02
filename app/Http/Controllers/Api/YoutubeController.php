@@ -59,6 +59,7 @@ class YoutubeController extends Controller
         $onlyDuration = $request->has("onlyDuration");
         try {
             $track = Youtube::getVideoInfo($id);
+
             if ($onlyDuration) return (int) $this->ISO8601ToSeconds($track->contentDetails->duration);
             $track->src = $this->getPlayable($id);
             $track->duration =  $this->ISO8601ToSeconds($track->contentDetails->duration);

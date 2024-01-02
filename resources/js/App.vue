@@ -27,12 +27,16 @@
 
                 <!-- ANCHOR items library --------------------------------- -->
 
-                <v-list class="nav-left mb-1 w-full flex-shrink-1 max-h-[10%]">
-                    <left-item
-                        icon="mdi-home"
-                        :to="{ name: 'Home' }"
+                <v-list class="nav-left mb-1 w-full flex-shrink-1 max-h-[25%]">
+                    <!-- <left-item
+                        v-for="item in state.navItems"
+                        :key="item"
+                        :icon="item.icon"
+                        :to="{ name: icon.name }"
                         :active="
-                            $route.matched.some(({ name }) => name === 'Home')
+                            $route.matched.some(
+                                ({ name }) => name === icon.name
+                            )
                         "
                     >
                         <div class="flex justify-start align-center">
@@ -40,10 +44,23 @@
                             <v-list-item-title
                                 class="ml-4 mt-1 name truncate capitalize font-normal"
                             >
-                                Home
+                                {{ item.title }}
                             </v-list-item-title>
                         </div>
-                    </left-item>
+                    </left-item> -->
+                    <list-item
+                        v-for="item in state.navItems"
+                        :title="item.title"
+                        :to="{ name: item.name }"
+                        :key="item"
+                        :icon="item.icon"
+                        :isActive="
+                            $route.matched.some(
+                                ({ name }) => name === item.name
+                            )
+                        "
+                    >
+                    </list-item>
                 </v-list>
                 <!-- divider -->
                 <v-divider
@@ -91,6 +108,7 @@ import NowPlayingBar from "@/components/NowPlayingBar.vue";
 import AppBarContent from "@/components/layouts/AppBarContent.vue";
 import LeftItem from "@/components/layouts/sidebar/LeftItem.vue";
 import SidebarPlaylist from "./components/playlist/SidebarPlaylist.vue";
+import ListItem from "@/components/app/ListItem.vue";
 import { useRoute } from "vue-router";
 import { reactive, computed, toRef } from "vue";
 import { useUsers } from "./stores/Users";
@@ -103,6 +121,7 @@ export default {
         AppBarContent,
         LeftItem,
         SidebarPlaylist,
+        ListItem,
     },
     setup() {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
@@ -113,14 +132,17 @@ export default {
         const initData = () => {
             return {
                 scrollTop: 0,
-                items: [
-                    { text: "My Files", icon: "mdi-folder" },
-                    { text: "Shared with me", icon: "mdi-account-multiple" },
-                    { text: "Starred", icon: "mdi-star" },
-                    { text: "Recent", icon: "mdi-history" },
-                    { text: "Offline", icon: "mdi-check-circle" },
-                    { text: "Uploads", icon: "mdi-upload" },
-                    { text: "Backups", icon: "mdi-cloud-upload" },
+                navItems: [
+                    {
+                        name: "Home",
+                        icon: "mdi-home",
+                        title: "Trang chủ",
+                    },
+                    {
+                        name: "Search",
+                        icon: "mdi-magnify",
+                        title: "Tìm kiếm",
+                    },
                 ],
             };
         };

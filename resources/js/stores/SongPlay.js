@@ -3,6 +3,8 @@ import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 const PlaylistRepo = RepositoryFactory.get("playlist");
 const TrackRepo = RepositoryFactory.get("track");
 const StTrackRepo = RepositoryFactory.get("StTrack");
+const UserRepo = RepositoryFactory.get("user");
+import { isEmpty } from "lodash";
 export const useSongPlay = defineStore({
     id: "SongPLay",
     state: () => ({
@@ -15,6 +17,10 @@ export const useSongPlay = defineStore({
         myPlaylistRender: [],
 
         defaultPlaylist: [],
+
+        searchList: [],
+
+        searchListRender: [],
 
         currentPlaylistItems: [],
 
@@ -56,6 +62,15 @@ export const useSongPlay = defineStore({
         },
     },
     actions: {
+        search(kw) {
+            UserRepo.search(kw)
+                .then((res) => {
+                    const data = res.data;
+                    const test = this.findKey(data["yt"]["1"], "thumbnails");
+                    console.log(test);
+                })
+                .catch((err) => {});
+        },
         // ANCHOR load playlist info //////////////////////////////////////////////////////
         loadPlaylist(id, plf) {},
         // ANCHOR load storage //////////////////////////////////////////////////////
@@ -261,12 +276,36 @@ export const useSongPlay = defineStore({
             return (this.myPlaylistRender = payload);
         },
         filterRenderPlaylist(type = "all") {
+            console.log(type);
             if (type === "all")
                 return (this.myPlaylistRender = this.myPlaylist);
             this.myPlaylistRender = {};
-            return (this.myPlaylistRender[type] = this.myPlaylist[type]);
+            return (this.myPlaylistRender["" + type] =
+                this.myPlaylist["" + type]);
         },
+        findKey(obj, targetKey) {
+            let result = null;
+            const searchInObject = (currentObj, keyToFind) => {
+                for (const key in currentObj) {
+                    if (Object.prototype.hasOwnProperty.call(currentObj, key)) {
+                        const value = currentObj[key];
 
+                        if (key === keyToFind) {
+                            result = { key: key, value: value };
+                            break;
+                        }
+
+                        if (typeof value === "object") {
+                            searchInObject(value, keyToFind);
+                        }
+                    }
+                }
+            };
+
+            searchInObject(obj, targetKey);
+
+            return result;
+        },
         getInfoStandards(data, plf = "yt", type = "song") {
             const info = {
                 title: "",
@@ -276,17 +315,19 @@ export const useSongPlay = defineStore({
                 plf: plf,
             };
 
-            if (_.isEmpty(data)) return info;
+            if (isEmpty(data)) return info;
+
             switch (plf) {
                 case "st":
+                    info.images = this.findKey(data, "images").value;
+                    info.title = this.findKey(data, "name").value;
+                    info.id = this.findKey(data, "id").value;
                     switch (type) {
                         case "playlist":
-                            (info.images = data.images),
-                                (info.title = data.name),
-                                (info.description = data.description
-                                    ? data.description
-                                    : data.owner.display_name),
-                                (info.id = data.id);
+                            info.description = data.description
+                                ? data.description
+                                : data.owner.display_name;
+
                             break;
 
                         default:
@@ -295,20 +336,33 @@ export const useSongPlay = defineStore({
                                 artists.push(item.name);
                             });
 
-                            (info.images = data.album.images),
-                                (info.title = data.name),
-                                (info.description = artists.toString()),
-                                (info.id = data.id);
+                            info.description = artists.toString();
+
                             break;
                     }
 
                     break;
                 case "yt":
-                    (info.images = data.snippet.thumbnails),
-                        (info.title = data.snippet.title),
-                        (info.description = data.snippet.channelTitle),
-                        (info.id = data.id);
+                    const kind = this.findKey(data, "kind").value;
+                    info.images = this.findKey(data, "thumbnails").value;
+                    info.title = this.findKey(data, "title").value;
+                    info.description = this.findKey(data, "channelTitle").value;
+                    let id = this.findKey(data, "id").hasOwnProperty("value")
+                        ? this.findKey(data, "id").value
+                        : null;
 
+                    if (!id) {
+                        switch (kind) {
+                            case "youtube#playlist":
+                                id = this.findKey(data, "playlistId");
+                                break;
+
+                            default:
+                                id = this.findKey(data, "videoId");
+                                break;
+                        }
+                    }
+                    info.id = id;
                     break;
 
                 default:

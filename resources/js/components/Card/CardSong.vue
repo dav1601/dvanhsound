@@ -124,6 +124,7 @@ export default {
             stateReactive.info = {
                 ...useStore.getInfoStandards(props.item, props.plf),
             };
+            console.log(stateReactive.info);
         };
 
         // !SECTION End Computed //////////////////////////////////////////////////////

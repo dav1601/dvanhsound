@@ -3,6 +3,7 @@ import TheLogin from "@/pages/TheLogin.vue";
 import TheRegister from "@/pages/TheRegister.vue";
 import Home from "@/pages/Home.vue";
 import PageNotFound from "@/pages/errors/PageNotFound.vue";
+import Search from "@/pages/Search.vue";
 const routes = [
     {
         path: "/",
@@ -26,6 +27,12 @@ const routes = [
         path: "/register",
         component: TheRegister,
         name: "Register",
+        props: true,
+    },
+    {
+        path: "/search/:kw?",
+        component: Search,
+        name: "Search",
         props: true,
     },
 
