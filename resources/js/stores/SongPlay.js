@@ -62,14 +62,25 @@ export const useSongPlay = defineStore({
         },
     },
     actions: {
+        // ANCHOR btn play //////////////////////////////////////////////////////
+
+        // ANCHOR search action //////////////////////////////////////////////////////
         search(kw) {
+            if (!kw) {
+                this.searchList = [];
+                this.searchListRender = [];
+                return;
+            }
             UserRepo.search(kw)
                 .then((res) => {
                     const data = res.data;
-                    const test = this.findKey(data["yt"]["1"], "thumbnails");
-                    console.log(test);
+                    this.searchList = data;
+                    this.searchListRender = data;
                 })
-                .catch((err) => {});
+                .catch((err) => {
+                    this.searchList = [];
+                    this.searchListRender = [];
+                });
         },
         // ANCHOR load playlist info //////////////////////////////////////////////////////
         loadPlaylist(id, plf) {},
@@ -143,6 +154,7 @@ export const useSongPlay = defineStore({
             plf = "yt",
             playlist = { id: null, items: [] }
         ) {
+            if (this.isActiveSong(id)) return this.playOrPause();
             this.loadedSong = false;
             let api;
             switch (plf) {
@@ -276,7 +288,6 @@ export const useSongPlay = defineStore({
             return (this.myPlaylistRender = payload);
         },
         filterRenderPlaylist(type = "all") {
-            console.log(type);
             if (type === "all")
                 return (this.myPlaylistRender = this.myPlaylist);
             this.myPlaylistRender = {};
@@ -351,14 +362,15 @@ export const useSongPlay = defineStore({
                         ? this.findKey(data, "id").value
                         : null;
 
-                    if (!id) {
+                    if (!id || typeof id === "object") {
                         switch (kind) {
                             case "youtube#playlist":
-                                id = this.findKey(data, "playlistId");
+                                id = this.findKey(data, "playlistId").value;
                                 break;
 
                             default:
-                                id = this.findKey(data, "videoId");
+                                id = this.findKey(data, "videoId").value;
+                                console.log({ debug: id });
                                 break;
                         }
                     }

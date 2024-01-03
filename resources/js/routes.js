@@ -33,7 +33,7 @@ const routes = [
         path: "/search/:kw?",
         component: Search,
         name: "Search",
-        props: true,
+        
     },
 
     { path: "/:pathMatch(.*)*", component: PageNotFound, name: "404" },

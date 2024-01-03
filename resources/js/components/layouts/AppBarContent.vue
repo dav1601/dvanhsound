@@ -17,7 +17,7 @@
                 <v-icon icon="mdi-magnify mr-2"></v-icon>
                 <input
                     type="text"
-                    class="flex-1 text-sm focus:!text-white focus:font-semibold"
+                    class="flex-1 text-sm font-semibold text-zinc-300 focus:!text-white"
                     placeholder="Tìm bài hát, nghệ sĩ, podcast..."
                     v-model="kw"
                 />
@@ -71,8 +71,8 @@
 import { useAuthStore } from "@/stores/AuthStore";
 import { storeToRefs } from "pinia";
 import ListItem from "@/components/app/ListItem.vue";
-import { useRoute } from "vue-router";
-import { ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ref, watch, computed } from "vue";
 import { debounce } from "lodash";
 import { useSongPlay } from "@/stores/SongPlay";
 export default {
@@ -80,6 +80,7 @@ export default {
     setup(props) {
         const auth = useAuthStore();
         const route = useRoute();
+        const router = useRouter();
         const storeSong = useSongPlay();
         const kw = ref(route.params.kw);
         const { isAuthenticated } = storeToRefs(auth);
@@ -90,10 +91,19 @@ export default {
         const search = debounce((newKw) => {
             storeSong.search(newKw);
         }, 300);
-        watch(kw, (newKw) => {
-            search(newKw);
-        });
-
+        watch(
+            () => route.params.kw,
+            (newVal) => {
+                kw.value = newVal;
+            }
+        );
+        watch(
+            () => kw.value,
+            (newVal) => {
+                search(newVal);
+                router.push({ name: "Search", params: { kw: newVal } });
+            }
+        );
         return {
             isAuthenticated,
             logout,

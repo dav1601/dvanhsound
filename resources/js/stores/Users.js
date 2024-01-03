@@ -23,9 +23,7 @@ export const useUsers = defineStore({
             localStorage.setItem("stId", this.sync.stId);
             localStorage.setItem("ytId", this.sync.ytId);
             if (auth.isAuthenticated) {
-                UserRepo.saveSync(this.sync).then((res) => {
-                    console.log(res);
-                });
+                UserRepo.saveSync(this.sync).then((res) => {});
             }
         },
         syncPlaylist() {
@@ -40,7 +38,6 @@ export const useUsers = defineStore({
             UserRepo.syncPlaylist(this.sync)
                 .then((res) => {
                     const { data } = res.data;
-                    console.log(data);
                     storeSongPlay.setMyPlaylist(data);
                     storeSongPlay.setMyPlaylistRender(data);
                     this.storageSync();

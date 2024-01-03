@@ -1,6 +1,6 @@
 <template>
     <div
-        class="playlist-grid-td group flex justify-start items-center cursor-pointer rounded-md py-2"
+        class="playlist-grid-td w-full group flex justify-start items-center cursor-pointer rounded-md py-2"
         @mouseenter="setHover(true)"
         @mouseleave="setHover(false)"
         @dblclick.stop="dbClick"
@@ -56,7 +56,7 @@
             >
                 <!-- title -->
                 <span
-                    class="text-white font-semibold truncate d-block w-100 mb-1"
+                    class="text-white font-semibold truncate d-block w-100 mb-1 w-full"
                     v-if="isLoaded"
                 >
                     {{ state.info.title }}
@@ -68,9 +68,9 @@
                 ></div>
                 <!-- desc -->
                 <span
-                    class="text-sm text-gray-500 truncate d-block"
+                    class="text-sm text-gray-500 truncate d-block w-full"
                     v-if="isLoaded"
-                    >{{ item.plf === "yt" ? "" : state.info.description }}</span
+                    >{{ plf === "yt" ? "" : state.info.description }}</span
                 >
                 <!-- ske -->
                 <div
@@ -103,7 +103,7 @@
                     class="text-gray-500 invisible group-hover:visible"
                 ></HeartIcon>
                 <!-- ---- -->
-                <span class="mr-2 ml-7">{{ $formatTime(state.duration) }}</span>
+                <span class="mr-3 ml-7">{{ $formatTime(state.duration) }}</span>
                 <!-- ---- -->
                 <v-icon
                     icon="mdi-dots-horizontal"
@@ -142,6 +142,10 @@ export default {
             type: String,
             default: "td",
         },
+        plf: {
+            type: String,
+            default: "yt",
+        },
         playlistItems: {
             default: [],
         },
@@ -165,14 +169,17 @@ export default {
         const { isLoaded } = toRefs(props);
         const setInfo = () => {
             stateReactive.info = {
-                ...storeSongPlay.getInfoStandards(props.item, props.item.plf),
+                ...storeSongPlay.getInfoStandards(props.item, props.plf),
             };
-            if (props.item.plf === "yt") getDuration();
-            if (props.item.plf === "st")
-                stateReactive.duration = props.item.duration;
+            if (props.plf === "yt") getDuration();
+            if (props.plf === "st")
+                stateReactive.duration = props.item.duration
+                    ? props.item.duration
+                    : storeSongPlay.findKey(props.item, "duration_ms").value /
+                      1000;
         };
         const getDuration = () => {
-            YtRepo.getTrack(props.item.id, { onlyDuration: true }).then(
+            YtRepo.getTrack(stateReactive.info.id, { onlyDuration: true }).then(
                 (res) => {
                     const { data } = res;
                     stateReactive.duration = data;
@@ -187,13 +194,13 @@ export default {
         const songImage = computed(() => {
             let url = "";
             if (isLoaded) {
-                switch (props.item.plf) {
+                switch (props.plf) {
                     case "st":
                         url = stateReactive.info.images[2].url;
                         break;
 
                     default:
-                        url = stateReactive.info.images.default.url;
+                        url = stateReactive.info.images.medium.url;
                         break;
                 }
             }
@@ -202,7 +209,7 @@ export default {
         });
         const albumOrChannel = computed(() => {
             let string = "";
-            switch (props.item.plf) {
+            switch (props.plf) {
                 case "st":
                     string = props.item.album.name;
                     break;
@@ -214,7 +221,7 @@ export default {
             return string;
         });
         const isActive = computed(() => {
-            return storeSongPlay.isActiveSong(props.item.id);
+            return storeSongPlay.isActiveSong(stateReactive.info.id);
         });
         const renderPlayOrPause = computed(() => {
             if (
@@ -240,13 +247,10 @@ export default {
             );
         });
         const dbClick = (e) => {
-            if (isActive.value) return storeSongPlay.playOrPause();
-            storeSongPlay.loadSong(
-                stateReactive.info.id,
-                true,
-                props.item.plf,
-                { items: props.playlistItems, id: props.playlistId }
-            );
+            storeSongPlay.loadSong(stateReactive.info.id, true, props.plf, {
+                items: props.playlistItems,
+                id: props.playlistId,
+            });
         };
         watch(
             isLoaded,

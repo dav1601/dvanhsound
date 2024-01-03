@@ -49,14 +49,17 @@ class UserController extends Controller
     public function search($kw = null)
     {
         $spotify =  new Spotify(config("spotify.default_config"));
+        
         $search['yt'] = Youtube::search($kw, 20);
+
         $search['yt'] = collect($search['yt'])->filter(function ($item) {
             unset($item->kind);
-
-
             return $item->id->kind == "youtube#video" || $item->id->kind == "youtube#playlist";
         });
+        $search['yt'] = $search['yt']->groupBy("id.kind")->toArray();
+
         $search['st'] = $spotify->searchItems($kw, 'playlist, track')->get();
+        $search['st'] = collect($search['st'])->toArray();
         return $search;
     }
 }

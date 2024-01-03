@@ -79,7 +79,6 @@ export const useAuthStore = defineStore({
             return api
                 .get("/user")
                 .then((res) => {
-                    console.log(res);
                     this.isLoading = false;
                     const { data } = res.data;
                     this.setUser(data.user);

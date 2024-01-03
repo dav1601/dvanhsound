@@ -40,6 +40,7 @@
                 v-for="i in 6"
                 :key="'grsks-' + i"
                 :isLoaded="loadedPlaylistItems"
+                :plf="plf"
             ></song-item>
         </div>
     </div>
@@ -66,15 +67,15 @@ export default {
             default: null,
         },
     },
-    setup(props , ctx) {
+    setup(props, ctx) {
         const songPlay = useSongPlay();
         const { loadedPlaylistItems } = storeToRefs(songPlay);
-       const updateDuration = (e) => {
-           return ctx.emit("update-duration" , e);
-       }
+        const updateDuration = (e) => {
+            return ctx.emit("update-duration", e);
+        };
         return {
             loadedPlaylistItems,
-            updateDuration
+            updateDuration,
         };
     },
 };

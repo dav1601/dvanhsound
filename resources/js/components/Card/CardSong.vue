@@ -75,7 +75,7 @@ export default {
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
 
         // SECTION Store //////////////////////////////////////////////////////
-        const useStore = useSongPlay();
+        const storeSongPlay = useSongPlay();
 
         // !SECTION End Store //////////////////////////////////////////////////////
 
@@ -92,16 +92,18 @@ export default {
         const { isLoaded } = toRefs(props);
         // SECTION Computed //////////////////////////////////////////////////////
         const isActiveSong = computed(() => {
-            return useStore.isActiveSong(stateReactive.info.id);
+            return storeSongPlay.isActiveSong(stateReactive.info.id);
         });
         const currSongLoading = computed(() => {
-            return !useStore.loadedSong && isActiveSong.value;
+            return !storeSongPlay.loadedSong && isActiveSong.value;
         });
 
         const renderIcon = computed(() => {
-            if (useStore.isPaused) return "mdi-play";
-            if (useStore.isPlaying && isActiveSong.value) return "mdi-pause";
-            if (useStore.isPlaying && !isActiveSong.value) return "mdi-play";
+            if (storeSongPlay.isPaused) return "mdi-play";
+            if (storeSongPlay.isPlaying && isActiveSong.value)
+                return "mdi-pause";
+            if (storeSongPlay.isPlaying && !isActiveSong.value)
+                return "mdi-play";
         });
         const cardImage = computed(() => {
             let url = "";
@@ -122,9 +124,8 @@ export default {
 
         const setInfo = () => {
             stateReactive.info = {
-                ...useStore.getInfoStandards(props.item, props.plf),
+                ...storeSongPlay.getInfoStandards(props.item, props.plf),
             };
-            console.log(stateReactive.info);
         };
 
         // !SECTION End Computed //////////////////////////////////////////////////////
@@ -149,12 +150,10 @@ export default {
             }
         };
         const clickPlay = (e) => {
-            if (isActiveSong.value) return useStore.playOrPause();
-            useStore.loadSong(stateReactive.info.id, true, props.plf);
-            useStore.setCurrentPlaylistItems(
-                props.playlistItems,
-                props.playlistId
-            );
+            storeSongPlay.loadSong(stateReactive.info.id, true, props.plf, {
+                items: props.playlistItems,
+                id: props.playlistId,
+            });
         };
 
         // !SECTION End Methods //////////////////////////////////////////////////////
