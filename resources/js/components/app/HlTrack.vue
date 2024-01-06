@@ -9,6 +9,7 @@
                     class="top-reults p-[20px] w-full h-full rounded-lg relative isolate cursor-pointer"
                     @mouseenter="hoverIn"
                     @mouseleave="hoverOut"
+                    v-if="isLoaded"
                 >
                     <div
                         class="bg-gradient-to-b opacity-40 rounded-lg dva-abs-full"
@@ -46,18 +47,23 @@
                         </span>
 
                         <span
-                            class="d-block w-full truncate text-sm font-normal text-inherit"
+                            class="d-block w-full truncate text-sm font-bold text-gray-300"
                         >
                             {{ topTrack.description }}
                         </span>
                     </div>
                 </div>
+                <!-- ske -->
+                <div
+                    v-else
+                    class="w-full h-[220px] bg-gray-500 animate-pulse rounded-lg"
+                ></div>
             </div>
             <div class="tracks flex-1 ml-10 overflow-hidden">
                 <h2 class="text-2xl font-semibold text-white mb-3">
                     Bài hát - {{ $getPlfName(plf) }}
                 </h2>
-                <div class="list-tracks overflow-hidden" v-if="hasList">
+                <div class="list-tracks overflow-hidden" v-if="isLoaded">
                     <song-item
                         v-for="(item, index) in tracks"
                         :key="item"
@@ -82,6 +88,7 @@
 <script>
 import { computed } from "vue";
 import { useSongPlay } from "@/stores/SongPlay";
+import { storeToRefs } from "pinia";
 import SongItem from "@/components/song/SongItem.vue";
 import "animate.css";
 export default {
@@ -105,6 +112,10 @@ export default {
         });
         const hasList = computed(() => {
             return props.tracks.length > 0;
+        });
+        const { isSearching, isSearched } = storeToRefs(storeSong);
+        const isLoaded = computed(() => {
+            return !isSearching.value && isSearched.value;
         });
         const hoverIn = (e) => {
             const el = e.target;
@@ -144,6 +155,7 @@ export default {
             hoverIn,
             hoverOut,
             hasList,
+            isLoaded,
         };
     },
 };

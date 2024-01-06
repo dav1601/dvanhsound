@@ -49,17 +49,39 @@ class UserController extends Controller
     public function search($kw = null)
     {
         $spotify =  new Spotify(config("spotify.default_config"));
-        
-        $search['yt'] = Youtube::search($kw, 20);
+        $params = [
+            'q'             => $kw,
+            'type'          => 'playlist',
+            'part'          => 'id, snippet',
+            'maxResults'    => 16
+        ];
+        $paramsVideo = [
+            'q'             => $kw,
+            'type'          => 'video',
+            'part'          => 'id, snippet',
+            'maxResults'    => 4
+        ];
 
-        $search['yt'] = collect($search['yt'])->filter(function ($item) {
-            unset($item->kind);
-            return $item->id->kind == "youtube#video" || $item->id->kind == "youtube#playlist";
-        });
-        $search['yt'] = $search['yt']->groupBy("id.kind")->toArray();
+        try {
+            // Make intial call. with second argument to reveal page info such as page tokens
+            $search['yt']['playlists'] = Youtube::searchAdvanced($params, true)['results'];
+            $search['yt']['tracks'] = Youtube::searchAdvanced($paramsVideo, true)['results'];
 
-        $search['st'] = $spotify->searchItems($kw, 'playlist, track')->get();
-        $search['st'] = collect($search['st'])->toArray();
-        return $search;
+            $search['yt']['playlists'] = collect($search['yt']['playlists'])->filter(function ($item) {
+                unset($item->kind);
+                return $item;
+            });
+            $search['yt']['tracks'] = collect($search['yt']['tracks'])->filter(function ($item) {
+                unset($item->kind);
+                return $item;
+            });
+            // $search['yt'] = $search['yt']->groupBy("id.kind")->toArray();
+
+            $search['st'] = $spotify->searchItems($kw, 'playlist, track')->get();
+            $search['st'] = collect($search['st'])->toArray();
+            return $this->successResponse($search);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Xin lỗi vì sự cố máy chủ!");
+        }
     }
 }

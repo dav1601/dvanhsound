@@ -59,7 +59,7 @@
                     class="text-white font-semibold truncate d-block w-100 mb-1 w-full"
                     v-if="isLoaded"
                 >
-                    {{ state.info.title }}
+                    <span v-html="state.info.title"></span>
                 </span>
 
                 <div

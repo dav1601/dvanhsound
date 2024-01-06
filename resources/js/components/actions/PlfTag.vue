@@ -1,5 +1,7 @@
 <template>
-    <div class="flex justify-start items-center flex-shrink-1">
+    <div
+        class="flex justify-start items-center flex-shrink-1 w-full overflow-x-scroll custom-scroll pb-2"
+    >
         <v-btn
             size="small"
             v-for="(item, index) in state.listPlf"

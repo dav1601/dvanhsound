@@ -11,6 +11,7 @@ import * as directives from "vuetify/directives";
 import { createPinia } from "pinia";
 import helper from "@/helper/index.js";
 import Notifications from "@kyvg/vue3-notification";
+
 // ANCHOR router //////////////////////////////////////////////////////
 const router = vuerouter.createRouter({
     // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
@@ -18,6 +19,7 @@ const router = vuerouter.createRouter({
     routes,
     // short for `routes: routes`
 });
+
 // ANCHOR vuetify //////////////////////////////////////////////////////
 const vuetify = createVuetify({
     components,

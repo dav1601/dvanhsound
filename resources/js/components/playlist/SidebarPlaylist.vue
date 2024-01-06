@@ -61,7 +61,7 @@
     <div
         class="sidebar-playlist mt-2 w-full flex flex-col flex-shrink-1 h-[75%]"
     >
-        <div class="flex-shrink-1 h-[15%]">
+        <div class="flex-shrink-1 h-[15%] mb-4">
             <v-btn
                 class="rounded-full vtf-def mx-auto mb-4 capitalize flex items-center"
                 @click="state.dialogSync = true"

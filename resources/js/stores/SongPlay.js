@@ -21,6 +21,9 @@ export const useSongPlay = defineStore({
         searchList: [],
 
         searchListRender: [],
+        isSearched: false,
+
+        isSearching: false,
 
         currentPlaylistItems: [],
 
@@ -66,20 +69,29 @@ export const useSongPlay = defineStore({
 
         // ANCHOR search action //////////////////////////////////////////////////////
         search(kw) {
+            this.isSearched = false;
+            this.isSearching = true;
             if (!kw) {
                 this.searchList = [];
                 this.searchListRender = [];
+                this.isSearching = false;
+                this.isSearched = true;
                 return;
             }
+
             UserRepo.search(kw)
                 .then((res) => {
-                    const data = res.data;
+                    const { data } = res.data;
                     this.searchList = data;
                     this.searchListRender = data;
+                    this.isSearching = false;
+                    this.isSearched = true;
                 })
                 .catch((err) => {
                     this.searchList = [];
                     this.searchListRender = [];
+                    this.isSearching = false;
+                    this.isSearched = true;
                 });
         },
         // ANCHOR load playlist info //////////////////////////////////////////////////////
@@ -358,6 +370,7 @@ export const useSongPlay = defineStore({
                     info.images = this.findKey(data, "thumbnails").value;
                     info.title = this.findKey(data, "title").value;
                     info.description = this.findKey(data, "channelTitle").value;
+
                     let id = this.findKey(data, "id").hasOwnProperty("value")
                         ? this.findKey(data, "id").value
                         : null;
@@ -370,7 +383,7 @@ export const useSongPlay = defineStore({
 
                             default:
                                 id = this.findKey(data, "videoId").value;
-                                console.log({ debug: id });
+
                                 break;
                         }
                     }

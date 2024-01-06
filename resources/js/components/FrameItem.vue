@@ -1,15 +1,25 @@
 <template>
     <div class="frame-item mb-11 w-100" :id="'frame-' + playlistId">
-        <div
-            class="w-100 flex justify-between items-center mb-5"
-            v-if="state.isLoadedInfo"
-        >
-            <span
-                class="frame-item-title d-inline text-white leading-[38px] text-2xl truncate flex-1"
-            >
-               {{ $getPlfName(plf) }} - {{ frameTitle }}
-            </span>
-            <div class="flex items-center justify-end mr-6">
+        <core-slide :isLoaded="state.isLoadedItems" :id="playlistId">
+            <template v-slot:header-start>
+                <!-- <span
+                    v-if="state.isLoadedInfo"
+                    class="frame-item-title d-inline text-white leading-[38px] text-2xl truncate flex-1"
+                >
+                    {{ $getPlfName(plf) }} - {{ frameTitle }}
+                </span> -->
+                <text-header
+                    :content="$getPlfName(plf) + ' - ' + frameTitle"
+                    v-if="state.isLoadedInfo"
+                ></text-header>
+                <v-skeleton-loader
+                    v-else
+                    type="heading"
+                    max-width="500"
+                    :boilerplate="false"
+                ></v-skeleton-loader>
+            </template>
+            <template v-slot:header-btn>
                 <v-btn
                     variant="outlined"
                     size="small"
@@ -20,78 +30,61 @@
                 >
                     Xem them
                 </v-btn>
-                <v-btn
-                    icon="mdi-chevron-left"
-                    class="mx-4"
-                    @click.stop="nextOrPrev('p')"
-                    size="small"
-                ></v-btn>
-                <v-btn
-                    icon="mdi-chevron-right"
-                    @click.stop="nextOrPrev()"
-                    size="small"
-                ></v-btn>
-            </div>
-        </div>
-        <v-skeleton-loader
-            v-else
-            type="heading"
-            max-width="500"
-            :boilerplate="false"
-        ></v-skeleton-loader>
-        <div class="frame-item-slide">
-            <swiper
-                :slides-per-view="8"
-                :slidesPerGroup="4"
-                :modules="modules"
-                :id="'s-' + playlistId"
-                v-if="state.isLoadedItems"
-            >
-                <swiper-slide v-for="item in state.items" :key="item">
+            </template>
+            <template v-slot:items>
+                <swiper-slide
+                    v-for="item in state.items"
+                    :key="item"
+                    class="w-fit"
+                >
                     <card-song
                         :item="item"
-                        :isLoaded="state.isLoadedItems"
+                        :isLoaded="true"
                         :playlistItems="state.items"
                         :plf="plf"
                         :playlistId="playlistId"
                     ></card-song>
                 </swiper-slide>
-            </swiper>
-            <swiper
-                :slides-per-view="8"
-                :slidesPerGroup="4"
-                :modules="modules"
-                :id="'s-' + playlistId"
-                v-else
-            >
-                <swiper-slide v-for="i in 8" :key="'slide-ske-' + i">
-                    <card-song :isLoaded="state.isLoadedItems"></card-song>
+            </template>
+            <template v-slot:skeleton>
+                <swiper-slide
+                    v-for="i in 8"
+                    :key="'slide-ske-' + i"
+                    class="w-fit"
+                >
+                    <card-song :isLoaded="false"></card-song>
                 </swiper-slide>
-            </swiper>
-        </div>
+            </template>
+        </core-slide>
     </div>
 </template>
 <script>
 import { useSongPlay } from "@/stores/SongPlay";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 import { reactive, toRef, computed } from "vue";
-import { Swiper, SwiperSlide } from "swiper/vue";
-import { useSwiper } from "swiper/vue";
+import { SwiperSlide } from "swiper/vue";
 import CardSong from "@/components/Card/CardSong.vue";
-import { Scrollbar, A11y, EffectCoverflow, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/scrollbar";
-
+import CoreSlide from "@/components/app/CoreSlide.vue";
+import TextHeader from "@/components/ui/TextHeader.vue";
 const PlaylistRepository = RepositoryFactory.get("playlist");
 const StPlaylistRepository = RepositoryFactory.get("StPlaylist");
 export default {
-    props: ["playlistId", "plf"],
+    props: {
+        playlistId: {
+            default: "",
+        },
+        plf: {
+            default: "yt",
+        },
+        type: {
+            default: "track",
+        },
+    },
     components: {
-        Swiper,
         SwiperSlide,
         CardSong,
+        CoreSlide,
+        TextHeader,
     },
     setup(props) {
         const initData = () => {
@@ -128,7 +121,6 @@ export default {
         const fetchPlaylistItems = () => {
             PlaylistRepository.getItems(props.playlistId).then((res) => {
                 setItems(res);
-                console.log(res.data.data);
             });
         };
         const spotifyFetchPlaylistInfo = () => {
@@ -152,11 +144,7 @@ export default {
             spotifyFetchPlaylistInfo();
             spotifyFetchPlaylistItems();
         }
-        const nextOrPrev = (t = "n") => {
-            const el = document.getElementById("s-" + props.playlistId).swiper;
-            if (t === "n") return el.slideNext();
-            return el.slidePrev();
-        };
+
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
 
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
@@ -194,8 +182,6 @@ export default {
         // SECTION return //////////////////////////////////////////////////////
         return {
             state: toRef(stateReactive),
-            modules: [Scrollbar, A11y, EffectCoverflow, Pagination],
-            nextOrPrev,
             frameTitle,
         };
     },

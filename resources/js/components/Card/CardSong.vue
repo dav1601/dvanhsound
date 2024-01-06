@@ -1,8 +1,9 @@
-<template language="html">
+<template>
     <div
         class="card-song w-[183px] p-[12.99999px] h-[260px] rounded-[5.152px] bg-[#161616] cursor-pointer hover:bg-[#282828] transition-all relative"
         @mouseenter="hoverIn"
         @mouseleave="hoverOut"
+        @click="clickCard"
     >
         <v-btn
             :icon="renderIcon"
@@ -51,6 +52,7 @@
 </template>
 <script>
 import { useSongPlay } from "@/stores/SongPlay";
+import { useRouter } from "vue-router";
 import { computed, reactive, watch, toRefs, toRef } from "vue";
 import "animate.css";
 export default {
@@ -68,15 +70,21 @@ export default {
         playlistId: {
             default: null,
         },
+        type: {
+            default: "track",
+        },
+        to: {
+            default: null,
+        },
     },
-    setup(props) {
+    setup(props, ctx) {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
 
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
 
         // SECTION Store //////////////////////////////////////////////////////
         const storeSongPlay = useSongPlay();
-
+        const router = useRouter();
         // !SECTION End Store //////////////////////////////////////////////////////
 
         // SECTION State //////////////////////////////////////////////////////
@@ -110,7 +118,12 @@ export default {
             if (isLoaded) {
                 switch (props.plf) {
                     case "st":
-                        url = stateReactive.info.images[1].url;
+                        if (stateReactive.info.images[1])
+                            url = stateReactive.info.images[1].url;
+                        if (!url && stateReactive.info.images[0])
+                            url = stateReactive.info.images[0].url;
+                        if (!url && stateReactive.info.images[2])
+                            url = stateReactive.info.images[2].url;
                         break;
 
                     default:
@@ -119,12 +132,16 @@ export default {
                 }
             }
 
-            return url;
+            return url ? url : "";
         });
 
         const setInfo = () => {
             stateReactive.info = {
-                ...storeSongPlay.getInfoStandards(props.item, props.plf),
+                ...storeSongPlay.getInfoStandards(
+                    props.item,
+                    props.plf,
+                    props.type
+                ),
             };
         };
 
@@ -155,6 +172,9 @@ export default {
                 id: props.playlistId,
             });
         };
+        const clickCard = () => {
+            return router.push(props.to);
+        };
 
         // !SECTION End Methods //////////////////////////////////////////////////////
 
@@ -183,6 +203,7 @@ export default {
             cardImage,
             isActiveSong,
             currSongLoading,
+            clickCard,
         };
     },
 };

@@ -4,11 +4,16 @@
         <!-- ANCHOR left sidebar --------------------------------- -->
         <v-navigation-drawer
             rounded
-            :width="271"
+            :width="240"
             class="bg-[#121212]"
             :class="{ 'pt-16': activeScroll, 'py-2': !activeScroll }"
             id="nav-drawer-left"
+            v-model="state.showDrawer"
             :disable-resize-watcher="true"
+            :disable-route-watcher="true"
+            :expand-on-hover="false"
+            :mobile-breakpoint="0"
+            :permanent="permanent"
             v-if="!hiddenAllNav"
         >
             <div
@@ -27,27 +32,9 @@
 
                 <!-- ANCHOR items library --------------------------------- -->
 
-                <v-list class="nav-left mb-1 w-full flex-shrink-1 max-h-[25%]">
-                    <!-- <left-item
-                        v-for="item in state.navItems"
-                        :key="item"
-                        :icon="item.icon"
-                        :to="{ name: icon.name }"
-                        :active="
-                            $route.matched.some(
-                                ({ name }) => name === icon.name
-                            )
-                        "
-                    >
-                        <div class="flex justify-start align-center">
-                            <v-icon icon="mdi-home" class="icon"></v-icon>
-                            <v-list-item-title
-                                class="ml-4 mt-1 name truncate capitalize font-normal"
-                            >
-                                {{ item.title }}
-                            </v-list-item-title>
-                        </div>
-                    </left-item> -->
+                <v-list
+                    class="nav-left mb-1 w-full flex-shrink-1 max-h-[25%] hidden lg:block"
+                >
                     <list-item
                         v-for="item in state.navItems"
                         :title="item.title"
@@ -80,7 +67,7 @@
             :class="classAppBar"
             v-if="!hiddenAllNav"
         >
-            <AppBarContent />
+            <AppBarContent @toggle-nav="toggleDrawer" />
             <!-- <MainTopBar /> -->
         </v-app-bar>
 
@@ -110,9 +97,10 @@ import LeftItem from "@/components/layouts/sidebar/LeftItem.vue";
 import SidebarPlaylist from "./components/playlist/SidebarPlaylist.vue";
 import ListItem from "@/components/app/ListItem.vue";
 import { useRoute } from "vue-router";
-import { reactive, computed, toRef } from "vue";
+import { reactive, computed, toRef, onMounted, watch } from "vue";
 import { useUsers } from "./stores/Users";
 import { useAuthStore } from "@/stores/AuthStore";
+import { useResponsive } from "@/stores/Responsive";
 export default {
     components: {
         SidebarList,
@@ -127,6 +115,15 @@ export default {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         const route = useRoute();
         const auth = useAuthStore();
+
+        const responsive = useResponsive();
+        const handleResize = () => {
+            responsive.width = window.innerWidth;
+        };
+
+        onMounted(() => {
+            window.addEventListener("resize", handleResize);
+        });
         auth.fetchUserInfo();
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
         const initData = () => {
@@ -144,6 +141,7 @@ export default {
                         title: "Tìm kiếm",
                     },
                 ],
+                showDrawer: responsive.lg,
             };
         };
 
@@ -154,6 +152,9 @@ export default {
                 return "fixed-scroll";
             }
             return "!bg-transparent";
+        });
+        const permanent = computed(() => {
+            return responsive.lg;
         });
         const classMainContent = computed(() => {
             if (route.name === "Playlist" || route.name === "Track")
@@ -168,10 +169,39 @@ export default {
             stateReactive.scrollTop > 10;
         });
         // SECTION Store //////////////////////////////////////////////////////
-
+        const overflowHtml = () => {
+            const el = document.getElementsByTagName("html")[0];
+            if (!permanent.value) {
+                if (stateReactive.showDrawer)
+                    el.classList.add("!overflow-y-hidden");
+                else el.classList.remove("!overflow-y-hidden");
+            }
+        };
         const scrollApp = (e) => {
             stateReactive.scrollTop = document.getElementById("html").scrollTop;
         };
+        const toggleDrawer = () => {
+            stateReactive.showDrawer = !stateReactive.showDrawer;
+        };
+        watch(
+            () => responsive.width,
+            (newSize) => {
+                stateReactive.showDrawer = responsive.lg;
+                overflowHtml();
+            }
+        );
+        watch(
+            () => permanent,
+            (yes) => {
+                overflowHtml();
+            }
+        );
+        watch(
+            () => stateReactive.showDrawer,
+            (show) => {
+                overflowHtml();
+            }
+        );
         return {
             scrollApp,
             classAppBar,
@@ -179,13 +209,15 @@ export default {
             classMainContent,
             state: toRef(stateReactive),
             hiddenAllNav,
+            toggleDrawer,
+            permanent,
         };
     },
 };
 </script>
 <style lang="scss">
 #dvs-app-bar-content {
-    width: calc(100vw - 271px - 12px);
+    width: calc(100vw - 240px - 12px);
 }
 #dvs-app-bar {
     background: transparent;
