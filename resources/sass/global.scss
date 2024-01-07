@@ -91,7 +91,7 @@ input {
     width: 100%;
 }
 @mixin col($width: 100%) {
-    flex: 0 0 auto;
+    flex: 1 0 auto;
     width: $width;
     max-width: $width;
 }
@@ -101,14 +101,23 @@ input {
     justify-content: center;
 }
 .grid-pl-col-1 {
-    @include col(2%);
+    @include col(5%);
 }
 .grid-pl-col-2 {
-    @include col(53%);
+    @include col(52%);
+    @media (max-width: 600px) {
+        @include col(65%);
+    }
 }
 .grid-pl-col-3 {
-    @include col(27%);
+    @include col(25%);
+    @media (max-width: 600px) {
+        @include col(0);
+    }
 }
 .grid-pl-col-4 {
     @include col(18%);
+    @media (max-width: 600px) {
+        @include col(30%);
+    }
 }

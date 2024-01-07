@@ -1,5 +1,6 @@
 <template>
     <notifications position="top center" :speed="500" :duration="4000" />
+    <PlayerPage />
     <v-layout class="rounded" v-scroll="scrollApp" id="dvs-layout-app">
         <!-- ANCHOR left sidebar --------------------------------- -->
         <v-navigation-drawer
@@ -21,7 +22,11 @@
             >
                 <!-- ANCHOR logo --------------------------------- -->
                 <!-- ANCHOR list main --------------------------------- -->
-                <router-link :to="{ name: 'Home' }" v-if="!activeScroll">
+                <router-link
+                    :to="{ name: 'Home' }"
+                    v-if="!activeScroll"
+                    :class="{ 'invisible': showPlayerPage }"
+                >
                     <v-img
                         width="146"
                         height="44"
@@ -94,13 +99,16 @@ import MainTopBar from "@/components/MainTopBar.vue";
 import NowPlayingBar from "@/components/NowPlayingBar.vue";
 import AppBarContent from "@/components/layouts/AppBarContent.vue";
 import LeftItem from "@/components/layouts/sidebar/LeftItem.vue";
-import SidebarPlaylist from "./components/playlist/SidebarPlaylist.vue";
+import SidebarPlaylist from "@/components/playlist/SidebarPlaylist.vue";
+import PlayerPage from "@/components/app/PlayerPage.vue";
 import ListItem from "@/components/app/ListItem.vue";
 import { useRoute } from "vue-router";
 import { reactive, computed, toRef, onMounted, watch } from "vue";
 import { useUsers } from "./stores/Users";
 import { useAuthStore } from "@/stores/AuthStore";
 import { useResponsive } from "@/stores/Responsive";
+import { useSongPlay } from "@/stores/SongPlay";
+import { storeToRefs } from "pinia";
 export default {
     components: {
         SidebarList,
@@ -110,12 +118,13 @@ export default {
         LeftItem,
         SidebarPlaylist,
         ListItem,
+        PlayerPage,
     },
     setup() {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         const route = useRoute();
         const auth = useAuthStore();
-
+        const { showPlayerPage } = storeToRefs(useSongPlay());
         const responsive = useResponsive();
         const handleResize = () => {
             responsive.width = window.innerWidth;
@@ -142,6 +151,7 @@ export default {
                     },
                 ],
                 showDrawer: responsive.lg,
+                dialog: true,
             };
         };
 
@@ -211,6 +221,7 @@ export default {
             hiddenAllNav,
             toggleDrawer,
             permanent,
+            showPlayerPage,
         };
     },
 };

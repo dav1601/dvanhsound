@@ -83,7 +83,7 @@
             <!-- album -->
             <span
                 v-if="isLoaded"
-                class="text-sm font-normal text-gray-500 truncate d-block"
+                class="text-sm font-normal text-gray-500 truncate hidden sm:block"
             >
                 {{ albumOrChannel }}
             </span>
@@ -100,7 +100,7 @@
                 v-if="isLoaded"
             >
                 <HeartIcon
-                    class="text-gray-500 invisible group-hover:visible"
+                    class="text-gray-500 hidden lg:invisible group-hover:visible"
                 ></HeartIcon>
                 <!-- ---- -->
                 <span class="mr-3 ml-7">{{ $formatTime(state.duration) }}</span>

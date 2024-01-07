@@ -8,6 +8,8 @@ import { isEmpty } from "lodash";
 export const useSongPlay = defineStore({
     id: "SongPLay",
     state: () => ({
+        showPlayerPage: false,
+
         loadedSong: false,
 
         loadedPlaylistItems: false,
@@ -66,7 +68,9 @@ export const useSongPlay = defineStore({
     },
     actions: {
         // ANCHOR btn play //////////////////////////////////////////////////////
-
+        togglePlayerPage() {
+            this.showPlayerPage = !this.showPlayerPage;
+        },
         // ANCHOR search action //////////////////////////////////////////////////////
         search(kw) {
             this.isSearched = false;

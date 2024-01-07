@@ -1,11 +1,17 @@
-<template language="html">
-    <v-bottom-navigation id="now-playing-bar" width="100vw" fixed>
-        <div id="now-playing-bar-content" class="py-4 px-4">
+<template>
+    <v-bottom-navigation
+        id="now-playing-bar"
+        width="100vw"
+        class="!overflow-visible sm:overflow-hidden"
+        fixed
+        @click.stop="clickNav"
+    >
+        <div id="now-playing-bar-content" class="py-4 px-4 relative">
             <div
-                class="npb-layout flex justify-between items-center w-100 h-100"
+                class="npb-layout flex justify-between items-center w-full h-full"
             >
                 <div
-                    class="npb-layout-start col-4 flex justify-start items-center"
+                    class="npb-layout-start mr-4 md:flex hidden justify-start items-center flex-shrink-1 md:w-[15%] lg:w-1/4"
                 >
                     <v-img
                         :src="state.info.image"
@@ -13,7 +19,7 @@
                         max-height="56"
                         width="56"
                         height="56"
-                        class="rounded-md"
+                        class="rounded-md md:block hidden"
                         cover
                         v-if="store.loadedSong.value"
                     >
@@ -28,10 +34,10 @@
                     ></v-skeleton-loader>
 
                     <div
-                        class="title-artist flex flex-col justify-start items-start ml-4"
+                        class="title-artist lg:flex hidden flex-col justify-start items-start ml-4 overflow-hidden"
                     >
                         <span
-                            class="title mb-2 text-lg text-white font-semibold truncate max-w-[250px]"
+                            class="title mb-2 text-lg w-full text-white font-semibold truncate max-w-[250px]"
                             v-if="store.loadedSong.value"
                         >
                             {{ state.info.title }}
@@ -42,7 +48,7 @@
                             width="250px"
                         ></v-skeleton-loader>
                         <span
-                            class="artist text-sm font-normal white-72 max-w-[250px] truncate"
+                            class="artist text-sm font-normal white-72 max-w-[60%] truncate"
                             v-if="store.loadedSong.value"
                         >
                             {{ state.info.description }}
@@ -55,13 +61,15 @@
                     </div>
                     <v-icon
                         icon="mdi-heart-outline"
-                        class="ml-9 cursor-pointer"
+                        class="ml-5 cursor-pointer hidden lg:block"
                         size="20"
                     >
                     </v-icon>
                 </div>
                 <!-- ANCHOR layout center --------------------------------- -->
-                <div class="npb-layout-center col-4">
+                <div
+                    class="npb-layout-center w-[85%] md:w-[55%] lg:w-2/4 flex-shrink-1 flex flex-col justify-center items-center"
+                >
                     <div
                         class="npb-layout-center-controls flex items-center justify-center mb-1"
                     >
@@ -122,7 +130,7 @@
                     </div>
                     <!-- ANCHOR end controls --------------------------------- -->
                     <div
-                        class="npb-layout-center-timeLine flex-1"
+                        class="npb-layout-center-timeLine w-[100%] sm:w-[400px] xl:w-[626px]"
                         @mouseenter="timeLineHover('in')"
                         @mouseleave="timeLineHover('out')"
                     >
@@ -141,15 +149,25 @@
 
                 <!-- ANCHOR end --------------------------------- -->
                 <div
-                    class="npb-layout-end col-4 flex items-center justify-end pr-10"
+                    class="npb-layout-end items-center justify-end ml-4 lg:pr-10 flex-shrink-1 w-[15%] md:w-[30%] flex lg:w-1/4"
                 >
-                    <div class="npb-layout-end-time mr-6">
+                    <div class="npb-layout-end-time mr-6 hidden sm:flex">
                         <span id="npb-layout-timeupdate">0:00</span>
                         <span class="px-1">/</span>
                         <span id="npb-layout-duration">0:00</span>
                     </div>
+                    <v-btn
+                        icon="mdi-menu-up"
+                        class="block sm:hidden bg-dvs-gray-1 text-lg"
+                        density="comfortable"
+                        size="30"
+                    ></v-btn>
+
                     <!-- ANCHOR end layout-end-time --------------------------------- -->
-                    <div class="npb-layout-end-volume flex items-center">
+                    <!-- volume -->
+                    <div
+                        class="npb-layout-end-volume z-[5000] absolute top-[-24px] p-1 rounded-lg bg-dvs-gray-1 right-5 sm:right-0 sm:p-0 sm:top-0 sm:bg-transparent sm:rounded-none sm:relative sm:flex hidden items-center"
+                    >
                         <v-icon
                             :icon="
                                 state.volumeOff
@@ -369,7 +387,9 @@ export default {
                 return (stateReactive.repeat = "song");
             return (stateReactive.repeat = "playlist");
         };
-
+        const clickNav = () => {
+            useStore.togglePlayerPage();
+        };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
@@ -451,6 +471,7 @@ export default {
             timeLineHover,
             shuffle,
             setRepeat,
+            clickNav,
         };
         // !SECTION //////////////////////////////////////////////////////
     },

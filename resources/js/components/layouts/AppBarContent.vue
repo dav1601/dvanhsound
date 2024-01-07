@@ -7,7 +7,7 @@
             @click="emitToggle"
         >
         </v-btn>
-        <router-link :to="{ name: 'Home' }">
+        <router-link :to="{ name: 'Home' }" >
             <v-img
                 width="146"
                 height="44"
@@ -18,10 +18,10 @@
 
         <div
             id="dvs-app-bar-content"
-            class="flex flex-1 xl:ml-[65px] justify-between items-center"
+            class="flex flex-1 lg:ml-[65px] justify-between items-center"
         >
             <div
-                class="bg-[#282828cc] lg:flex hidden mr-8 justify-start items-center ml-8 w-[480px] relative border-solid border border-[rgba(255 , 255 ,255 , 0.15)] h-[40px] rounded-lg p-3 text-[#595656]"
+                class="bg-[#282828cc] lg:flex hidden mr-8 justify-start items-center w-[480px] ml-8 relative border-solid border border-[rgba(255 , 255 ,255 , 0.15)] h-[40px] rounded-lg p-3 text-[#595656]"
                 id="dvs-search-box"
             >
                 <v-icon icon="mdi-magnify mr-2"></v-icon>
@@ -109,7 +109,7 @@ export default {
         const storeSong = useSongPlay();
         const kw = ref(route.params.kw);
         const { isAuthenticated } = storeToRefs(auth);
-
+        const { showPlayerPage } = storeToRefs(storeSong);
         const logout = () => {
             auth.logout();
         };
@@ -129,11 +129,16 @@ export default {
         watch(
             () => kw.value,
             (newVal) => {
-                search(newVal);
-                if (route.name === "Search") {
-                    router.replace({ name: "Search", params: { kw: newVal } });
-                } else {
-                    router.push({ name: "Search", params: { kw: newVal } });
+                if (newVal) {
+                    search(newVal);
+                    if (route.name === "Search") {
+                        router.replace({
+                            name: "Search",
+                            params: { kw: newVal },
+                        });
+                    } else {
+                        router.push({ name: "Search", params: { kw: newVal } });
+                    }
                 }
             }
         );
@@ -151,6 +156,7 @@ export default {
             kw,
             nameRoute,
             emitToggle,
+            showPlayerPage,
         };
     },
 };

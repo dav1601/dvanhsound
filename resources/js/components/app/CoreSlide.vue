@@ -59,7 +59,7 @@
             <swiper
                 slidesPerView="auto"
                 :spaceBetween="10"
-                :slidesPerGroup="2"
+                :slidesPerGroup="1"
                 :modules="modules"
                 :id="'slide-' + id"
                 :key="'slide-' + id"
@@ -70,7 +70,7 @@
             <swiper
                 slidesPerView="auto"
                 :spaceBetween="10"
-                :slidesPerGroup="2"
+                :slidesPerGroup="1"
                 :modules="modules"
                 :id="'slide-ske-' + id"
                 :key="'slide-ske-' + id"
