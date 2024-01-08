@@ -8,10 +8,10 @@ export const useResponsive = defineStore({
     }),
     getters: {
         xs: (state) => {
-            return state.width < 640; // Tailwind XS breakpoint
+            return state.width < 600; // Tailwind XS breakpoint
         },
         sm: (state) => {
-            return state.width >= 640; // Tailwind SM breakpoint
+            return state.width >= 600; // Tailwind SM breakpoint
         },
         md: (state) => {
             return state.width >= 768; // Tailwind MD breakpoint

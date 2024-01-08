@@ -1,6 +1,6 @@
 <template>
     <span
-        class="text-header d-block w-full text-white leading-[38px] text-2xl truncate"
+        class="text-header block w-full text-white leading-[38px] text-2xl truncate"
     >
         {{ content }}
     </span>

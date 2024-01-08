@@ -1,7 +1,7 @@
 <template>
     <div class="highlight-tracks my-10 relative content-spacing">
-        <div class="flex justify-start items-start">
-            <div class="w-[390px] flex-shrink-1">
+        <div class="flex justify-start items-start flex-col md:flex-row">
+            <div class="w-full md:w-[200px] lg:w-[390px] flex-shrink-1">
                 <h2 class="text-2xl font-semibold text-white mb-3">
                     Kết quả hàng đầu - {{ $getPlfName(plf) }}
                 </h2>
@@ -59,11 +59,13 @@
                     class="w-full h-[220px] bg-gray-500 animate-pulse rounded-lg"
                 ></div>
             </div>
-            <div class="tracks flex-1 ml-10 overflow-hidden">
+            <div
+                class="tracks flex-1 md:ml-10 mt-4 md:mt-0 overflow-hidden w-full"
+            >
                 <h2 class="text-2xl font-semibold text-white mb-3">
                     Bài hát - {{ $getPlfName(plf) }}
                 </h2>
-                <div class="list-tracks overflow-hidden" v-if="isLoaded">
+                <div class="list-tracks overflow-hidden w-full" v-if="isLoaded">
                     <song-item
                         v-for="(item, index) in tracks"
                         :key="item"

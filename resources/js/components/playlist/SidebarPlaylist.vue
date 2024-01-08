@@ -59,9 +59,10 @@
     </v-dialog>
     <!-- content -->
     <div
-        class="sidebar-playlist mt-2 w-full flex flex-col flex-shrink-1 h-[75%]"
+        class="sidebar-playlist mt-2 w-full flex flex-col h-[88%] sm:h-[90%] flex-shrink-1 lg:h-[75%]"
     >
-        <div class="flex-shrink-1 h-[15%] mb-4">
+        <!-- flex-shrink-1 h-[15%] -->
+        <div class="mb-4">
             <v-btn
                 class="rounded-full vtf-def mx-auto mb-4 capitalize flex items-center"
                 @click="state.dialogSync = true"
@@ -77,12 +78,11 @@
             </v-btn>
         </div>
 
-        <PlfTag @change-plf="clickTag" />
+        <div class="">
+            <PlfTag @change-plf="clickTag" />
+        </div>
         <!-- list playlist -->
-        <div
-            id="listPlaylist"
-            class="flex-shrink-1 flex-1 overflow-auto custom-scroll mt-2"
-        >
+        <div id="listPlaylist" class="flex-1 overflow-auto custom-scroll mt-2">
             <div v-if="usersStore.loadedSync.value">
                 <div v-if="!isEmpty">
                     <div

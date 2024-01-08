@@ -19,7 +19,11 @@
                 </template>
 
                 <template v-slot:items>
-                    <swiper-slide v-for="itemYt in playlistYt" :key="itemYt">
+                    <swiper-slide
+                        v-for="itemYt in playlistYt"
+                        :key="itemYt"
+                        class="w-fit"
+                    >
                         <card-song
                             :item="itemYt"
                             :isLoaded="true"
@@ -34,7 +38,11 @@
                     </swiper-slide>
                 </template>
                 <template v-slot:skeleton>
-                    <swiper-slide v-for="i in 8" :key="'slide-ske-yt-' + i">
+                    <swiper-slide
+                        v-for="i in 8"
+                        :key="'slide-ske-yt-' + i"
+                        class="w-fit"
+                    >
                         <card-song :isLoaded="false"></card-song>
                     </swiper-slide>
                 </template>
@@ -51,7 +59,11 @@
                 </template>
 
                 <template v-slot:items>
-                    <swiper-slide v-for="itemSt in playlistSt" :key="itemSt">
+                    <swiper-slide
+                        v-for="itemSt in playlistSt"
+                        :key="itemSt"
+                        class="w-fit"
+                    >
                         <card-song
                             :item="itemSt"
                             :isLoaded="true"
@@ -66,7 +78,11 @@
                     </swiper-slide>
                 </template>
                 <template v-slot:skeleton>
-                    <swiper-slide v-for="i in 8" :key="'slide-ske-st-' + i">
+                    <swiper-slide
+                        v-for="i in 8"
+                        :key="'slide-ske-st-' + i"
+                        class="w-fit"
+                    >
                         <card-song :isLoaded="false"></card-song>
                     </swiper-slide>
                 </template>

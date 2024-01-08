@@ -14,7 +14,9 @@
                 tieu de
             </div>
             <div class="grid-pl-col-3 font-bold text-white">
-                {{ plf === "yt" ? "Channel" : "album" }}
+                <span class="hidden md:block">
+                    {{ plf === "yt" ? "Channel" : "album" }}
+                </span>
             </div>
             <div
                 class="grid-pl-col-4 flex justify-end font-bold text-white pr-12"

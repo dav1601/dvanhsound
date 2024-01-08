@@ -25,7 +25,7 @@
                 <router-link
                     :to="{ name: 'Home' }"
                     v-if="!activeScroll"
-                    :class="{ 'invisible': showPlayerPage }"
+                    :class="{ invisible: showPlayerPage }"
                 >
                     <v-img
                         width="146"
@@ -72,7 +72,10 @@
             :class="classAppBar"
             v-if="!hiddenAllNav"
         >
-            <AppBarContent @toggle-nav="toggleDrawer" />
+            <AppBarContent
+                @toggle-nav="toggleDrawer"
+                :showSearch="state.showSearch"
+            />
             <!-- <MainTopBar /> -->
         </v-app-bar>
 
@@ -90,7 +93,11 @@
             </div>
         </v-main>
         <!-- ANCHOR now playing bar --------------------------------- -->
-        <NowPlayingBar v-if="!hiddenAllNav" />
+        <NowPlayingBar
+            v-if="!hiddenAllNav"
+            :showVolume="state.showVol"
+            @toggle-vol="toggleVol"
+        />
     </v-layout>
 </template>
 <script>
@@ -152,6 +159,8 @@ export default {
                 ],
                 showDrawer: responsive.lg,
                 dialog: true,
+                showVol: responsive.md,
+                showSearch: responsive.lg,
             };
         };
 
@@ -187,6 +196,9 @@ export default {
                 else el.classList.remove("!overflow-y-hidden");
             }
         };
+        const toggleVol = () => {
+            stateReactive.showVol = !stateReactive.showVol;
+        };
         const scrollApp = (e) => {
             stateReactive.scrollTop = document.getElementById("html").scrollTop;
         };
@@ -197,6 +209,8 @@ export default {
             () => responsive.width,
             (newSize) => {
                 stateReactive.showDrawer = responsive.lg;
+                stateReactive.showVol = responsive.md;
+                stateReactive.showSearch = responsive.lg;
                 overflowHtml();
             }
         );
@@ -222,6 +236,7 @@ export default {
             toggleDrawer,
             permanent,
             showPlayerPage,
+            toggleVol,
         };
     },
 };

@@ -4,9 +4,11 @@
         width="100vw"
         class="!overflow-visible sm:overflow-hidden"
         fixed
-        @click.stop="clickNav"
     >
-        <div id="now-playing-bar-content" class="py-4 px-4 relative">
+        <div
+            id="now-playing-bar-content"
+            class="py-4 px-1 sm:px-2 md:px-4 relative"
+        >
             <div
                 class="npb-layout flex justify-between items-center w-full h-full"
             >
@@ -156,17 +158,12 @@
                         <span class="px-1">/</span>
                         <span id="npb-layout-duration">0:00</span>
                     </div>
-                    <v-btn
-                        icon="mdi-menu-up"
-                        class="block sm:hidden bg-dvs-gray-1 text-lg"
-                        density="comfortable"
-                        size="30"
-                    ></v-btn>
 
                     <!-- ANCHOR end layout-end-time --------------------------------- -->
                     <!-- volume -->
                     <div
-                        class="npb-layout-end-volume z-[5000] absolute top-[-24px] p-1 rounded-lg bg-dvs-gray-1 right-5 sm:right-0 sm:p-0 sm:top-0 sm:bg-transparent sm:rounded-none sm:relative sm:flex hidden items-center"
+                        class="npb-layout-end-volume z-[5000] absolute top-[-24px] p-1 rounded-lg bg-dvs-gray-1 right-5 md:right-0 md:p-0 md:top-0 md:bg-transparent md:rounded-none md:relative md:flex items-center"
+                        v-show="showVolume"
                     >
                         <v-icon
                             :icon="
@@ -187,6 +184,20 @@
                             @input="changeVolume"
                         />
                     </div>
+                    <!-- menu up -->
+                    <v-icon
+                        icon="mdi-volume-high"
+                        class="mr-2 cursor-pointer md:hidden"
+                        size="large"
+                        @click.stop="emitToggleVol"
+                    ></v-icon>
+                    <v-icon
+                        :icon="iconMenu"
+                        class="ml-2 cursor-pointer"
+                        @click.stop="clickNav"
+                        size="42"
+                    ></v-icon>
+
                     <!-- ANCHOR end layout-end-volume --------------------------------- -->
                 </div>
             </div>
@@ -194,12 +205,25 @@
     </v-bottom-navigation>
 </template>
 <script>
-import { reactive, toRef, watch, getCurrentInstance, computed } from "vue";
+import {
+    reactive,
+    toRef,
+    watch,
+    getCurrentInstance,
+    computed,
+    toRefs,
+} from "vue";
 import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
 import { notify } from "@kyvg/vue3-notification";
+
 export default {
-    setup() {
+    props: {
+        showVolume: {
+            default: true,
+        },
+    },
+    setup(props, ctx) {
         const { proxy } = getCurrentInstance();
 
         // SECTION Store //////////////////////////////////////////////////////
@@ -213,6 +237,8 @@ export default {
 
         // !SECTION End Store //////////////////////////////////////////////////////
         const useStore = useSongPlay();
+        const { showVolume } = toRefs(props);
+        const { showPlayerPage } = storeToRefs(useStore);
         // SECTION State //////////////////////////////////////////////////////
         const initData = () => {
             return {
@@ -247,6 +273,9 @@ export default {
         const renderIconPlayPause = computed(() => {
             if (useStore.isPlaying) return "mdi-pause-circle";
             if (useStore.isPaused) return "mdi-play-circle";
+        });
+        const iconMenu = computed(() => {
+            return showPlayerPage.value ? "mdi-menu-down" : "mdi-menu-up";
         });
         const renderIconRepeat = computed(() => {
             switch (stateReactive.repeat) {
@@ -390,6 +419,9 @@ export default {
         const clickNav = () => {
             useStore.togglePlayerPage();
         };
+        const emitToggleVol = () => {
+            return ctx.emit("toggle-vol");
+        };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
@@ -450,6 +482,7 @@ export default {
                 }
             }
         );
+
         // ANCHOR end volume //////////////////////////////////////////////////////
         // !SECTION End Watch //////////////////////////////////////////////////////
 
@@ -472,6 +505,8 @@ export default {
             shuffle,
             setRepeat,
             clickNav,
+            iconMenu,
+            emitToggleVol,
         };
         // !SECTION //////////////////////////////////////////////////////
     },

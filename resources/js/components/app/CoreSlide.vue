@@ -1,12 +1,12 @@
 <template>
     <div class="core-slide w-full">
         <div
-            class="flex justify-between items-center core-slide-header mb-5 flex-wrap w-full"
+            class="flex flex-col sm:flex-row justify-between items-center core-slide-header mb-5 flex-wrap w-full"
         >
-            <div class="flex-1 mr-5">
+            <div class="flex-1 mr-5 overflow-hidden">
                 <slot name="header-start"></slot>
             </div>
-            <div class="flex-grow-1 md:flex-grow-0">
+            <div class="sm:!flex-grow-0 flex-grow-1">
                 <div class="flex items-center justify-end mr-6">
                     <slot name="header-btn"></slot>
                     <v-btn
@@ -23,38 +23,7 @@
                 </div>
             </div>
         </div>
-        <!-- core slide swiper -->
-        <!-- :breakpoints="{
-                    '320': {
-                        slidesPerView: 1,
-                        slidesGroup: 1,
-                        spaceBetween: 10,
-                    },
-                    '375': {
-                        slidesPerView: 2,
-                        slidesGroup: 2,
-                    },
-                    '567': {
-                        slidesPerView: 3,
-                        slidesGroup: 3,
-                    },
-                    '768': {
-                        slidesPerView: 3,
-                        slidesGroup: 3,
-                    },
-                    '1024': {
-                        slidesPerView: 5,
-                        slidesGroup: 4,
-                    },
-                    '1280': {
-                        slidesPerView: 6,
-                        slidesGroup: 4,
-                    },
-                    '1536': {
-                        slidesPerView: 8,
-                        slidesGroup: 4,
-                    },
-                }" -->
+
         <div class="core-slide-content">
             <swiper
                 slidesPerView="auto"

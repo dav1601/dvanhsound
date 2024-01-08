@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer components {
+    .song-item-col-1 {
+        @apply w-[10%] max-w-[10%] sm:w-[5%] sm:max-w-[5%];
+    }
+    .song-item-col-2 {
+        @apply w-[60%] max-w-[60%] sm:w-[52%] sm:max-w-[52%];
+    }
+    .song-item-col-3 {
+        @apply sm:w-[25%] sm:max-w-[25%];
+    }
+    .song-item-col-4 {
+        @apply w-[30%] max-w-[30%] sm:w-[18%] sm:max-w-[18%];
+    }
+}

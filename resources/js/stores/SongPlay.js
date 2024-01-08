@@ -170,7 +170,14 @@ export const useSongPlay = defineStore({
             plf = "yt",
             playlist = { id: null, items: [] }
         ) {
-            if (this.isActiveSong(id)) return this.playOrPause();
+            if (this.isActiveSong(id)) {
+                if (isEmpty(this.currentPlaylistItems)) {
+                    this.currentPlaylistItems = playlist.items;
+                    this.storageData();
+                }
+                return this.playOrPause();
+            }
+            console.log(this.currentPlaylistItems);
             this.loadedSong = false;
             let api;
             switch (plf) {
@@ -282,7 +289,10 @@ export const useSongPlay = defineStore({
                 }
             }
             const song = this.currentPlaylistItems[index];
-            this.loadSong(song.id, true, song.plf);
+            this.loadSong(song.id, true, song.plf, {
+                id: this.currentPlaylistId,
+                items: this.currentPlaylistItems,
+            });
         },
         updateStatusCurrentSong(status) {
             this.currentSong.status = status;

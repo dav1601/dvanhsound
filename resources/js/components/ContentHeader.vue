@@ -1,14 +1,14 @@
 <template lang="">
     <div
         id="contentHeader"
-        class="content-spacing h-[340px] max-h-[400px] pb-6 relative flex"
+        class="content-spacing px-3 md:!px-[30px] h-[340px] max-h-[400px] pb-6 relative flex"
     >
         <div
-            class="w-full h-full flex justify-start items-end flex-1"
+            class="w-full h-full flex justify-start items-center mt-10 sm:!mt-0 sm:items-end flex-1"
             v-if="isLoaded"
         >
             <img
-                class="rounded-md w-[232px] h-[232px] object-cover object-center drop-shadow-lg"
+                class="rounded-md w-[160px] h-[160px] sm:w-[232px] sm:h-[232px] object-cover object-center drop-shadow-lg"
                 :src="image"
                 id="content-header-image"
             />
@@ -16,7 +16,7 @@
             <div class="content flex flex-column justify-end ml-6 flex-1">
                 <span class="font-semibold">{{ type }}</span>
                 <h1
-                    class="mt-4 mb-3 text-7xl font-bold"
+                    class="mt-4 mb-3 text-xl sm:text-2xl md:4xl lg:6xl xl:7xl font-bold line-clamp-2"
                     id="content-header-title"
                 >
                     {{ title }}

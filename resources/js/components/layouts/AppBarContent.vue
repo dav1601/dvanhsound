@@ -7,7 +7,7 @@
             @click="emitToggle"
         >
         </v-btn>
-        <router-link :to="{ name: 'Home' }" >
+        <router-link :to="{ name: 'Home' }">
             <v-img
                 width="146"
                 height="44"
@@ -20,18 +20,7 @@
             id="dvs-app-bar-content"
             class="flex flex-1 lg:ml-[65px] justify-between items-center"
         >
-            <div
-                class="bg-[#282828cc] lg:flex hidden mr-8 justify-start items-center w-[480px] ml-8 relative border-solid border border-[rgba(255 , 255 ,255 , 0.15)] h-[40px] rounded-lg p-3 text-[#595656]"
-                id="dvs-search-box"
-            >
-                <v-icon icon="mdi-magnify mr-2"></v-icon>
-                <input
-                    type="text"
-                    class="flex-1 text-sm font-semibold text-zinc-300 focus:!text-white"
-                    placeholder="Tìm bài hát, nghệ sĩ, podcast..."
-                    v-model="kw"
-                />
-            </div>
+            <SearchInput :show="showSearch" />
             <div class="lg:hidden"></div>
 
             <div class="flex justify-end items-center mr-10">
@@ -95,66 +84,32 @@
 import { useAuthStore } from "@/stores/AuthStore";
 import { storeToRefs } from "pinia";
 import ListItem from "@/components/app/ListItem.vue";
-import { useRoute, useRouter } from "vue-router";
-import { ref, watch, computed } from "vue";
-import { debounce } from "lodash";
+import SearchInput from "@/components/app/SearchInput.vue";
 import { useSongPlay } from "@/stores/SongPlay";
 export default {
-    components: { ListItem },
+    components: { ListItem, SearchInput },
+    props: {
+        showSearch: {
+            default: true,
+        },
+    },
     setup(props, ctx) {
         const auth = useAuthStore();
-        const route = useRoute();
-        const nameRoute = ref(route.name);
-        const router = useRouter();
         const storeSong = useSongPlay();
-        const kw = ref(route.params.kw);
         const { isAuthenticated } = storeToRefs(auth);
         const { showPlayerPage } = storeToRefs(storeSong);
         const logout = () => {
             auth.logout();
         };
-        const search = debounce((newKw) => {
-            storeSong.search(newKw);
-        }, 300);
+
         const emitToggle = () => {
             return ctx.emit("toggle-nav");
         };
-        watch(
-            () => route.params.kw,
-            (newVal) => {
-                console.log(newVal);
-                if (route.name === "Search") kw.value = newVal;
-            }
-        );
-        watch(
-            () => kw.value,
-            (newVal) => {
-                if (newVal) {
-                    search(newVal);
-                    if (route.name === "Search") {
-                        router.replace({
-                            name: "Search",
-                            params: { kw: newVal },
-                        });
-                    } else {
-                        router.push({ name: "Search", params: { kw: newVal } });
-                    }
-                }
-            }
-        );
-        watch(
-            () => route.name,
-            (newVal) => {
-                if (newVal !== "Search") {
-                    kw.value = "";
-                }
-            }
-        );
+
         return {
             isAuthenticated,
             logout,
-            kw,
-            nameRoute,
+
             emitToggle,
             showPlayerPage,
         };

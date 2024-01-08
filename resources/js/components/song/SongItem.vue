@@ -5,7 +5,7 @@
         @mouseleave="setHover(false)"
         @dblclick.stop="dbClick"
     >
-        <div class="grid-pl-col-1 overflow-hidden">
+        <div class="song-item-col-1 overflow-hidden flex-shrink-1">
             <!-- index -->
             <div
                 class="w-full h-full flex items-center justify-center"
@@ -35,7 +35,9 @@
                 v-else
             ></div>
         </div>
-        <div class="grid-pl-col-2 ml-2 flex items-center justify-start">
+        <div
+            class="grid-pl-col-2 song-item-col-2 ml-2 flex items-center justify-start"
+        >
             <v-img
                 width="40"
                 height="40"
@@ -79,13 +81,15 @@
                 ></div>
             </div>
         </div>
-        <div class="grid-pl-col-3">
+        <div
+            class="grid-pl-col-3 song-item-col-3 hidden sm:block overflow-hidden truncate"
+        >
             <!-- album -->
             <span
                 v-if="isLoaded"
-                class="text-sm font-normal text-gray-500 truncate hidden sm:block"
+                class="text-sm font-normal w-full text-gray-500"
             >
-                {{ albumOrChannel }}
+                {{ state.info.description }}
             </span>
             <!-- ske -->
             <div
@@ -93,8 +97,10 @@
                 class="w-[100%] h-[20px] rounded-xl bg-gray-500 animate-pulse"
             ></div>
         </div>
-        <!-- duration actions -->
-        <div class="grid-pl-col-4 flex justify-end pr-2 overflow-hidden">
+        <!-- duration actions col -4-->
+        <div
+            class="grid-pl-col-4 song-item-col-4 flex justify-end pr-2 overflow-hidden"
+        >
             <div
                 class="w-full h-full flex items-center justify-end"
                 v-if="isLoaded"

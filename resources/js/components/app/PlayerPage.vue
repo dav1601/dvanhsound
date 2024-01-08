@@ -1,16 +1,23 @@
 <template>
     <div
-        class="player-page fixed top-0 left-0 w-screen h-screen pl-0 lg:!pl-nav-left pr-0 pt-nav-top pb-nav-bottom bg-dvs-dark z-10 visible"
+        class="player-page fixed top-0 left-0 w-screen h-screen pl-0 lg:!pl-nav-left pt-nav-top pb-nav-bottom bg-dvs-dark z-10 visible"
         :style="translate"
     >
         <div
-            class="player-page-content pt-[64px] px-[30px] xl:px-[96px] pb-0 w-full h-full flex flex-col xl:flex-row items-center justify-start"
+            class="player-page-content pt-[30px] md:pt-[64px] px-[30px] xl:pl-30 xl:pr-30 pb-0 w-full h-full flex flex-col xl:flex-row items-center justify-start"
         >
-            <div class="pp-content-thumb w-full mb-2 xl:w-auto flex-1">
-                <v-img cover :src="image"></v-img>
+            <div
+                class="pp-content-thumb w-full flex items-center h-full mb-2 flex-1"
+            >
+                <v-img
+                    :src="image"
+                    width="100%"
+                    class="aspect-auto xl:aspect-square rounded-lg shadow-lg"
+                    cover
+                ></v-img>
             </div>
             <div
-                class="pp-content-list w-full  xl:ml-[100px] h-full overflow-y-auto overflow-x-hidden custom-scroll"
+                class="pp-content-list mt-5 xl:mt-0 pr-2 xl:ml-[56px] w-full xl:max-w-[500px] 2xl:max-w-[800px] h-full overflow-y-auto overflow-x-hidden custom-scroll"
             >
                 <song-item
                     v-for="(item, index) in currentPlaylistItems"
@@ -50,7 +57,7 @@ export default {
                 return currentSong.value.info.images.maxres.url;
             return "";
         });
-        console.log(image.value);
+
         watch(
             () => showPlayerPage.value,
             (show) => {
