@@ -5,6 +5,8 @@ import Cookies from "js-cookie";
 import { handleApiError } from "@/api/ErrorHandler";
 const axiosInstance = axios.create({
     baseURL: baseUrl,
+    withCredentials: true ,
+    withXSRFToken: true
 });
 axiosInstance.interceptors.request.use(
     (config) => {

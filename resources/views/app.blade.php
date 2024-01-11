@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" id="html" >
+<html lang="en" id="html">
 
 <head>
     <meta charset="UTF-8">
@@ -17,6 +17,7 @@
 <body>
 
     <div id="app"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.4.0/socket.io.min.js"></script>
     @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
 
 </body>

@@ -1,12 +1,15 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\SpotifyController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\YoutubeController;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\SpotifyController;
+use App\Http\Controllers\Api\YoutubeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +39,17 @@ Route::controller(UserController::class)->as("users.")->prefix('users/')->group(
     Route::get("sync/playlist", 'syncPlaylist')->name("sync_playlist");
     Route::get("search/{kw?}", 'search')->name("search");
     Route::post("sync/save", "saveSync")->middleware('auth:sanctum')->name("save_sync");
+    Route::prefix("room/")->group(function () {
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post("create", "createRoom");
+            Route::post("edit/{uuid}", "editRoom");
+            Route::post("delete/{uuid}", "deleteRoom");
+        });
+        Route::get("list", "getRooms");
+        Route::post("add/tracks", 'addTracksRoom');
+        Route::post("delete/tracks", 'deleteTracksRoom');
+        Route::post('check/membership', 'checkMembership');
+    });
 });
 
 Route::controller(YoutubeController::class)->as("yt.")->prefix('youtube/')->group(function () {
@@ -58,4 +72,22 @@ Route::controller(SpotifyController::class)->as("st.")->prefix('spotify/')->grou
     Route::prefix("track/")->as("track.")->group(function () {
         Route::get("{id}", "getTrack")->name("audio");
     });
+});
+
+// Route::middleware('auth:sanctum')->post('/broadcasting/auth', function (Request $request) {
+
+//     return true;
+// });
+Route::middleware('auth:sanctum')->post('/broadcasting/auth', function (Request $request) {
+    $channel_name = $request->channel_name;
+    Log::debug($channel_name);
+    Log::debug($request->user());
+
+
+    return response()->json([
+        'channel_data' => [
+            'user_id' => 8,
+            'user_info' => $request->user(),
+        ],
+    ]);
 });

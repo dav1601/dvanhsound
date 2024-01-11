@@ -7,8 +7,6 @@
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
-
-
 // window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /**
@@ -17,8 +15,25 @@
  * allows your team to easily build robust real-time web applications.
  */
 
-// import Echo from 'laravel-echo';
-
+import Echo from "laravel-echo";
+import Cookies from "js-cookie";
+import RepositoryBase from "./repositories/RepositoryBase";
+import axios from "axios";
+const token = Cookies.get("dvanhsound_token");
+axios.defaults.withCredentials = true;
+axios.defaults.withXSRFToken = true;
+axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+window.Echo = new Echo({
+    broadcaster: "socket.io",
+    host: `${window.location.protocol}//${window.location.hostname}:6002`,
+    auth: {
+        headers: {
+            Authorization: "Bearer " + Cookies.get("dvanhsound_token"),
+            withCredentials: true,
+            withXSRFToken: true,
+        },
+    },
+});
 // import Pusher from 'pusher-js';
 // window.Pusher = Pusher;
 

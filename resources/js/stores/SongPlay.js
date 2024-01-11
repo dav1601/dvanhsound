@@ -353,7 +353,13 @@ export const useSongPlay = defineStore({
             };
 
             if (isEmpty(data)) return info;
-
+            if (type === "room") {
+                info.title = data.title;
+                info.description = data.description;
+                info.images.push(data.image);
+                info.id = data.uuid;
+                return info;
+            }
             switch (plf) {
                 case "st":
                     info.images = this.findKey(data, "images").value;

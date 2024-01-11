@@ -1,5 +1,6 @@
 import RepositoryBase from "./RepositoryBase";
 const resoure = "users";
+const room = resoure + "/room";
 const sync = resoure + "/sync";
 export default {
     syncPlaylist(listId = {}, params = {}) {
@@ -17,6 +18,16 @@ export default {
     search(kw, params = {}) {
         return RepositoryBase.get(`${resoure}/search/` + kw, {
             params: params,
+        });
+    },
+    rooms(params) {
+        return RepositoryBase.get(`${room}/list`, {
+            params: params,
+        });
+    },
+    isMembership(roomId) {
+        return RepositoryBase.post(`${room}/check/membership`, {
+            roomId: roomId,
         });
     },
 };

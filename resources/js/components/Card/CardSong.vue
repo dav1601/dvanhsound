@@ -8,9 +8,16 @@
         <v-btn
             :icon="renderIcon"
             class="bg-[#1db954] text-black absolute right-[26px] bottom-[106px] z-10 hidden card-song-play animate__animated"
-            v-if="isLoaded"
+            v-if="isLoaded && !isRoom"
             @click.stop="clickPlay"
         ></v-btn>
+        <v-img
+            v-if="isRoom && !isRoomPublic"
+            :width="32"
+            :height="32"
+            class="absolute bottom-[90px] right-[10px] z-10"
+            src="https://res.cloudinary.com/vanh-tech/image/upload/v1704985305/dvanhsound/images/lock_eumnlc.png"
+        ></v-img>
         <v-img
             :src="cardImage"
             height="150"
@@ -105,7 +112,15 @@ export default {
         const currSongLoading = computed(() => {
             return !storeSongPlay.loadedSong && isActiveSong.value;
         });
-
+        const isRoom = computed(() => {
+            return props.type === "room";
+        });
+        const isRoomPublic = computed(() => {
+            if (props.type === "room" && isLoaded.value) {
+                return props.item.status === "public";
+            }
+            return false;
+        });
         const renderIcon = computed(() => {
             if (storeSongPlay.isPaused) return "mdi-play";
             if (storeSongPlay.isPlaying && isActiveSong.value)
@@ -116,6 +131,11 @@ export default {
         const cardImage = computed(() => {
             let url = "";
             if (isLoaded) {
+                if (props.type === "room")
+                    return stateReactive.info.images[0]
+                        ? stateReactive.info.images[0]
+                        : "https://res.cloudinary.com/vanh-tech/image/upload/v1704983327/dvanhsound/images/togethertogether_eral5g.jpg";
+
                 switch (props.plf) {
                     case "st":
                         if (stateReactive.info.images[1])
@@ -204,6 +224,8 @@ export default {
             isActiveSong,
             currSongLoading,
             clickCard,
+            isRoom,
+            isRoomPublic,
         };
     },
 };

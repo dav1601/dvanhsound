@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Room;
 use App\Models\User;
+use App\Models\Members;
 use App\Traits\Responser;
 use Aerni\Spotify\Spotify;
 use Illuminate\Http\Request;
@@ -81,7 +83,44 @@ class UserController extends Controller
             $search['st'] = collect($search['st'])->toArray();
             return $this->successResponse($search);
         } catch (\Exception $e) {
-            return $this->errorResponse("Xin lỗi vì sự cố máy chủ!");
+            return $this->errorResponse();
+        }
+    }
+    // ANCHOR list rooms //////////////////////////////////////////////////////
+    public function getRooms(Request $request)
+    {
+        $limit = $request->has("limit") ? (int) $request->get("limit") : false;
+        try {
+            $rooms = Room::with("members");
+            if ($limit) {
+                $rooms = $rooms->limit($limit);
+            }
+            $rooms = $rooms->orderBy("id", 'asc')->get();
+            return $this->successResponse($rooms);
+        } catch (\Exception $e) {
+            return $this->errorResponse();
+        }
+    }
+    public function checkMembership(Request $request)
+    {
+        $room_id = $request->roomId;
+
+        try {
+            $room = Room::where("uuid", "LIKE", $room_id)->firstOrFail();
+            if ($room->isPrivate()) {
+                $user = auth("sanctum")->user();
+                if (!$user) {
+                    return $this->errorResponse("", 401);
+                }
+                $isMember = Members::where("room_id", $room->id)->where("user_id", $user->id)->first();
+                $allow = 0;
+                if ($isMember || $room->user_id == $user->id) {
+                    $allow = 1;
+                }
+                return $this->successResponse(['allow' => $allow]);
+            }
+        } catch (\Exception $e) {
+            return $this->errorResponse();
         }
     }
 }

@@ -128,6 +128,10 @@ export default {
         PlayerPage,
     },
     setup() {
+        Echo.join(`user`).here(users => {
+            console.log(users);
+        });
+
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         const route = useRoute();
         const auth = useAuthStore();

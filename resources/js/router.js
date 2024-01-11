@@ -1,15 +1,26 @@
+import * as vuerouter from "vue-router";
+import middlewarePipeline from "@/middlewarePipeline.js";
 import Playlist from "@/pages/Playlist.vue";
 import TheLogin from "@/pages/TheLogin.vue";
 import TheRegister from "@/pages/TheRegister.vue";
 import Home from "@/pages/Home.vue";
 import PageNotFound from "@/pages/errors/PageNotFound.vue";
 import Search from "@/pages/Search.vue";
+import MusicRoom from "@/pages/MusicRoom.vue";
+import membership from "@/middleware/membership";
 const routes = [
     {
         path: "/",
         component: Home,
         name: "Home",
         props: true,
+    },
+    {
+        path: "/room/:id",
+        component: MusicRoom,
+        name: "Room",
+        props: true,
+        meta: { middleware: [membership] },
     },
     {
         path: "/playlist/:plf/:id",
@@ -33,10 +44,27 @@ const routes = [
         path: "/search/:kw?",
         component: Search,
         name: "Search",
-        
     },
 
     { path: "/:pathMatch(.*)*", component: PageNotFound, name: "404" },
 ];
+const router = vuerouter.createRouter({
+    // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
+    history: vuerouter.createWebHistory(),
+    routes,
+    // short for `routes: routes`
+});
+router.beforeEach((to, from, next) => {
+    const middleware = to.meta.middleware;
+    const context = { to, from, next };
 
-export default routes;
+    if (!middleware) {
+        return next();
+    }
+
+    return middleware[0]({
+        ...context,
+        next: middlewarePipeline(context, middleware, 1),
+    });
+});
+export default router;

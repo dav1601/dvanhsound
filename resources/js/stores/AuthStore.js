@@ -5,8 +5,6 @@ import { notify } from "@kyvg/vue3-notification";
 import Cookies from "js-cookie";
 import { useUsers } from "@/stores/Users";
 
-const api = RepositoryBase;
-
 export const useAuthStore = defineStore({
     id: "Auth",
     state: () => ({
@@ -22,8 +20,8 @@ export const useAuthStore = defineStore({
         login(email, password) {
             this.isLoading = true;
             this.validator = [];
-            api.get(`sanctum/csrf-cookie`).then((res) => {
-                api.post("/login", {
+            RepositoryBase.get(`sanctum/csrf-cookie`).then((res) => {
+                RepositoryBase.post("/login", {
                     email: email,
                     password: password,
                 })
@@ -32,7 +30,7 @@ export const useAuthStore = defineStore({
                         Cookies.set("dvanhsound_token", data.token, {
                             expires: 365,
                         });
-                        await this.fetchUserInfo({ name: "Home" }, true);
+                        await this.fetchUserInfo(true, true);
                     })
                     .catch((err) => {
                         this.handleErroResponse(err);
@@ -43,13 +41,12 @@ export const useAuthStore = defineStore({
         register(name, email, password) {
             this.isLoading = true;
             this.validator = [];
-            api.get(`sanctum/csrf-cookie`).then((res) => {
-                return api
-                    .post("/register", {
-                        name: name,
-                        email: email,
-                        password: password,
-                    })
+            RepositoryBase.get(`sanctum/csrf-cookie`).then((res) => {
+                return RepositoryBase.post("/register", {
+                    name: name,
+                    email: email,
+                    password: password,
+                })
                     .then((res) => {
                         this.isLoading = false;
                         this.login(email, password);
@@ -61,7 +58,7 @@ export const useAuthStore = defineStore({
         },
 
         logout() {
-            api.post("/logout")
+            RepositoryBase.post("/logout")
                 .then((res) => {
                     this.clearUser();
                 })
@@ -70,21 +67,20 @@ export const useAuthStore = defineStore({
                 });
         },
 
-        fetchUserInfo(to = {}, loginAction = false) {
+        fetchUserInfo(fromLogin = false, loginAction = false) {
             const user = useUsers();
             const token = Cookies.get("dvanhsound_token");
             if (!token && !loginAction) {
                 return user.initUser(null);
             }
-            return api
-                .get("/user")
+            return RepositoryBase.get("/user")
                 .then((res) => {
                     this.isLoading = false;
                     const { data } = res.data;
                     this.setUser(data.user);
                     user.initUser(data.user);
-                    if (to) {
-                        this.$router.push(to);
+                    if (fromLogin) {
+                        this.$router.push({ name: "Home" });
                     }
                 })
                 .catch((err) => {
