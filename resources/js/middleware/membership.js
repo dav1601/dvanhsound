@@ -1,19 +1,19 @@
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
-
+import { useErrors } from "@/stores/ErrorStore";
+import router from "@/router.js";
 export default function membership({ to, from, next }) {
     const api = RepositoryFactory.get("user");
-    api.isMembership(to.params.id)
-        .then((res) => {
-            const { data } = res.data;
-            const allow = data.allow;
+    const store = useErrors();
 
-            if (allow === 0) {
-                return next({ name: "Home" });
-            }
+    api.isMembership(to.params.id).then((res) => {
+        const { data } = res.data;
+        const allow = data.allow;
 
-            return next();
-        })
-        .catch((err) => {
-            return next({ name: "Home" });
-        });
+        if (allow === 0) {
+            store.setError("Bạn không có quyền truy cập vào room này");
+            return next(false);
+        }
+
+        return next();
+    });
 }

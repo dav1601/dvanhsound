@@ -90,8 +90,9 @@ class UserController extends Controller
     public function getRooms(Request $request)
     {
         $limit = $request->has("limit") ? (int) $request->get("limit") : false;
+
         try {
-            $rooms = Room::with("members");
+            $rooms = new Room();
             if ($limit) {
                 $rooms = $rooms->limit($limit);
             }
@@ -104,21 +105,30 @@ class UserController extends Controller
     public function checkMembership(Request $request)
     {
         $room_id = $request->roomId;
-
+        $allow = 0;
         try {
+            $user = $request->user();
             $room = Room::where("uuid", "LIKE", $room_id)->firstOrFail();
             if ($room->isPrivate()) {
-                $user = auth("sanctum")->user();
-                if (!$user) {
-                    return $this->errorResponse("", 401);
-                }
+
                 $isMember = Members::where("room_id", $room->id)->where("user_id", $user->id)->first();
-                $allow = 0;
                 if ($isMember || $room->user_id == $user->id) {
                     $allow = 1;
                 }
-                return $this->successResponse(['allow' => $allow]);
+            } else {
+                $allow = 1;
             }
+            return $this->successResponse(['allow' => $allow]);
+        } catch (\Exception $e) {
+            return $this->errorResponse();
+        }
+    }
+    // ////////////////////////////
+    public function getRoom($id, Request $request)
+    {
+        try {
+            $room = Room::with(['members', 'tracks', 'messages'])->where("uuid", $id)->first();
+            return $this->successResponse($room);
         } catch (\Exception $e) {
             return $this->errorResponse();
         }

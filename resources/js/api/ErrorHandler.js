@@ -1,30 +1,26 @@
 // apiErrorHandler.js
-import { notify } from "@kyvg/vue3-notification";
+
 import router from "@/router";
+import { useErrors } from "@/stores/ErrorStore";
 export const handleApiError = (err) => {
+    const storeError = useErrors();
     const response = err.response;
     const data = response.data;
     let message = data.message;
-    const code = data.status;
+    const code = response.status;
     switch (code) {
         case 401:
             return router.push({ name: "Login" });
         case 404:
-            message = "Không thể tìm thấy tài nguyên được yêu cầu.";
+            message = "Không tìm thấy dữ liệu";
             break;
         case 403:
             message = "Không có quyền truy cập";
             break;
         default:
-            message = "Một lỗi xảy ra trên máy chủ khi xử lý yêu cầu.";
+            message = "Lỗi máy chủ";
             break;
     }
-    if (message)
-        return notify({
-            title: "Lỗi",
-            text: message,
-            type: "error",
-            timeout: 5000,
-        });
-    return true;
+    console.log(err);
+    return storeError.setError(message);
 };

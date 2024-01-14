@@ -65,8 +65,24 @@ export const useSongPlay = defineStore({
                 state.currentSong.status === "paused"
             );
         },
+        hasSong: (state) => {
+            return state.currentSong.el;
+        },
     },
     actions: {
+        resetCurrent() {
+            this.loadedSong = false;
+            this.loadedPlaylistItems = false;
+            this.currentPlaylistItems = [];
+            this.playlistId = null;
+            this.currentSong = {
+                status: "paused",
+                el: null,
+                data: {},
+                info: {},
+                progress: 0,
+            };
+        },
         // ANCHOR btn play //////////////////////////////////////////////////////
         togglePlayerPage() {
             this.showPlayerPage = !this.showPlayerPage;
@@ -243,6 +259,7 @@ export const useSongPlay = defineStore({
             this.playSong();
         },
         playSong() {
+            if (!this.hasSong) return;
             this.currentSong.status = "playing";
             this.currentSong.el.play();
         },
@@ -251,6 +268,7 @@ export const useSongPlay = defineStore({
             this.pauseSong();
         },
         pauseSong() {
+            if (!this.hasSong) return;
             this.currentSong.status = "paused";
             this.currentSong.el.pause();
         },

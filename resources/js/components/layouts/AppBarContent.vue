@@ -16,67 +16,71 @@
             ></v-img>
         </router-link>
 
-        <div
-            id="dvs-app-bar-content"
-            class="flex flex-1 lg:ml-[65px] justify-between items-center"
-        >
-            <SearchInput :show="showSearch" />
-            <div class="lg:hidden"></div>
+        <div id="dvs-app-bar-content" class="flex-1 lg:ml-[65px]">
+            <div class="w-full h-full justify-between items-center flex">
+                <SearchInput :show="showSearch" />
+                <div class="lg:hidden"></div>
 
-            <div class="flex justify-end items-center mr-10">
-                <v-btn
-                    density="comfortable"
-                    icon="mdi-magnify"
-                    :to="{ name: 'Search' }"
-                    class="mr-2 lg:hidden bg-dvs-gray-1"
-                >
-                </v-btn>
-                <v-btn
-                    class="capitalize rounded-full text-center text-sm dvs-dark-bg hidden md:flex"
-                    prepend-icon="mdi-download-circle-outline"
-                >
-                    <span class="mt-1"> cai dat ung dung</span>
-                </v-btn>
-                <v-btn
-                    density="comfortable"
-                    class="dvs-dark-bg md:hidden"
-                    icon="mdi-download-circle-outline"
-                >
-                </v-btn>
-                <!-- menu -->
-                <v-menu transition="slide-x-transition" v-if="isAuthenticated">
-                    <template v-slot:activator="{ props }">
+                <div class="flex justify-end items-center mr-10">
+                    <v-btn
+                        density="comfortable"
+                        icon="mdi-magnify"
+                        :to="{ name: 'Search' }"
+                        class="mr-2 lg:hidden bg-dvs-gray-1"
+                    >
+                    </v-btn>
+                    <v-btn
+                        class="capitalize rounded-full text-center text-sm dvs-dark-bg hidden md:flex"
+                        prepend-icon="mdi-download-circle-outline"
+                    >
+                        <span class="mt-1"> cai dat ung dung</span>
+                    </v-btn>
+                    <v-btn
+                        density="comfortable"
+                        class="dvs-dark-bg md:hidden"
+                        icon="mdi-download-circle-outline"
+                    >
+                    </v-btn>
+                    <!-- menu -->
+                    <v-menu
+                        transition="slide-x-transition"
+                        v-if="isAuthenticated"
+                    >
+                        <template v-slot:activator="{ props }">
+                            <v-btn
+                                density="comfortable"
+                                class="dvs-dark-bg ml-2 md:ml-4"
+                                icon="mdi-account-outline"
+                                v-bind="props"
+                            >
+                            </v-btn>
+                        </template>
+                        <v-list class="w-[200px] mt-3">
+                            <list-item
+                                icon="mdi-logout"
+                                title="Đăng Xuất"
+                                class="h-[40px]"
+                                @click="logout"
+                            ></list-item>
+                        </v-list>
+                    </v-menu>
+                    <!-- login  -->
+                    <div class="flex items-center" v-else>
                         <v-btn
-                            density="comfortable"
-                            class="dvs-dark-bg ml-2 md:ml-4"
-                            icon="mdi-account-outline"
-                            v-bind="props"
+                            class="capitalize rounded-full mx-4 text-center text-sm dvs-dark-bg"
+                            :to="{ name: 'Register' }"
+                            >Đăng ký</v-btn
                         >
-                        </v-btn>
-                    </template>
-                    <v-list class="w-[200px] mt-3">
-                        <list-item
-                            icon="mdi-logout"
-                            title="Đăng Xuất"
-                            class="h-[40px]"
-                            @click="logout"
-                        ></list-item>
-                    </v-list>
-                </v-menu>
-                <!-- login  -->
-                <div class="flex items-center" v-else>
-                    <v-btn
-                        class="capitalize rounded-full mx-4 text-center text-sm dvs-dark-bg"
-                        :to="{ name: 'Register' }"
-                        >Đăng ký</v-btn
-                    >
-                    <v-btn
-                        class="capitalize rounded-full text-center text-sm dvs-dark-bg"
-                        :to="{ name: 'Login' }"
-                        >Đăng nhập</v-btn
-                    >
+                        <v-btn
+                            class="capitalize rounded-full text-center text-sm dvs-dark-bg"
+                            :to="{ name: 'Login' }"
+                            >Đăng nhập</v-btn
+                        >
+                    </div>
                 </div>
+                <!-- -------- -->
             </div>
+            <!--  -------  -->
         </div>
     </div>
 </template>
@@ -85,7 +89,6 @@ import { useAuthStore } from "@/stores/AuthStore";
 import { storeToRefs } from "pinia";
 import ListItem from "@/components/app/ListItem.vue";
 import SearchInput from "@/components/app/SearchInput.vue";
-import { useSongPlay } from "@/stores/SongPlay";
 export default {
     components: { ListItem, SearchInput },
     props: {
@@ -95,9 +98,9 @@ export default {
     },
     setup(props, ctx) {
         const auth = useAuthStore();
-        const storeSong = useSongPlay();
+
         const { isAuthenticated } = storeToRefs(auth);
-        const { showPlayerPage } = storeToRefs(storeSong);
+
         const logout = () => {
             auth.logout();
         };
@@ -109,9 +112,8 @@ export default {
         return {
             isAuthenticated,
             logout,
-
             emitToggle,
-            showPlayerPage,
+
         };
     },
 };

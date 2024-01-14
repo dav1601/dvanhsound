@@ -1,5 +1,12 @@
 <template>
     <notifications position="top center" :speed="500" :duration="4000" />
+    <v-progress-linear
+        color="#1db954"
+        indeterminate
+        :height="4"
+        class="fixed top-0 left-0 w-full z-[50000]"
+        v-if="routerLoading"
+    ></v-progress-linear>
     <PlayerPage />
     <v-layout class="rounded" v-scroll="scrollApp" id="dvs-layout-app">
         <!-- ANCHOR left sidebar --------------------------------- -->
@@ -20,8 +27,6 @@
             <div
                 class="h-full flex flex-col justify-start items-start mx-2 overflow-hidden"
             >
-                <!-- ANCHOR logo --------------------------------- -->
-                <!-- ANCHOR list main --------------------------------- -->
                 <router-link
                     :to="{ name: 'Home' }"
                     v-if="!activeScroll"
@@ -58,7 +63,7 @@
                 <v-divider
                     class="mb-2 w-full flex-shrink-1 h-[10%]"
                 ></v-divider>
-                <!-- sidebar playlist -->
+                <!-- ANCHOR sidebar playlist -->
                 <SidebarPlaylist />
                 <!-- list playlist -->
             </div>
@@ -94,7 +99,7 @@
         </v-main>
         <!-- ANCHOR now playing bar --------------------------------- -->
         <NowPlayingBar
-            v-if="!hiddenAllNav"
+            v-show="!hiddenAllNav && hasSong"
             :showVolume="state.showVol"
             @toggle-vol="toggleVol"
         />
@@ -128,14 +133,13 @@ export default {
         PlayerPage,
     },
     setup() {
-        Echo.join(`user`).here(users => {
-            console.log(users);
-        });
+
 
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         const route = useRoute();
         const auth = useAuthStore();
-        const { showPlayerPage } = storeToRefs(useSongPlay());
+        const songPlay = useSongPlay();
+        const { showPlayerPage, hasSong } = storeToRefs(songPlay);
         const responsive = useResponsive();
         const handleResize = () => {
             responsive.width = window.innerWidth;
@@ -191,6 +195,9 @@ export default {
         const activeScroll = computed(() => {
             stateReactive.scrollTop > 10;
         });
+        const routerLoading = computed(() => {
+            return responsive.routerLoading;
+        });
         // SECTION Store //////////////////////////////////////////////////////
         const overflowHtml = () => {
             const el = document.getElementsByTagName("html")[0];
@@ -230,6 +237,14 @@ export default {
                 overflowHtml();
             }
         );
+        watch(
+            () => hiddenAllNav.value,
+            (hidden) => {
+                if (hidden) {
+                    songPlay.pauseSong();
+                }
+            }
+        );
         return {
             scrollApp,
             classAppBar,
@@ -241,6 +256,8 @@ export default {
             permanent,
             showPlayerPage,
             toggleVol,
+            hasSong,
+            routerLoading,
         };
     },
 };

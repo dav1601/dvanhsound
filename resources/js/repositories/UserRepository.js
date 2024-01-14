@@ -25,6 +25,11 @@ export default {
             params: params,
         });
     },
+    loadRoom(id, params) {
+        return RepositoryBase.get(`${room}/data/${id}`, {
+            params: params,
+        });
+    },
     isMembership(roomId) {
         return RepositoryBase.post(`${room}/check/membership`, {
             roomId: roomId,

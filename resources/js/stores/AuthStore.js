@@ -30,7 +30,7 @@ export const useAuthStore = defineStore({
                         Cookies.set("dvanhsound_token", data.token, {
                             expires: 365,
                         });
-                        await this.fetchUserInfo(true, true);
+                        await this.fetchUserInfo(true);
                     })
                     .catch((err) => {
                         this.handleErroResponse(err);
@@ -67,7 +67,7 @@ export const useAuthStore = defineStore({
                 });
         },
 
-        fetchUserInfo(fromLogin = false, loginAction = false) {
+        fetchUserInfo(loginAction = false) {
             const user = useUsers();
             const token = Cookies.get("dvanhsound_token");
             if (!token && !loginAction) {
@@ -79,7 +79,7 @@ export const useAuthStore = defineStore({
                     const { data } = res.data;
                     this.setUser(data.user);
                     user.initUser(data.user);
-                    if (fromLogin) {
+                    if (loginAction) {
                         this.$router.push({ name: "Home" });
                     }
                 })

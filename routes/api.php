@@ -44,11 +44,12 @@ Route::controller(UserController::class)->as("users.")->prefix('users/')->group(
             Route::post("create", "createRoom");
             Route::post("edit/{uuid}", "editRoom");
             Route::post("delete/{uuid}", "deleteRoom");
+            Route::post('check/membership', 'checkMembership');
+            Route::get("data/{id}", 'getRoom');
         });
         Route::get("list", "getRooms");
         Route::post("add/tracks", 'addTracksRoom');
         Route::post("delete/tracks", 'deleteTracksRoom');
-        Route::post('check/membership', 'checkMembership');
     });
 });
 
@@ -80,14 +81,13 @@ Route::controller(SpotifyController::class)->as("st.")->prefix('spotify/')->grou
 // });
 Route::middleware('auth:sanctum')->post('/broadcasting/auth', function (Request $request) {
     $channel_name = $request->channel_name;
-    Log::debug($channel_name);
-    Log::debug($request->user());
+    $user = $request->user();
 
 
     return response()->json([
         'channel_data' => [
-            'user_id' => 8,
-            'user_info' => $request->user(),
+            'user_id' => $user->id,
+            'user_info' => $user,
         ],
     ]);
 });

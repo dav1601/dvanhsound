@@ -5,6 +5,7 @@ export const useResponsive = defineStore({
     id: "Responsive",
     state: () => ({
         width: window.innerWidth,
+        routerLoading: false,
     }),
     getters: {
         xs: (state) => {

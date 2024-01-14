@@ -77,7 +77,7 @@ import CardSong from "@/components/Card/CardSong.vue";
 import CoreSlide from "@/components/app/CoreSlide.vue";
 import TextHeader from "@/components/ui/TextHeader.vue";
 import { SwiperSlide } from "swiper/vue";
-
+import { useErrors } from "@/stores/ErrorStore";
 const UserRepo = RepositoryFactory.get("user");
 export default {
     components: { FrameItem, SwiperSlide, CardSong, CoreSlide, TextHeader },
@@ -113,6 +113,8 @@ export default {
         };
 
         const stateReactive = reactive({ ...initData() });
+        const storeError = useErrors();
+       
         UserRepo.rooms({ limit: 12 }).then((res) => {
             const { data } = res.data;
             stateReactive.rooms = data;

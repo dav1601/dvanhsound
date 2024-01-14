@@ -5,8 +5,8 @@ import Cookies from "js-cookie";
 import { handleApiError } from "@/api/ErrorHandler";
 const axiosInstance = axios.create({
     baseURL: baseUrl,
-    withCredentials: true ,
-    withXSRFToken: true
+    withCredentials: true,
+    withXSRFToken: true,
 });
 axiosInstance.interceptors.request.use(
     (config) => {
@@ -18,6 +18,16 @@ axiosInstance.interceptors.request.use(
         }
 
         return config;
+    },
+    (error) => {
+        // handleApiError(error);
+
+        return Promise.reject(error);
+    }
+);
+axiosInstance.interceptors.response.use(
+    (response) => {
+        return response;
     },
     (error) => {
         handleApiError(error);

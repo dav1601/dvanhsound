@@ -8,6 +8,7 @@ import PageNotFound from "@/pages/errors/PageNotFound.vue";
 import Search from "@/pages/Search.vue";
 import MusicRoom from "@/pages/MusicRoom.vue";
 import membership from "@/middleware/membership";
+import { useResponsive } from "@/stores/Responsive";
 const routes = [
     {
         path: "/",
@@ -54,17 +55,23 @@ const router = vuerouter.createRouter({
     routes,
     // short for `routes: routes`
 });
+
 router.beforeEach((to, from, next) => {
     const middleware = to.meta.middleware;
     const context = { to, from, next };
-
+    const responsive = useResponsive();
+    responsive.routerLoading = true;
     if (!middleware) {
         return next();
     }
 
-    return middleware[0]({
+    middleware[0]({
         ...context,
         next: middlewarePipeline(context, middleware, 1),
     });
+});
+router.afterEach(() => {
+    const responsive = useResponsive();
+    responsive.routerLoading = false;
 });
 export default router;
