@@ -46,6 +46,11 @@ Route::controller(UserController::class)->as("users.")->prefix('users/')->group(
             Route::post("delete/{uuid}", "deleteRoom");
             Route::post('check/membership', 'checkMembership');
             Route::get("data/{id}", 'getRoom');
+            Route::prefix("events/")->group(function () {
+                Route::post("updateCurrentSong", "updateCurrentSong");
+                Route::post("updateControl", "updateControl");
+                Route::post("updateTime", "updateTime");
+            });
         });
         Route::get("list", "getRooms");
         Route::post("add/tracks", 'addTracksRoom');

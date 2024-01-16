@@ -12,6 +12,7 @@ export const useAuthStore = defineStore({
         isAuthenticated: false,
         isLoading: false,
         validator: [],
+        channel: null,
     }),
     getters: {
         getUser: (state) => state.user,

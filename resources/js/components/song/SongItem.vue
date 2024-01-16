@@ -4,6 +4,7 @@
         @mouseenter="setHover(true)"
         @mouseleave="setHover(false)"
         @dblclick.stop="dbClick"
+        @click.stop="listenClick"
     >
         <div class="song-item-col-1 overflow-hidden flex-shrink-1">
             <!-- index -->
@@ -158,6 +159,9 @@ export default {
         playlistId: {
             default: null,
         },
+        emitClick: {
+            default: false,
+        },
     },
     components: { HeartIcon, EqualiserLoading },
     setup(props, ctx) {
@@ -253,10 +257,18 @@ export default {
             );
         });
         const dbClick = (e) => {
+            if (props.emitClick) {
+                return ctx.emit("db-click");
+            }
             storeSongPlay.loadSong(stateReactive.info.id, true, props.plf, {
                 items: props.playlistItems,
                 id: props.playlistId,
             });
+        };
+        const listenClick = (e) => {
+            if (props.emitClick) {
+                return ctx.emit("click");
+            }
         };
         watch(
             isLoaded,
@@ -278,6 +290,7 @@ export default {
             showEqua,
             renderPlayOrPause,
             dbClick,
+            listenClick,
         };
     },
 };

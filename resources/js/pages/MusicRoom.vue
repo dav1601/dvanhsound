@@ -18,7 +18,6 @@ import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
 import { useMusicRoom } from "@/stores/MusicRoom";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
-import Echo from "laravel-echo";
 const usersRepo = RepositoryFactory.get("user");
 export default {
     setup(props) {
@@ -42,7 +41,7 @@ export default {
             return route.params.id;
         });
         const initStream = () => {
-            stateReactive.channel = window.Echo.join(
+            musicRoom.channel = window.Echo.join(
                 `room.music.` + musicRoom.room.id
             )
                 .here((users) => {
@@ -50,6 +49,13 @@ export default {
                 })
                 .joining((user) => {
                     musicRoom.addUserOnline(user);
+                    const data = songPlay.currentSong;
+                    data.el = songPlay.currentSong.el.src;
+                    usersRepo
+                        .brcUpdateCurrentSong("user", musicRoom.room.id, data)
+                        .then((res) => {
+                            console.log(res);
+                        });
                     console.log({ userJoin: user });
                 })
                 .leaving((user) => {

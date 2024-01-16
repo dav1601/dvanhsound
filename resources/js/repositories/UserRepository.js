@@ -1,6 +1,7 @@
 import RepositoryBase from "./RepositoryBase";
 const resoure = "users";
 const room = resoure + "/room";
+const roomEvent = room + "/events";
 const sync = resoure + "/sync";
 export default {
     syncPlaylist(listId = {}, params = {}) {
@@ -33,6 +34,13 @@ export default {
     isMembership(roomId) {
         return RepositoryBase.post(`${room}/check/membership`, {
             roomId: roomId,
+        });
+    },
+    brcUpdateCurrentSong(type = "room", id = null, currentSong) {
+        return RepositoryBase.post(`${roomEvent}/updateCurrentSong`, {
+            id: id,
+            type: type,
+            current_song: currentSong,
         });
     },
 };

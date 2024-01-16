@@ -17,8 +17,10 @@ class Room extends Model
         'description',
         'image',
         "status",
+        'type',
         "password",
-        "user_id"
+        "user_id",
+        "track_id"
     ];
     public static function boot()
     {
@@ -26,6 +28,10 @@ class Room extends Model
         self::creating(function ($model) {
             $model->uuid = (string) Str::uuid();
         });
+    }
+    public function current_song()
+    {
+        return $this->belongsTo(RoomTracks::class, "track_id", "id");
     }
     public function members()
     {

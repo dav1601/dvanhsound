@@ -126,11 +126,33 @@ class UserController extends Controller
     // ////////////////////////////
     public function getRoom($id, Request $request)
     {
+        $spotify =  new Spotify(config("spotify.default_config"));
         try {
-            $room = Room::with(['members', 'tracks', 'messages'])->where("uuid", $id)->first();
+            $room = Room::with(['members', 'tracks', 'messages', 'current_song'])->where("uuid", $id)->first();
+            $tracks = collect($room->tracks)->groupBy("plf");
+            if ($tracks['yt']) {
+                $tracks['yt'] = collect($tracks['yt'])->map(function ($item) {
+                    return $item->track_id;
+                });
+                $tracks['yt'] = Youtube::getVideoInfo($tracks['yt']->toArray());
+                $track['yt'] = collect($tracks['yt'])->map(function ($video) {
+                    $video->duration =  $this->ISO8601ToSeconds($video->contentDetails->duration);
+                    $video->plf = "yt";
+                    return $video;
+                });
+            }
+            if ($tracks['st']) {
+               
+            }
+            return $tracks;
             return $this->successResponse($room);
         } catch (\Exception $e) {
             return $this->errorResponse();
         }
+    }
+    // ANCHOR currentSOng //////////////////////////////////////////////////////
+    public function updateCurrentSong(Request $request)
+    {
+        return $request;
     }
 }

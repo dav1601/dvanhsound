@@ -12,7 +12,8 @@ class Members extends Model
     protected $fillable = [
         "room_id",
         "user_id",
-        "isOwner"
+        "isOwner",
+        "is_dj"
     ];
     public function user()
     {

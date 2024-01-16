@@ -216,7 +216,8 @@ import {
 import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
 import { notify } from "@kyvg/vue3-notification";
-
+import { useMusicRoom } from "@/stores/MusicRoom";
+import { useAuthStore } from "@/stores/AuthStore";
 export default {
     props: {
         showVolume: {
@@ -225,7 +226,7 @@ export default {
     },
     setup(props, ctx) {
         const { proxy } = getCurrentInstance();
-
+        const auth = useAuthStore();
         // SECTION Store //////////////////////////////////////////////////////
 
         // const storeCurrentSong = localStorage.getItem("currentSong")
@@ -239,6 +240,7 @@ export default {
         const useStore = useSongPlay();
         const { showVolume } = toRefs(props);
         const { showPlayerPage } = storeToRefs(useStore);
+        const musicRoom = useMusicRoom();
         // SECTION State //////////////////////////////////////////////////////
         const initData = () => {
             return {
@@ -267,9 +269,22 @@ export default {
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
 
         // !SECTION End Lifecycle Hooks //////////////////////////////////////////////////////
-
+        const initChannelUser = () => {
+            auth.channel = window.Echo.private(`user.` + auth.user.id).listen(
+                "updateCurrentSong",
+                function (e) {
+                    console.log(e);
+                }
+            );
+        };
         // SECTION Computed //////////////////////////////////////////////////////
+        const listenEventMusicRoom = () => {
+            musicRoom.channel.listen("updateCurrentSong", function (e) {
+                console.log(e);
+            });
+        };
 
+        // ///
         const renderIconPlayPause = computed(() => {
             if (useStore.isPlaying) return "mdi-pause-circle";
             if (useStore.isPaused) return "mdi-play-circle";
@@ -383,22 +398,25 @@ export default {
                 position: "top center",
             });
         };
+        const timeUpdate = () => {
+            const el = document.getElementById("npb-layout-timeupdate");
+            const value =
+                (useStore.currentSong.el.currentTime /
+                    useStore.currentSong.el.duration) *
+                100;
+
+            if (!isNaN(value)) {
+                el.innerText = proxy.$formatTime(
+                    useStore.currentSong.el.currentTime
+                );
+                stateReactive.progress = value.toFixed();
+            }
+        };
         const listenerEvent = () => {
             const elAudio = useStore.currentSong.el;
 
             elAudio.addEventListener("timeupdate", function () {
-                const el = document.getElementById("npb-layout-timeupdate");
-                const value =
-                    (useStore.currentSong.el.currentTime /
-                        useStore.currentSong.el.duration) *
-                    100;
-
-                if (!isNaN(value)) {
-                    el.innerText = proxy.$formatTime(
-                        useStore.currentSong.el.currentTime
-                    );
-                    stateReactive.progress = value.toFixed();
-                }
+                timeUpdate();
             });
 
             return;
@@ -482,7 +500,22 @@ export default {
                 }
             }
         );
-
+        watch(
+            () => auth.isAuthenticated,
+            (isAuthenticated) => {
+                if (isAuthenticated) {
+                    initChannelUser();
+                }
+            }
+        );
+        watch(
+            () => musicRoom.channel,
+            (channel) => {
+                if (channel) {
+                    listenEventMusicRoom();
+                }
+            }
+        );
         // ANCHOR end volume //////////////////////////////////////////////////////
         // !SECTION End Watch //////////////////////////////////////////////////////
 
