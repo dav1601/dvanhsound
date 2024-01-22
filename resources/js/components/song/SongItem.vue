@@ -173,16 +173,19 @@ export default {
                 isHover: false,
             };
         };
+        console.log(props.plf);
         const stateReactive = reactive({ ...initData() });
         const storeSongPlay = useSongPlay();
 
         const { isLoaded } = toRefs(props);
+
         const setInfo = () => {
             stateReactive.info = {
                 ...storeSongPlay.getInfoStandards(props.item, props.plf),
             };
-            if (props.plf === "yt") getDuration();
-            if (props.plf === "st")
+
+            if (props.plf == "yt") getDuration();
+            if (props.plf == "st")
                 stateReactive.duration = props.item.duration
                     ? props.item.duration
                     : storeSongPlay.findKey(props.item, "duration_ms").value /

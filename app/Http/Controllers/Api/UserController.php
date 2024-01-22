@@ -128,25 +128,46 @@ class UserController extends Controller
     {
         $spotify =  new Spotify(config("spotify.default_config"));
         try {
-            $room = Room::with(['members', 'tracks', 'messages', 'current_song'])->where("uuid", $id)->first();
-            $tracks = collect($room->tracks)->groupBy("plf");
+            $room = Room::with(['members', 'tracks', 'messages', 'current_song', 'members.user', 'owner'])->where("uuid", $id)->first();
+            $room_tracks = collect($room->tracks);
+            $tracks = $room_tracks->groupBy("plf");
+
             if ($tracks['yt']) {
                 $tracks['yt'] = collect($tracks['yt'])->map(function ($item) {
                     return $item->track_id;
-                });
-                $tracks['yt'] = Youtube::getVideoInfo($tracks['yt']->toArray());
+                })->toArray();
+
+                $tracks['yt'] = Youtube::getVideoInfo($tracks['yt']);
+
                 $track['yt'] = collect($tracks['yt'])->map(function ($video) {
                     $video->duration =  $this->ISO8601ToSeconds($video->contentDetails->duration);
                     $video->plf = "yt";
                     return $video;
                 });
             }
+
             if ($tracks['st']) {
-               
+                $tracks['st'] = collect($tracks['st'])->map(function ($item) {
+                    return $item->track_id;
+                });
+                $tracks['st'] = $spotify->tracks($tracks['st']->toArray())->get()['tracks'];
+                $tracks['st'] = collect($tracks['st'])->map(function ($item_st) {
+                    $item_st['duration'] = (int) $item_st['duration_ms'] / 1000;
+                    $item_st['plf'] = "st";
+                    return $item_st;
+                });
             }
-            return $tracks;
+
+            $room->tracks = $room_tracks->map(function ($item_rt) use ($tracks) {
+                $root_track = collect($tracks[$item_rt->plf])->firstWhere("id", $item_rt->track_id);
+                return $root_track;
+            })->filter();
+
+
+            $room->setRelation('tracks', $room->tracks);
             return $this->successResponse($room);
         } catch (\Exception $e) {
+            return $e->getMessage();
             return $this->errorResponse();
         }
     }

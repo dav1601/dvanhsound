@@ -199,7 +199,7 @@ export default {
                         break;
 
                     default:
-                        url = info.value.images.medium.url;
+                        url = info.value.images.maxres.url;
                         break;
                 }
             }

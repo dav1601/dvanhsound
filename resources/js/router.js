@@ -9,6 +9,7 @@ import Search from "@/pages/Search.vue";
 import MusicRoom from "@/pages/MusicRoom.vue";
 import membership from "@/middleware/membership";
 import { useResponsive } from "@/stores/Responsive";
+import { useMusicRoom } from "@/stores/MusicRoom";
 const routes = [
     {
         path: "/",
@@ -57,6 +58,8 @@ const router = vuerouter.createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+    const mr = useMusicRoom();
+    mr.setInRoom(to.name === "Room");
     const middleware = to.meta.middleware;
     const context = { to, from, next };
     const responsive = useResponsive();

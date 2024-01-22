@@ -5,6 +5,7 @@ const TrackRepo = RepositoryFactory.get("track");
 const StTrackRepo = RepositoryFactory.get("StTrack");
 const UserRepo = RepositoryFactory.get("user");
 import { isEmpty } from "lodash";
+import { useMusicRoom } from "@/stores/MusicRoom";
 export const useSongPlay = defineStore({
     id: "SongPLay",
     state: () => ({
@@ -118,6 +119,8 @@ export const useSongPlay = defineStore({
         loadPlaylist(id, plf) {},
         // ANCHOR load storage //////////////////////////////////////////////////////
         loadStorage() {
+            const musicRoom = useMusicRoom();
+            if (musicRoom.inRoom) return;
             this.loadedSong = false;
             const currentSong = localStorage.getItem("currentSong");
             const currentPlaylist = localStorage.getItem("currentPlaylist");
@@ -140,6 +143,8 @@ export const useSongPlay = defineStore({
             }
         },
         storageData() {
+            const musicRoom = useMusicRoom();
+            if (musicRoom.inRoom) return;
             localStorage.setItem(
                 "currentSong",
                 JSON.stringify({
@@ -170,7 +175,7 @@ export const useSongPlay = defineStore({
             }
         },
 
-        setCurrentPlaylistItems(items, playlistId) {
+        setCurrentPlaylistItems(items, playlistId = null) {
             this.currentPlaylistId = playlistId;
             this.currentPlaylistItems = items;
         },
@@ -186,6 +191,7 @@ export const useSongPlay = defineStore({
             plf = "yt",
             playlist = { id: null, items: [] }
         ) {
+            const musicRoom = useMusicRoom();
             if (this.isActiveSong(id)) {
                 if (isEmpty(this.currentPlaylistItems)) {
                     this.currentPlaylistItems = playlist.items;
@@ -210,9 +216,11 @@ export const useSongPlay = defineStore({
                 const payload = res.data.data;
                 payload.playing = playing;
                 this.setCurrentSong(payload);
-                if (!playlist.items) playlist.items.push(payload);
-                this.setCurrentPlaylistItems(playlist.items, playlist.id);
-                this.storageData();
+                if (!musicRoom.inRoom) {
+                    if (!playlist.items) playlist.items.push(payload);
+                    this.setCurrentPlaylistItems(playlist.items, playlist.id);
+                    this.storageData();
+                }
             });
         },
         shufflePlaylist() {
@@ -369,7 +377,9 @@ export const useSongPlay = defineStore({
                 id: "",
                 plf: plf,
             };
-
+            if (data.hasOwnProperty("plf")) {
+                plf = data.plf;
+            }
             if (isEmpty(data)) return info;
             if (type === "room") {
                 info.title = data.title;

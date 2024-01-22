@@ -16,7 +16,7 @@
                     class="npb-layout-start mr-4 md:flex hidden justify-start items-center flex-shrink-1 md:w-[15%] lg:w-1/4"
                 >
                     <v-img
-                        :src="state.info.image"
+                        :src="image"
                         max-width="56"
                         max-height="56"
                         width="56"
@@ -42,7 +42,7 @@
                             class="title mb-2 text-lg w-full text-white font-semibold truncate max-w-[250px]"
                             v-if="store.loadedSong.value"
                         >
-                            {{ state.info.title }}
+                            {{ info.title }}
                         </span>
                         <v-skeleton-loader
                             v-else
@@ -53,7 +53,7 @@
                             class="artist text-sm font-normal white-72 max-w-[60%] truncate"
                             v-if="store.loadedSong.value"
                         >
-                            {{ state.info.description }}
+                            {{ info.description }}
                         </span>
                         <v-skeleton-loader
                             v-else
@@ -311,19 +311,25 @@ export default {
         };
         const setInfo = () => {
             stateReactive.info = useStore.currentSong.info;
-            switch (stateReactive.info.plf) {
-                case "st":
-                    stateReactive.info["image"] =
-                        stateReactive.info.images[2].url;
-                    break;
-
-                default:
-                    stateReactive.info["image"] =
-                        stateReactive.info.images.medium.url;
-
-                    break;
-            }
         };
+        const info = computed(() => {
+            return useStore.currentSong.info;
+        });
+        const image = computed(() => {
+            let image = "";
+            if (info.value) {
+                switch (info.value.plf) {
+                    case "st":
+                        image = info.value.images[2].url;
+                        break;
+
+                    default:
+                        image = info.value.images.medium.url;
+                        break;
+                }
+            }
+            return image;
+        });
         // ANCHOR update time  //////////////////////////////////////////////////////
 
         const setDuration = () => {
@@ -527,6 +533,9 @@ export default {
             // ANCHOR computed //////////////////////////////////////////////////////
             renderIconPlayPause,
             renderIconRepeat,
+            iconMenu,
+            info,
+            image,
             // ANCHOR methods //////////////////////////////////////////////////////
             renderBgSongProgress,
             onInputChangeProgress,
@@ -538,7 +547,6 @@ export default {
             shuffle,
             setRepeat,
             clickNav,
-            iconMenu,
             emitToggleVol,
         };
         // !SECTION //////////////////////////////////////////////////////

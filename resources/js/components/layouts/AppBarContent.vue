@@ -17,7 +17,10 @@
         </router-link>
 
         <div id="dvs-app-bar-content" class="flex-1 lg:ml-[65px]">
-            <div class="w-full h-full justify-between items-center flex">
+            <div
+                class="w-full h-full justify-between items-center flex"
+                v-if="!inRoom"
+            >
                 <SearchInput :show="showSearch" />
                 <div class="lg:hidden"></div>
 
@@ -80,7 +83,9 @@
                 </div>
                 <!-- -------- -->
             </div>
+
             <!--  -------  -->
+            <RoomBarContent v-else />
         </div>
     </div>
 </template>
@@ -89,8 +94,10 @@ import { useAuthStore } from "@/stores/AuthStore";
 import { storeToRefs } from "pinia";
 import ListItem from "@/components/app/ListItem.vue";
 import SearchInput from "@/components/app/SearchInput.vue";
+import { useMusicRoom } from "@/stores/MusicRoom";
+import RoomBarContent from "@/components/layouts/RoomBarContent.vue";
 export default {
-    components: { ListItem, SearchInput },
+    components: { ListItem, SearchInput, RoomBarContent },
     props: {
         showSearch: {
             default: true,
@@ -98,7 +105,7 @@ export default {
     },
     setup(props, ctx) {
         const auth = useAuthStore();
-
+        const { inRoom } = storeToRefs(useMusicRoom());
         const { isAuthenticated } = storeToRefs(auth);
 
         const logout = () => {
@@ -113,7 +120,7 @@ export default {
             isAuthenticated,
             logout,
             emitToggle,
-
+            inRoom,
         };
     },
 };

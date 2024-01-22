@@ -49,4 +49,8 @@ class Room extends Model
     {
         return $this->status === "private";
     }
+    public  function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

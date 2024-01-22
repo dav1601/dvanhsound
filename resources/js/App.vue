@@ -7,7 +7,7 @@
         class="fixed top-0 left-0 w-full z-[50000]"
         v-if="routerLoading"
     ></v-progress-linear>
-    <PlayerPage />
+    <PlayerPage v-if="!inRoom" />
     <v-layout class="rounded" v-scroll="scrollApp" id="dvs-layout-app">
         <!-- ANCHOR left sidebar --------------------------------- -->
         <v-navigation-drawer
@@ -26,6 +26,7 @@
         >
             <div
                 class="h-full flex flex-col justify-start items-start mx-2 overflow-hidden"
+                v-if="!inRoom"
             >
                 <router-link
                     :to="{ name: 'Home' }"
@@ -67,6 +68,8 @@
                 <SidebarPlaylist />
                 <!-- list playlist -->
             </div>
+            <!-- ROOM MUSIC CONTENT -->
+            <SbRoom v-else />
         </v-navigation-drawer>
 
         <!-- ANCHOR right sidebar --------------------------------- -->
@@ -114,6 +117,7 @@ import LeftItem from "@/components/layouts/sidebar/LeftItem.vue";
 import SidebarPlaylist from "@/components/playlist/SidebarPlaylist.vue";
 import PlayerPage from "@/components/app/PlayerPage.vue";
 import ListItem from "@/components/app/ListItem.vue";
+import SbRoom from "@/components/layouts/SbRoom.vue";
 import { useRoute } from "vue-router";
 import { reactive, computed, toRef, onMounted, watch } from "vue";
 import { useUsers } from "./stores/Users";
@@ -121,6 +125,7 @@ import { useAuthStore } from "@/stores/AuthStore";
 import { useResponsive } from "@/stores/Responsive";
 import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
+import { useMusicRoom } from "@/stores/MusicRoom";
 export default {
     components: {
         SidebarList,
@@ -131,15 +136,16 @@ export default {
         SidebarPlaylist,
         ListItem,
         PlayerPage,
+        SbRoom,
     },
     setup() {
-
-
         // SECTION Lifecycle Hooks //////////////////////////////////////////////////////
         const route = useRoute();
         const auth = useAuthStore();
         const songPlay = useSongPlay();
+        const musicRoom = useMusicRoom();
         const { showPlayerPage, hasSong } = storeToRefs(songPlay);
+        const { inRoom } = storeToRefs(musicRoom);
         const responsive = useResponsive();
         const handleResize = () => {
             responsive.width = window.innerWidth;
@@ -184,7 +190,11 @@ export default {
             return responsive.lg;
         });
         const classMainContent = computed(() => {
-            if (route.name === "Playlist" || route.name === "Track")
+            if (
+                route.name === "Playlist" ||
+                route.name === "Track" ||
+                route.name === "Room"
+            )
                 return "pt-0";
             return "";
         });
@@ -245,6 +255,7 @@ export default {
                 }
             }
         );
+
         return {
             scrollApp,
             classAppBar,
@@ -258,6 +269,7 @@ export default {
             toggleVol,
             hasSong,
             routerLoading,
+            inRoom,
         };
     },
 };

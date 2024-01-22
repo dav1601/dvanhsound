@@ -2,6 +2,7 @@
 import { defineStore } from "pinia";
 import { useAuthStore } from "@/stores/AuthStore";
 import { useSongPlay } from "@/stores/SongPlay";
+
 export const useMusicRoom = defineStore({
     id: "musicroom16",
     state: () => ({
@@ -11,6 +12,8 @@ export const useMusicRoom = defineStore({
         tracks: [],
         usersOnline: [],
         channel: null,
+        isLoadedRoom: false,
+        inRoom: false,
     }),
     getters: {
         hasRoom: (state) => {
@@ -22,11 +25,24 @@ export const useMusicRoom = defineStore({
             if (state.hasRoom) return state.room.user_id === auth.user.id;
             return false;
         },
-        inRoom: (state) => {
-            return state.room ? true : false;
+        tracksSt: (state) => {
+            return state.tracks.filter((track) => track.plf === "st");
         },
         listDj: (state) => {
             return state.members.filter((member) => member.is_dj);
+        },
+        usersRoom: (state) => {
+            return state.members.filter((member) => {
+                return !member.is_dj;
+            });
+        },
+        roomDj: (state) => {
+            if (state.hasRoom) return state.room.type === "only_dj";
+            return false;
+        },
+        roomAll: (state) => {
+            if (state.hasRoom) return state.room.type === "all";
+            return false;
         },
         allowControls: (state) => {
             if (state.isOwner) {
@@ -57,13 +73,16 @@ export const useMusicRoom = defineStore({
             this.messages = roomData.messages;
             this.members = roomData.members;
             this.tracks = roomData.tracks;
-            console.log(roomData);
+            songPlay.setCurrentPlaylistItems(this.tracks);
+            this.isLoadedRoom = true;
         },
         resetRoom() {
             this.room = null;
             this.messages = [];
             this.members = [];
             this.tracks = [];
+            this.usersOnline = [];
+            this.channel = null;
         },
 
         findIndexUser(id) {
@@ -82,6 +101,16 @@ export const useMusicRoom = defineStore({
             if (index !== -1) {
                 this.usersOnline.splice(index, 1);
             }
+        },
+        setInRoom(inRoom = false) {
+            this.inRoom = inRoom;
+        },
+        getRoleUser(userId) {
+            let role = "member";
+            if (this.isOwner) role = "owner";
+            if (this.listDj.findIndex((dj) => dj.id === userId) !== -1)
+                role = "dj";
+            return role;
         },
     },
 });

@@ -18,9 +18,11 @@ class HomeController extends Controller
     public function index()
     {
         $spotify = new Spotify(config("spotify.default_config"));
-        $list = Youtube::getPlaylistItemsByPlaylistId("PLlD46yrpUbIV22mq_rZ0aITj3aldb0WAg")['results'];
+        $list = $spotify->playlistTracks("37i9dQZEVXbvK0cS2Fkkuh")->limit(10)->get()['items'];
+
         // foreach ($list as $key => $value) {
-        //     RoomTracks::create(['room_id' => 1, 'track_id' => $value->contentDetails->videoId, 'plf' => "yt"]);
+
+        //     RoomTracks::create(['room_id' => 1, 'track_id' => $value['track']['id'], 'plf' => "st"]);
         // }
         // dd(RoomTracks::all());
     }
