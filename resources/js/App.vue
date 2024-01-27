@@ -226,6 +226,9 @@ export default {
         const toggleDrawer = () => {
             stateReactive.showDrawer = !stateReactive.showDrawer;
         };
+        const initChannelUser = () => {
+            auth.channel = Echo.private("user." + auth.user.id);
+        };
         watch(
             () => responsive.width,
             (newSize) => {
@@ -239,6 +242,14 @@ export default {
             () => permanent,
             (yes) => {
                 overflowHtml();
+            }
+        );
+        watch(
+            () => auth.isAuthenticated,
+            (isAuthenticated) => {
+                if (isAuthenticated) {
+                    initChannelUser();
+                }
             }
         );
         watch(

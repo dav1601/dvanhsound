@@ -36,11 +36,18 @@ export default {
             roomId: roomId,
         });
     },
-    brcUpdateCurrentSong(type = "room", id = null, currentSong) {
-        return RepositoryBase.post(`${roomEvent}/updateCurrentSong`, {
-            id: id,
-            type: type,
-            current_song: currentSong,
+    broadcastRoom(roomId, event, data) {
+        return RepositoryBase.post(`${roomEvent}/broadcastRoom`, {
+            room_id: roomId,
+            event: event,
+            data: data,
+        });
+    },
+    broadcastUser(userId, event, data) {
+        return RepositoryBase.post(`${resoure}/broadcast`, {
+            user_id: userId,
+            event: event,
+            data: data,
         });
     },
 };

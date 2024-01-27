@@ -73,8 +73,12 @@ router.beforeEach((to, from, next) => {
         next: middlewarePipeline(context, middleware, 1),
     });
 });
-router.afterEach(() => {
+router.afterEach((to, from, failure) => {
     const responsive = useResponsive();
+    const mr = useMusicRoom();
     responsive.routerLoading = false;
+    if (failure && to.name === "Room") {
+        mr.setInRoom(false);
+    }
 });
 export default router;

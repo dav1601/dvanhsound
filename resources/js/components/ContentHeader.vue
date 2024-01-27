@@ -100,7 +100,6 @@ export default {
         const stateReact = reactive({ ...initData() });
         const { isLoaded } = toRefs(props);
         const bgColor = (opacity = 0) => {
-            console.log(stateReact);
             return (
                 `--tw-gradient-from: ${stateReact.mainColor} var(--tw-gradient-from-position);` +
                 `--tw-gradient-to: rgb(${stateReact.mainRbg[0]} ${stateReact.mainRbg[1]} ${stateReact.mainRbg[2]} / ${opacity}) var(--tw-gradient-to-position);` +
@@ -132,9 +131,8 @@ export default {
             const img = document.getElementById("getColor");
             img.src = url;
             img.crossOrigin = "";
-            console.log({ url: url, image: props.image });
+
             img.onload = () => {
-                console.log(img);
                 const pallet = colorThief.getPalette(img);
                 const color = pallet[0];
                 stateReact.mainRbg = color;
@@ -146,7 +144,6 @@ export default {
             };
         };
         const loadBg = () => {
-            console.log("loadBg");
             switch (props.plf) {
                 case "yt":
                     PlaylistRepository.convertImage(props.image, props.id).then(
@@ -168,7 +165,6 @@ export default {
             isLoaded,
             (loaded) => {
                 if (loaded) {
-                    console.log({ loaded: loaded, image: props.image });
                     loadBg();
                 }
             },

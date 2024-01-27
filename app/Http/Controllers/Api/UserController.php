@@ -9,8 +9,11 @@ use App\Traits\Responser;
 use Aerni\Spotify\Spotify;
 use Illuminate\Http\Request;
 use Alaouy\Youtube\Facades\Youtube;
+use App\Events\BroadcastRoom;
+use App\Events\BroadcastUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -172,8 +175,37 @@ class UserController extends Controller
         }
     }
     // ANCHOR currentSOng //////////////////////////////////////////////////////
-    public function updateCurrentSong(Request $request)
+    public function broadcastRoom(Request $request)
     {
-        return $request;
+        $validator = Validator::make($request->all(), [
+            'room_id' => 'required',
+            'event' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return $this->validatorFailResponse($validator);
+        }
+        try {
+            broadcast(new BroadcastRoom($request));
+            return $this->successResponse(['broadcasted' => true]);
+        } catch (\Exception $e) {
+            return $this->errorResponse();
+        }
+    }
+    //
+    public function broadcastUser(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'event' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return $this->validatorFailResponse($validator);
+        }
+        try {
+            broadcast(new BroadcastUser($request));
+            return $this->successResponse(['broadcasted' => true]);
+        } catch (\Exception $e) {
+            return $this->errorResponse();
+        }
     }
 }

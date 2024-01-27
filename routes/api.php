@@ -39,6 +39,7 @@ Route::controller(UserController::class)->as("users.")->prefix('users/')->group(
     Route::get("sync/playlist", 'syncPlaylist')->name("sync_playlist");
     Route::get("search/{kw?}", 'search')->name("search");
     Route::post("sync/save", "saveSync")->middleware('auth:sanctum')->name("save_sync");
+    Route::post("broadcast", "broadcastUser");
     Route::prefix("room/")->group(function () {
         Route::middleware('auth:sanctum')->group(function () {
             Route::post("create", "createRoom");
@@ -46,10 +47,9 @@ Route::controller(UserController::class)->as("users.")->prefix('users/')->group(
             Route::post("delete/{uuid}", "deleteRoom");
             Route::post('check/membership', 'checkMembership');
             Route::get("data/{id}", 'getRoom');
+            // ///////////
             Route::prefix("events/")->group(function () {
-                Route::post("updateCurrentSong", "updateCurrentSong");
-                Route::post("updateControl", "updateControl");
-                Route::post("updateTime", "updateTime");
+                Route::post("broadcastRoom", "broadcastRoom");
             });
         });
         Route::get("list", "getRooms");
@@ -85,10 +85,7 @@ Route::controller(SpotifyController::class)->as("st.")->prefix('spotify/')->grou
 //     return true;
 // });
 Route::middleware('auth:sanctum')->post('/broadcasting/auth', function (Request $request) {
-    $channel_name = $request->channel_name;
     $user = $request->user();
-
-
     return response()->json([
         'channel_data' => [
             'user_id' => $user->id,

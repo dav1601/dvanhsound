@@ -173,7 +173,7 @@ export default {
                 isHover: false,
             };
         };
-        console.log(props.plf);
+
         const stateReactive = reactive({ ...initData() });
         const storeSongPlay = useSongPlay();
 

@@ -11,7 +11,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class UpdateCurrentSong implements ShouldBroadcastNow
+class BroadcastRoom implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -20,14 +20,15 @@ class UpdateCurrentSong implements ShouldBroadcastNow
      *
      * @return void
      */
-    public $id;
+    public $room_id;
     public $data;
-    public $type;
+    public $event;
     public function __construct($data)
     {
-        $this->type =  $data->type;
-        $this->id = $data->id;
-        $this->data = $data->current_song;
+        $this->event =  $data->event;
+        $this->room_id = $data->room_id;
+        $this->data = $data->data ? $data->data : [];
+        $this->data['event'] = $this->event;
     }
 
     /**
@@ -37,11 +38,7 @@ class UpdateCurrentSong implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        if ($this->type === "room") {
-            return new PresenceChannel('room.music.' . $this->id);
-        } else {
-            return new PrivateChannel('user.' . $this->id);
-        }
+        return new PresenceChannel('room.music.' . $this->room_id);
     }
     /**
      * Get the data to broadcast.
@@ -50,6 +47,6 @@ class UpdateCurrentSong implements ShouldBroadcastNow
      */
     public function broadcastWith(): array
     {
-        return ['current_song' =>  $this->data];
+        return ['data' =>  $this->data];
     }
 }

@@ -218,6 +218,8 @@ import { storeToRefs } from "pinia";
 import { notify } from "@kyvg/vue3-notification";
 import { useMusicRoom } from "@/stores/MusicRoom";
 import { useAuthStore } from "@/stores/AuthStore";
+import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+const usersRepo = RepositoryFactory.get("user");
 export default {
     props: {
         showVolume: {
@@ -278,11 +280,6 @@ export default {
             );
         };
         // SECTION Computed //////////////////////////////////////////////////////
-        const listenEventMusicRoom = () => {
-            musicRoom.channel.listen("updateCurrentSong", function (e) {
-                console.log(e);
-            });
-        };
 
         // ///
         const renderIconPlayPause = computed(() => {
@@ -307,6 +304,12 @@ export default {
         // ANCHOR play song //////////////////////////////////////////////////////
         const playOrPause = (e) => {
             if (!useStore.loadedSong) return;
+            if (musicRoom.inRoom && musicRoom.room) {
+                return usersRepo.broadcastRoom(
+                    musicRoom.room.id,
+                    "play_or_pause"
+                );
+            }
             return useStore.playOrPause();
         };
         const setInfo = () => {
@@ -385,32 +388,22 @@ export default {
             stateReactive.volumeOff = !stateReactive.volumeOff;
         };
         // ANCHOR next or prev //////////////////////////////////////////////////////
-        const nextOrPrev = (type = "next") => {
+        const nextOrPrev = (type = "next", listener = false) => {
             if (!useStore.loadedSong)
                 return notify({
                     text: "Action cannot be performed while loading",
                     type: "error",
                     position: "top center",
                 });
-            useStore.resetSong();
+            useStore.resetSong(listener);
             stateReactive.progress = 0;
-            useStore.nextOrPrevSong(type);
+            useStore.nextOrPrevSong(type, listener);
         };
-        const shuffle = () => {
-            useStore.shufflePlaylist();
-            return notify({
-                text: "Mixed playlist",
-                type: "success",
-                position: "top center",
-            });
+        const shuffle = (listener = false) => {
+            useStore.shufflePlaylist(listener);
         };
-        const timeUpdate = () => {
+        const timeUpdate = (value) => {
             const el = document.getElementById("npb-layout-timeupdate");
-            const value =
-                (useStore.currentSong.el.currentTime /
-                    useStore.currentSong.el.duration) *
-                100;
-
             if (!isNaN(value)) {
                 el.innerText = proxy.$formatTime(
                     useStore.currentSong.el.currentTime
@@ -420,13 +413,35 @@ export default {
         };
         const listenerEvent = () => {
             const elAudio = useStore.currentSong.el;
-
             elAudio.addEventListener("timeupdate", function () {
-                timeUpdate();
+                const value =
+                    (useStore.currentSong.el.currentTime /
+                        useStore.currentSong.el.duration) *
+                    100;
+                timeUpdate(value);
             });
-
             return;
         };
+        // ANCHOR event room //////////////////////////////////////////////////////
+        const listenerEventRoom = (remove = false) => {
+            const elAudio = useStore.currentSong.el;
+            if (!elAudio) return;
+            if (remove) {
+                return elAudio.removeEventListener("timeupdate");
+            }
+            elAudio.addEventListener("timeupdate", function () {
+                const value =
+                    (useStore.currentSong.el.currentTime /
+                        useStore.currentSong.el.duration) *
+                    100;
+                usersRepo.broadcastRoom(musicRoom.room.id, "time_update", {
+                    time: value,
+                    current_time: useStore.currentSong.el.currentTime,
+                });
+            });
+            return;
+        };
+
         const timeLineHover = (t) => {
             const elProgress = document.getElementById("songProgress");
             if (t === "in") {
@@ -446,6 +461,19 @@ export default {
         const emitToggleVol = () => {
             return ctx.emit("toggle-vol");
         };
+        const listenEventMusicRoom = () => {
+            musicRoom.channel.listen("BroadcastRoom", function (e) {
+                const data = e.data;
+                const event = data.event;
+                const listener = true;
+                if (event === "time_update") {
+                    if (!musicRoom.isSM) {
+                        useStore.currentSong.el.currentTime = data.current_time;
+                    }
+                    timeUpdate(data.time);
+                }
+            });
+        };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
@@ -462,11 +490,29 @@ export default {
                     stateReactive.data = useStore.currentSong.data;
                     setInfo();
                     setDuration();
-                    listenerEvent();
+                    if (musicRoom.inRoom) {
+                        if (musicRoom.isSM) listenerEventRoom();
+                    } else {
+                        listenerEvent();
+                    }
+
                     renderBgSongVolume();
                 }
             }
         );
+        //
+
+        watch(
+            () => musicRoom.isSM,
+            (isSM) => {
+                if (isSM) {
+                    listenerEventRoom();
+                } else {
+                    listenerEventRoom(true);
+                }
+            }
+        );
+        //
         watch(
             () => stateReactive.progress,
             (newVal) => {
@@ -476,7 +522,7 @@ export default {
                 renderBgSongProgress(newVal);
                 if (newVal >= 100) {
                     if (stateReactive.repeat === "song") {
-                        useStore.loopSong();
+                        useStore.loopSong(true);
                     } else {
                         nextOrPrev("next");
                     }

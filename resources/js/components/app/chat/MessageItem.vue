@@ -1,7 +1,7 @@
 <template>
-    <div class="flex items-end justify-end" v-if="itsMe">
-        <div class="bg-blue-500 p-3 rounded-lg">
-            <p class="text-sm text-white">{{ message }}</p>
+    <div class="flex items-end justify-end my-2" v-if="itsMe">
+        <div class="bg-blue-500 p-3 rounded-lg max-w-[60%]">
+            <p class="text-sm text-white ">{{ message }}</p>
         </div>
         <img
             :src="avatar"
@@ -9,13 +9,13 @@
             class="w-8 h-8 rounded-full ml-3"
         />
     </div>
-    <div class="flex items-start justify-start" v-else>
+    <div class="flex items-start justify-start my-2" v-else>
         <img
             :src="avatar"
             alt="Other User Avatar"
             class="w-8 h-8 rounded-full ml-3"
         />
-        <div class="ml-3 bg-gray-100 p-3 rounded-lg">
+        <div class="ml-3 bg-gray-100 p-3 rounded-lg max-w-[60%]">
             <p class="text-sm text-gray-800">
                 {{ message }}
             </p>

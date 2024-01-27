@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+import { useMusicRoom } from "@/stores/MusicRoom";
+import { useAuthStore } from "@/stores/AuthStore";
 const PlaylistRepo = RepositoryFactory.get("playlist");
 const TrackRepo = RepositoryFactory.get("track");
 const StTrackRepo = RepositoryFactory.get("StTrack");
 const UserRepo = RepositoryFactory.get("user");
 import { isEmpty } from "lodash";
-import { useMusicRoom } from "@/stores/MusicRoom";
+import { notify } from "@kyvg/vue3-notification";
 export const useSongPlay = defineStore({
     id: "SongPLay",
     state: () => ({
@@ -69,8 +71,50 @@ export const useSongPlay = defineStore({
         hasSong: (state) => {
             return state.currentSong.el;
         },
+        allowControls: (state) => {
+            const musicRoom = useMusicRoom();
+            const auth = useAuthStore();
+            if (!musicRoom.inRoom) return true;
+            if (musicRoom.isOwner) {
+                return true;
+            }
+
+            let allow = false;
+            if (musicRoom.hasRoom) {
+                switch (musicRoom.room.type) {
+                    case "only_dj":
+                        const isDj = musicRoom.listDj.findIndex(
+                            (dj) => dj.id === auth.user.id
+                        );
+                        allow = isDj !== -1;
+                        break;
+                    case "only_owner":
+                        allow = musicRoom.isOwner;
+                        break;
+                    default:
+                        allow = true;
+                        break;
+                }
+            }
+            return allow;
+        },
     },
     actions: {
+        notifyControlsValid() {
+            return notify({
+                text: "Bạn không có quyền điều khiển trong phòng này",
+                type: "error",
+                position: "top center",
+            });
+        },
+        middleware(listener = false) {
+            let next = true;
+            const musicRoom = useMusicRoom();
+            if (musicRoom.inRoom) {
+                if (!listener) next = this.allowControls;
+            }
+            return next;
+        },
         resetCurrent() {
             this.loadedSong = false;
             this.loadedPlaylistItems = false;
@@ -159,6 +203,7 @@ export const useSongPlay = defineStore({
             localStorage.setItem("currentPlaylistId", this.currentPlaylistId);
         },
         setCurrentSong(payload) {
+            console.log({ loadsongDebug: payload });
             const plf = payload.hasOwnProperty("plf") ? payload.plf : "yt";
             this.currentSong.data = payload;
             this.currentSong.info = this.getInfoStandards(payload, plf);
@@ -168,9 +213,10 @@ export const useSongPlay = defineStore({
                 this.currentSong.el = new Audio(payload.src);
             }
             this.currentSong.el.currentTime = 0;
+            this.currentSong.el.autoplay = false;
             this.currentSong.el.volume = this.settings.volume / 100;
             this.loadedSong = true;
-            if (payload.playing) {
+            if (payload.playing === true) {
                 this.playSong();
             }
         },
@@ -185,12 +231,15 @@ export const useSongPlay = defineStore({
         },
 
         // ANCHOR end set area //////////////////////////////////////////////////////
-        loadSong(
-            id,
-            playing = false,
-            plf = "yt",
-            playlist = { id: null, items: [] }
-        ) {
+        // SECTION CONTROLS //////////////////////////////////////////////////////
+        // ANCHOR load song //////////////////////////////////////////////////////
+        loadSong(id, playing = false, plf = "yt", playlist, listener = false) {
+            if (!playlist) {
+                playlist = { id: null, items: [] };
+            }
+
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             const musicRoom = useMusicRoom();
             if (this.isActiveSong(id)) {
                 if (isEmpty(this.currentPlaylistItems)) {
@@ -199,7 +248,7 @@ export const useSongPlay = defineStore({
                 }
                 return this.playOrPause();
             }
-            console.log(this.currentPlaylistItems);
+
             this.loadedSong = false;
             let api;
             switch (plf) {
@@ -223,7 +272,10 @@ export const useSongPlay = defineStore({
                 }
             });
         },
-        shufflePlaylist() {
+        // ANCHOR shuffle playlist //////////////////////////////////////////////////////
+        shufflePlaylist(listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             if (this.currentPlaylistItems.length <= 1) {
                 return;
             }
@@ -251,36 +303,61 @@ export const useSongPlay = defineStore({
                 }
             );
             array.unshift(this.currentPlaylistItems[currentSongIndex]);
-            return (this.currentPlaylistItems = array);
+            this.currentPlaylistItems = array;
+            return notify({
+                text: "Mixed playlist",
+                type: "success",
+                position: "top center",
+            });
         },
-        loopSong() {
+        // ANCHOR loop //////////////////////////////////////////////////////
+        loopSong(listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             this.currentSong.el.currentTime = 0;
             this.currentSong.el.loop = true;
             this.playSong();
         },
-        repeatSong(type) {
+        // ANCHOR repeat //////////////////////////////////////////////////////
+        repeatSong(type, listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             this.settings.repeat = type;
             this.currentSong.el.loop = type === "self";
         },
-        startSong(id) {
+        startSong(id, listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             this.setCurrentSong({ index: index });
             this.playSong();
         },
-        playSong() {
+        // ANCHOR play //////////////////////////////////////////////////////
+        playSong(listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             if (!this.hasSong) return;
             this.currentSong.status = "playing";
             this.currentSong.el.play();
         },
-        resetSong() {
+        // ANCHOR reset //////////////////////////////////////////////////////
+        resetSong(listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             this.currentSong.el.currentTime = 0;
             this.pauseSong();
         },
-        pauseSong() {
+        // ANCHOR pause //////////////////////////////////////////////////////
+        pauseSong(listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             if (!this.hasSong) return;
             this.currentSong.status = "paused";
             this.currentSong.el.pause();
         },
-        updateSettings(payload) {
+        // ANCHOR update setting //////////////////////////////////////////////////////
+        updateSettings(payload, listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             if (payload.volume) {
                 if (payload.volume <= 1) {
                     payload.volume = 0;
@@ -295,7 +372,10 @@ export const useSongPlay = defineStore({
                 this.currentSong.el.currentTime = payload.currentTime;
             }
         },
-        nextOrPrevSong(type) {
+        // ANCHOR next or prev //////////////////////////////////////////////////////
+        nextOrPrevSong(type, listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
             let index;
             if (this.currentPlaylistItems.length <= 0) {
                 this.currentPlaylistItems = this.defaultPlaylist[0].items;
@@ -323,13 +403,15 @@ export const useSongPlay = defineStore({
         updateStatusCurrentSong(status) {
             this.currentSong.status = status;
         },
-        playOrPause() {
+        // ANCHOR play or pause //////////////////////////////////////////////////////
+        playOrPause(listener = false) {
             if (this.isPlaying) {
-                this.pauseSong();
+                this.pauseSong(listener);
             } else {
-                this.playSong();
+                this.playSong(listener);
             }
         },
+        // !SECTION  CONTROLS //////////////////////////////////////////////////////
         isActiveSong(id) {
             return this.currentSong.info.id === id;
         },

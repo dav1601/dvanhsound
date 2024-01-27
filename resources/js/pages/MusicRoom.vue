@@ -34,20 +34,15 @@
                             class="w-full h-full flex flex-col justify-start items-start"
                         >
                             <div
-                                class="chat-body w-full flex-1 overflow-y-auto overflow-x-hidden border rounded-lg p-4"
+                                class="chat-body w-full flex-1 overflow-y-auto overflow-x-hidden border rounded-lg p-4 custom-scroll"
+                                id="chat-body"
                             >
                                 <message-item
-                                    message="Mo bai khac ik"
-                                    role="member"
-                                ></message-item>
-                                <message-item
-                                    message="hoy"
-                                    role="owner"
-                                    :itsMe="true"
-                                ></message-item>
-                                <message-item
-                                    message="yeah yeah"
-                                    role="dj"
+                                    v-for="message in messages"
+                                    :key="message"
+                                    :message="message.message"
+                                    :role="getRole(message.user_id)"
+                                    :itsMe="checkItsMeChat(message.user_id)"
                                 ></message-item>
                             </div>
                             <div class="mt-4 flex items-center w-full">
@@ -81,6 +76,7 @@ import {
     onMounted,
     watch,
     onBeforeUnmount,
+    nextTick,
 } from "vue";
 import { useUsers } from "@/stores/Users";
 import { useAuthStore } from "@/stores/AuthStore";
@@ -97,8 +93,7 @@ export default {
         const auth = useAuthStore();
         const songPlay = useSongPlay();
         const musicRoom = useMusicRoom();
-        const { tracks, isLoadedRoom, messages, tracksSt } =
-            storeToRefs(musicRoom);
+        const { tracks, isLoadedRoom, messages } = storeToRefs(musicRoom);
         const { currentPlaylistItems, currentSong, loadedSong } = storeToRefs(
             useSongPlay()
         );
@@ -111,6 +106,11 @@ export default {
         const stateReactive = reactive({ ...initData() });
         //
         songPlay.resetCurrent();
+        //
+        const chatScrollBottom = () => {
+            const chatContainer = document.getElementById("chat-body");
+            return (chatContainer.scrollTop = chatContainer.scrollHeight);
+        };
         //
         onBeforeUnmount(() => {
             window.Echo.leave(`room.music.` + musicRoom.room.id);
@@ -136,42 +136,111 @@ export default {
 
             return url;
         });
+        const listenEventsUser = () => {
+            auth.channel.listen("BroadcastUser", (e) => {
+                const data = e.data;
+                const event = data.event;
+
+                switch (event) {
+                    case "set_sm":
+                        const sm = data.sm;
+                        if (!sm) {
+                            musicRoom.setStandardMaker();
+                        } else {
+                            musicRoom.standardMaker = sm;
+                        }
+
+                        break;
+
+                    default:
+                        break;
+                }
+            });
+        };
         const initStream = () => {
             musicRoom.channel = window.Echo.join(
                 `room.music.` + musicRoom.room.id
             )
                 .here((users) => {
-                    musicRoom.usersOnline = users;
+                    if (users.length <= 1) {
+                        musicRoom.usersOnline = users;
+                        musicRoom.setStandardMaker();
+                    } else {
+                        musicRoom.usersOnline = users.reverse();
+                    }
                 })
                 .joining((user) => {
                     musicRoom.addUserOnline(user);
-                    const data = songPlay.currentSong;
-                    data.el = songPlay.currentSong.el.src;
-                    usersRepo
-                        .brcUpdateCurrentSong("user", musicRoom.room.id, data)
-                        .then((res) => {
-                            console.log(res);
+                    if (musicRoom.isFirstUserOnline)
+                        usersRepo.broadcastUser(user.id, "set_sm", {
+                            sm: musicRoom.standardMaker,
                         });
-                    console.log({ userJoin: user });
                 })
                 .leaving((user) => {
                     musicRoom.removeUserOnline(user);
                     console.log({ userLeave: user });
+                })
+                .listen("BroadcastRoom", (e) => {
+                    const data = e.data;
+                    const event = data.event;
+                    const listener = true;
+                    switch (event) {
+                        case "load_song":
+                            break;
+                        case "next_song":
+                            break;
+                        case "prev_song":
+                            break;
+                        case "shuffle":
+                            break;
+                        case "play_or_pause":
+                            console.log("play_or_pause");
+                            songPlay.playOrPause(listener);
+                            break;
+                        case "pause":
+                            songPlay.pauseSong();
+                            break;
+                        case "repeat":
+                            break;
+                        case "loop":
+                            break;
+
+                        default:
+                            break;
+                    }
                 });
         };
         musicRoom.isLoadedRoom = false;
 
-        usersRepo.loadRoom(uuid.value).then((res) => {
+        usersRepo.loadRoom(uuid.value).then(async (res) => {
             const { data } = res.data;
             musicRoom.setRoom(data);
             initStream();
-
-            songPlay.loadSong(
-                data.current_song.track_id,
-                false,
-                data.current_song.plf
-            );
+            listenEventsUser();
+            musicRoom.setStandardMaker();
+            await nextTick();
+            chatScrollBottom();
         });
+
+        const checkItsMeChat = (userId) => {
+            return auth.user.id === userId;
+        };
+        const getRole = (userId) => {
+            return musicRoom.getRole(userId);
+        };
+
+        watch(
+            () => auth.channel,
+            (channel) => {
+                if (channel) listenEventsUser();
+            }
+        );
+        watch(
+            () => musicRoom.standardMaker,
+            (standardMaker) => {
+                if (!standardMaker) songPlay.resetSong();
+            }
+        );
         return {
             route,
             tracks,
@@ -181,6 +250,8 @@ export default {
             currentSong,
             loadedSong,
             headerImage,
+            checkItsMeChat,
+            getRole,
         };
     },
 };
