@@ -1,10 +1,11 @@
 <template>
     <div
-        class="playlist-grid-td w-full group flex justify-start items-center cursor-pointer rounded-md py-2"
+        class="playlist-grid-td transtion ease-in-out w-full group flex justify-start items-center cursor-pointer rounded-md py-2"
         @mouseenter="setHover(true)"
         @mouseleave="setHover(false)"
         @dblclick.stop="dbClick"
         @click.stop="listenClick"
+        :class="{ active: isActive }"
     >
         <div class="song-item-col-1 overflow-hidden flex-shrink-1">
             <!-- index -->
@@ -23,7 +24,7 @@
                     size="24"
                     class="block"
                     :icon="renderPlayOrPause"
-                    @click.stop="dbClick"
+                    @click.stop="songPlay.playOrPause(false)"
                 ></v-icon>
                 <equaliser-loading
                     v-if="showEqua"
@@ -170,7 +171,6 @@ export default {
                 isHover: false,
                 info: {},
                 duration: 0,
-                isHover: false,
             };
         };
 
@@ -199,9 +199,6 @@ export default {
                     ctx.emit("update-duration", data);
                 }
             );
-        };
-        const setHover = (hover) => {
-            return (stateReactive.isHover = hover);
         };
 
         const songImage = computed(() => {
@@ -236,6 +233,9 @@ export default {
         const isActive = computed(() => {
             return storeSongPlay.isActiveSong(stateReactive.info.id);
         });
+        const setHover = (hover) => {
+            stateReactive.isHover = hover;
+        };
         const renderPlayOrPause = computed(() => {
             if (
                 isActive.value &&
@@ -268,6 +268,7 @@ export default {
                 id: props.playlistId,
             });
         };
+
         const listenClick = (e) => {
             if (props.emitClick) {
                 return ctx.emit("click");
@@ -286,6 +287,7 @@ export default {
         );
         return {
             state: toRef(stateReactive),
+            songPlay: storeToRefs(storeSongPlay),
             songImage,
             albumOrChannel,
             isActive,
@@ -298,11 +300,11 @@ export default {
     },
 };
 </script>
-<style lang="scss">
-.playlist-grid-td {
-    &:hover {
-        background-color: hsla(0, 0%, 100%, 0.1);
-        transition: background-color 0.5s ease;
-    }
+<style lang="scss" scoped>
+.active {
+    background-color: hsla(0, 0%, 100%, 0.1);
+}
+.playlist-grid-td:hover {
+    @extend .active;
 }
 </style>

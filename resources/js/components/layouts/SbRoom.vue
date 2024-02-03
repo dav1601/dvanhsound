@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col justify-start items-start mx-2">
+    <div class="flex flex-col justify-start items-start mx-2 pt-nav-top">
         <v-list density="compact">
             <text-header
                 content="Chủ phòng"

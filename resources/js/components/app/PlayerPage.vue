@@ -54,7 +54,7 @@ export default {
         });
         const image = computed(() => {
             if (currentSong.value.info.hasOwnProperty("images"))
-                return currentSong.value.info.images.maxres.url;
+                return currentSong.value.info.images.high.url;
             return "";
         });
 

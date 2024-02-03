@@ -16,11 +16,18 @@ export const useMusicRoom = defineStore({
         isLoadedRoom: false,
         inRoom: false,
         standardMaker: null,
+        notConfirm: true,
     }),
     getters: {
         hasRoom: (state) => {
             const auth = useAuthStore();
             return state.room && auth.isAuthenticated;
+        },
+        hasSM: (state) => {
+            return state.standardMaker ? true : false;
+        },
+        confirmJoin: (state) => {
+            return !state.notConfirm;
         },
         isFirstUserOnline: (state) => {
             const auth = useAuthStore();
@@ -63,7 +70,7 @@ export const useMusicRoom = defineStore({
             this.messages = roomData.messages;
             this.members = roomData.members;
             this.tracks = roomData.tracks;
-            songPlay.setCurrentPlaylistItems(this.tracks);
+            songPlay.setCurrentPlaylistItems(roomData.tracks);
             this.isLoadedRoom = true;
             songPlay.loadSong(
                 roomData.current_song.track_id,
@@ -84,6 +91,7 @@ export const useMusicRoom = defineStore({
             this.usersOnline = [];
             this.channel = null;
             this.standardMaker = null;
+            this.notConfirm = true;
         },
 
         findIndexUser(id) {
@@ -112,6 +120,7 @@ export const useMusicRoom = defineStore({
         },
         removeUserOnline(user) {
             if (!user) return;
+            const songPlay = useSongPlay();
             const index = this.findIndexUser(user.id);
             if (index !== -1) {
                 this.usersOnline.splice(index, 1);
@@ -120,7 +129,10 @@ export const useMusicRoom = defineStore({
                 const indexDj = this.findIndexDj(user.id);
                 if (indexDj === -1) this.djOnline.splice(indexDj, 1);
             }
-            if (user.id === this.standardMaker) this.setStandardMaker();
+            if (user.id === this.standardMaker) {
+                this.setStandardMaker();
+                if (!this.standardMaker) songPlay.resetSong(true);
+            }
         },
         setInRoom(inRoom = false) {
             this.inRoom = inRoom;

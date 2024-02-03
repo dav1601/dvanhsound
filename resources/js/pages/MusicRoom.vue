@@ -1,5 +1,21 @@
 <template>
     <div class="h-full w-full flex flex-column">
+        <div v-if="!isSM && loadedSong">
+            <v-dialog width="auto" v-model="notConfirm" :attach="true">
+                <v-card class="p-5">
+                    <template v-slot:title
+                        >Bạn có muốn tham gia nghe nhạc chung?</template
+                    >
+
+                    <v-card-actions class="items-center justify-end">
+                        <v-btn class="bg-danger-700 ml-2">Thoát</v-btn>
+                        <v-btn class="bg-primary-700 ml-2" @click="setConfirm()"
+                            >Tham Gia</v-btn
+                        >
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+        </div>
         <content-header
             :isLoaded="loadedSong"
             :title="currentSong.info.title"
@@ -15,9 +31,12 @@
                     <v-col cols="8">
                         <div
                             class="w-full h-full overflow-y-auto overflow-x-hidden"
-                            v-if="isLoadedRoom"
                         >
-                            <song-item
+                            <GridItems
+                                :items="currentPlaylistItems"
+                                :isLoaded="isLoadedRoom"
+                            />
+                            <!-- <song-item
                                 v-for="(item, index) in currentPlaylistItems"
                                 :key="'song-item-room' + index"
                                 :item="item"
@@ -26,7 +45,7 @@
                                 :plf="item.plf"
                                 :isLoaded="true"
                             >
-                            </song-item>
+                            </song-item> -->
                         </div>
                     </v-col>
                     <v-col cols="4" class="layout-chat">
@@ -68,6 +87,7 @@
 import ContentHeader from "@/components/ContentHeader.vue";
 import SongItem from "@/components/song/SongItem.vue";
 import MessageItem from "@/components/app/chat/MessageItem.vue";
+import GridItems from "@/components/playlist/GridItems.vue";
 import { useRoute } from "vue-router";
 import {
     reactive,
@@ -85,15 +105,23 @@ import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
 import { useMusicRoom } from "@/stores/MusicRoom";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+
 const usersRepo = RepositoryFactory.get("user");
 
 export default {
-    components: { ContentHeader, SongItem, MessageItem },
+    components: { ContentHeader, SongItem, MessageItem, GridItems },
     setup(props) {
         const auth = useAuthStore();
         const songPlay = useSongPlay();
         const musicRoom = useMusicRoom();
-        const { tracks, isLoadedRoom, messages } = storeToRefs(musicRoom);
+        const {
+            tracks,
+            isLoadedRoom,
+            messages,
+            confirmJoin,
+            notConfirm,
+            isSM,
+        } = storeToRefs(musicRoom);
         const { currentPlaylistItems, currentSong, loadedSong } = storeToRefs(
             useSongPlay()
         );
@@ -129,7 +157,15 @@ export default {
                         break;
 
                     default:
-                        url = currentSong.value.info.images.maxres.url;
+                        if (
+                            currentSong.value.info.images.hasOwnProperty(
+                                "maxres"
+                            )
+                        ) {
+                            url = currentSong.value.info.images.maxres.url;
+                        } else {
+                            url = currentSong.value.info.images.high.url;
+                        }
                         break;
                 }
             }
@@ -186,23 +222,31 @@ export default {
                     const listener = true;
                     switch (event) {
                         case "load_song":
+                            songPlay.loadSong(
+                                data.id,
+                                data.playing,
+                                data.plf,
+                                data.playlist,
+                                true
+                            );
                             break;
-                        case "next_song":
-                            break;
-                        case "prev_song":
-                            break;
+
                         case "shuffle":
                             break;
                         case "play_or_pause":
-                            console.log("play_or_pause");
-                            songPlay.playOrPause(listener);
+                            if (data.play) {
+                                songPlay.playSong(true);
+                            } else {
+                                songPlay.pauseSong(true);
+                                songPlay.currentSong.status = "paused";
+                            }
+
                             break;
-                        case "pause":
-                            songPlay.pauseSong();
+
+                        case "set_repeat":
                             break;
-                        case "repeat":
-                            break;
-                        case "loop":
+                        case "loop_song":
+                            songPlay.loopSong(true);
                             break;
 
                         default:
@@ -228,6 +272,12 @@ export default {
         const getRole = (userId) => {
             return musicRoom.getRole(userId);
         };
+        const setConfirm = () => {
+            musicRoom.notConfirm = false;
+            if (songPlay.currentSong.el.currentTime > 0) {
+                songPlay.playSong(true);
+            }
+        };
 
         watch(
             () => auth.channel,
@@ -250,8 +300,12 @@ export default {
             currentSong,
             loadedSong,
             headerImage,
+            notConfirm,
+            isSM,
             checkItsMeChat,
             getRole,
+            setConfirm,
+            state: toRef(stateReactive),
         };
     },
 };

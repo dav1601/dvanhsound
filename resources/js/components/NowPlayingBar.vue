@@ -97,7 +97,7 @@
                         </button>
                         <button
                             class="--controls-btn --controls-playOrPause"
-                            @click.stop="playOrPause"
+                            @click.stop="playOrPause(false)"
                         >
                             <v-icon
                                 :icon="renderIconPlayPause"
@@ -124,7 +124,7 @@
                         </button>
                         <button
                             class="--controls-btn --controls-repeat"
-                            @click="setRepeat"
+                            @click="setRepeat(false)"
                         >
                             <v-icon :icon="renderIconRepeat" class="white">
                             </v-icon>
@@ -139,7 +139,7 @@
                         <input
                             type="range"
                             id="songProgress"
-                            :value="state.progress"
+                            :value="progress"
                             step="1"
                             min="0"
                             max="100"
@@ -219,6 +219,7 @@ import { notify } from "@kyvg/vue3-notification";
 import { useMusicRoom } from "@/stores/MusicRoom";
 import { useAuthStore } from "@/stores/AuthStore";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+import { debounce } from "lodash";
 const usersRepo = RepositoryFactory.get("user");
 export default {
     props: {
@@ -302,21 +303,17 @@ export default {
 
         // SECTION Methods //////////////////////////////////////////////////////
         // ANCHOR play song //////////////////////////////////////////////////////
-        const playOrPause = (e) => {
-            if (!useStore.loadedSong) return;
-            if (musicRoom.inRoom && musicRoom.room) {
-                return usersRepo.broadcastRoom(
-                    musicRoom.room.id,
-                    "play_or_pause"
-                );
-            }
-            return useStore.playOrPause();
+        const playOrPause = (listener = false) => {
+            return useStore.playOrPause(listener);
         };
         const setInfo = () => {
             stateReactive.info = useStore.currentSong.info;
         };
         const info = computed(() => {
             return useStore.currentSong.info;
+        });
+        const progress = computed(() => {
+            return parseInt(useStore.currentSong.progress);
         });
         const image = computed(() => {
             let image = "";
@@ -348,20 +345,36 @@ export default {
                     proxy.$formatTime(length);
             });
         };
+        const setProgressTime = (progress, currentTime) => {
+            useStore.currentSong.progress = progress;
+            useStore.updateSettings({
+                currentTime: currentTime,
+            });
+        };
         // ANCHOR change input range //////////////////////////////////////////////////////
         const onInputChangeProgress = (e) => {
             const target = e.target;
-            stateReactive.progress =
+            const progress =
                 ((target.value - target.min) / (target.max - target.min)) * 100;
-            useStore.updateSettings({
-                currentTime:
-                    (useStore.currentSong.el.duration * target.value) / 100,
-            });
+            const currentTime =
+                (useStore.currentSong.el.duration * target.value) / 100;
+            if (musicRoom.inRoom) {
+                if (useStore.allowControls) {
+                    return usersRepo.broadcastRoom(
+                        musicRoom.room.id,
+                        "change_progress",
+                        { progress: progress, current_time: currentTime }
+                    );
+                }
+            } else {
+                return setProgressTime(progress, currentTime);
+            }
+            return;
         };
         // ANCHOR render background progress and volume //////////////////////////////////////////////////////
         const renderBgSongProgress = (value) => {
             const el = document.getElementById("songProgress");
-            const width = value ? value : stateReactive.progress;
+            const width = value ? value : useStore.currentSong.progress;
             el.style.background =
                 "linear-gradient(to right, #1db954 0%, #1db954 " +
                 width +
@@ -395,21 +408,22 @@ export default {
                     type: "error",
                     position: "top center",
                 });
-            useStore.resetSong(listener);
-            stateReactive.progress = 0;
+
             useStore.nextOrPrevSong(type, listener);
         };
         const shuffle = (listener = false) => {
             useStore.shufflePlaylist(listener);
         };
-        const timeUpdate = (value) => {
+        const textTimeUpdate = () => {
             const el = document.getElementById("npb-layout-timeupdate");
-            if (!isNaN(value)) {
-                el.innerText = proxy.$formatTime(
-                    useStore.currentSong.el.currentTime
-                );
-                stateReactive.progress = value.toFixed();
-            }
+            el.innerText = proxy.$formatTime(
+                useStore.currentSong.el.currentTime
+            );
+        };
+        const timeUpdate = (value) => {
+            if (isNaN(value) || !value || !useStore.hasSong) return;
+            textTimeUpdate();
+            useStore.currentSong.progress = value.toFixed();
         };
         const listenerEvent = () => {
             const elAudio = useStore.currentSong.el;
@@ -430,14 +444,18 @@ export default {
                 return elAudio.removeEventListener("timeupdate");
             }
             elAudio.addEventListener("timeupdate", function () {
+                const current_time = useStore.currentSong.el.currentTime;
                 const value =
-                    (useStore.currentSong.el.currentTime /
-                        useStore.currentSong.el.duration) *
-                    100;
-                usersRepo.broadcastRoom(musicRoom.room.id, "time_update", {
-                    time: value,
-                    current_time: useStore.currentSong.el.currentTime,
+                    (current_time / useStore.currentSong.el.duration) * 100;
+                timeUpdate(value);
+                musicRoom.channel.whisper("timeupdate", {
+                    value: value,
+                    currentTime: current_time,
                 });
+                // usersRepo.broadcastRoom(musicRoom.room.id, "time_update", {
+                //     time: value,
+                //     current_time: useStore.currentSong.el.currentTime,
+                // });
             });
             return;
         };
@@ -450,7 +468,21 @@ export default {
                 elProgress.classList.remove("activeSliderThumb");
             }
         };
-        const setRepeat = () => {
+        const setRepeat = (listener = false) => {
+            const next = useStore.middleware(listener);
+            if (!next) return useStore.notifyControlsValid();
+            if (!listener && musicRoom.inRoom) {
+                console.log();
+                const repeat =
+                    stateReactive.repeat === "playlist" ? "song" : "playlist";
+                return usersRepo.broadcastRoom(
+                    musicRoom.room.id,
+                    "set_repeat",
+                    {
+                        repeat: repeat,
+                    }
+                );
+            }
             if (stateReactive.repeat === "playlist")
                 return (stateReactive.repeat = "song");
             return (stateReactive.repeat = "playlist");
@@ -462,17 +494,59 @@ export default {
             return ctx.emit("toggle-vol");
         };
         const listenEventMusicRoom = () => {
-            musicRoom.channel.listen("BroadcastRoom", function (e) {
-                const data = e.data;
-                const event = data.event;
-                const listener = true;
-                if (event === "time_update") {
-                    if (!musicRoom.isSM) {
-                        useStore.currentSong.el.currentTime = data.current_time;
+            musicRoom.channel
+                .listen("BroadcastRoom", function (e) {
+                    const data = e.data;
+                    const event = data.event;
+                    const listener = true;
+                    if (event === "time_update") {
+                        if (!musicRoom.isSM && useStore.hasSong && isPaused) {
+                            useStore.currentSong.el.currentTime =
+                                data.current_time;
+                            timeUpdate(data.time);
+
+                            console.log({
+                                checkTime: useStore.currentSong.el.currentTime,
+                            });
+                            // if (musicRoom.confirmJoin) {
+                            //     useStore.currentSong.el.currentTime =
+                            //         data.current_time;
+                            //     timeUpdate(data.time);
+
+                            //     console.log({
+                            //         checkTime:
+                            //             useStore.currentSong.el.currentTime,
+                            //     });
+                            // }
+                        }
+                        if (musicRoom.isSM && useStore.hasSong) {
+                            timeUpdate(data.time);
+                        }
                     }
-                    timeUpdate(data.time);
-                }
-            });
+                    if (event === "set_repeat") {
+                        stateReactive.repeat = data.repeat;
+                    }
+                    if (event === "change_progress") {
+                        console.log({ eventChangeProgress: data });
+                        setProgressTime(data.progress, data.current_time);
+                    }
+                })
+                .listenForWhisper("timeupdate", (e) => {
+                    if (!musicRoom.isSM && useStore.hasSong) {
+                        if (useStore.currentSong.status === "paused") {
+                            useStore.currentSong.el.currentTime = e.currentTime;
+                        }
+
+                        timeUpdate(e.value);
+                    }
+                });
+        };
+        const handleEndSong = (listener = false) => {
+            if (stateReactive.repeat === "song") {
+                useStore.loopSong(listener);
+            } else {
+                nextOrPrev("next", listener);
+            }
         };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
@@ -514,17 +588,21 @@ export default {
         );
         //
         watch(
-            () => stateReactive.progress,
+            () => useStore.currentSong.progress,
             (newVal) => {
-                if (newVal === isNaN || newVal >= 100) {
-                    stateReactive.progress = 0;
+                if (newVal === isNaN) {
+                    useStore.currentSong.progress = 0;
+                }
+                if (newVal === 0) {
+                    textTimeUpdate();
                 }
                 renderBgSongProgress(newVal);
+
                 if (newVal >= 100) {
-                    if (stateReactive.repeat === "song") {
-                        useStore.loopSong(true);
+                    if (!musicRoom.inRoom) {
+                        handleEndSong(true);
                     } else {
-                        nextOrPrev("next");
+                        if (musicRoom.isSM) handleEndSong(false);
                     }
                 }
             }
@@ -594,6 +672,7 @@ export default {
             setRepeat,
             clickNav,
             emitToggleVol,
+            progress,
         };
         // !SECTION //////////////////////////////////////////////////////
     },

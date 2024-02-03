@@ -52,6 +52,7 @@
                     :items="state.items"
                     :plf="state.plf"
                     :id="route.params.id"
+                    :isLoaded="loadedPlaylistItems"
                     @update-duration="updateDuration"
                 ></grid-items>
             </div>
@@ -66,7 +67,7 @@
 import { useSongPlay } from "@/stores/SongPlay";
 import { reactive, toRef, computed, watch, toRefs } from "vue";
 import { useRoute } from "vue-router";
-
+import { storeToRefs } from "pinia";
 import ContentHeader from "@/components/ContentHeader.vue";
 import HeartIcon from "@/components/actions/HeartIcon.vue";
 import GridItems from "../components/playlist/GridItems.vue";
@@ -99,6 +100,8 @@ export default {
         const route = useRoute();
 
         const songPlay = useSongPlay();
+
+        const { loadedPlaylistItems } = storeToRefs(songPlay);
         const fetchPlaylistSt = () => {
             StPlaylistRepository.getInfo(route.params.id)
                 .then((res) => {
@@ -229,6 +232,7 @@ export default {
         return {
             route,
             state: toRef(stateReactive),
+            loadedPlaylistItems,
             totalSong,
             info,
             image,

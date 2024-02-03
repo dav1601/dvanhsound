@@ -6,7 +6,7 @@ const PlaylistRepo = RepositoryFactory.get("playlist");
 const TrackRepo = RepositoryFactory.get("track");
 const StTrackRepo = RepositoryFactory.get("StTrack");
 const UserRepo = RepositoryFactory.get("user");
-import { isEmpty } from "lodash";
+import { isEmpty, isObject, values } from "lodash";
 import { notify } from "@kyvg/vue3-notification";
 export const useSongPlay = defineStore({
     id: "SongPLay",
@@ -26,6 +26,7 @@ export const useSongPlay = defineStore({
         searchList: [],
 
         searchListRender: [],
+
         isSearched: false,
 
         isSearching: false,
@@ -69,8 +70,9 @@ export const useSongPlay = defineStore({
             );
         },
         hasSong: (state) => {
-            return state.currentSong.el;
+            return state.currentSong.el ? true : false;
         },
+
         allowControls: (state) => {
             const musicRoom = useMusicRoom();
             const auth = useAuthStore();
@@ -203,7 +205,6 @@ export const useSongPlay = defineStore({
             localStorage.setItem("currentPlaylistId", this.currentPlaylistId);
         },
         setCurrentSong(payload) {
-            console.log({ loadsongDebug: payload });
             const plf = payload.hasOwnProperty("plf") ? payload.plf : "yt";
             this.currentSong.data = payload;
             this.currentSong.info = this.getInfoStandards(payload, plf);
@@ -213,15 +214,17 @@ export const useSongPlay = defineStore({
                 this.currentSong.el = new Audio(payload.src);
             }
             this.currentSong.el.currentTime = 0;
-            this.currentSong.el.autoplay = false;
             this.currentSong.el.volume = this.settings.volume / 100;
             this.loadedSong = true;
             if (payload.playing === true) {
-                this.playSong();
+                this.playSong(payload.listener);
             }
         },
 
         setCurrentPlaylistItems(items, playlistId = null) {
+            if (isObject(items)) {
+                items = values(items);
+            }
             this.currentPlaylistId = playlistId;
             this.currentPlaylistItems = items;
         },
@@ -234,13 +237,23 @@ export const useSongPlay = defineStore({
         // SECTION CONTROLS //////////////////////////////////////////////////////
         // ANCHOR load song //////////////////////////////////////////////////////
         loadSong(id, playing = false, plf = "yt", playlist, listener = false) {
+            const musicRoom = useMusicRoom();
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
+            if (!listener && musicRoom.inRoom) {
+                return UserRepo.broadcastRoom(musicRoom.room.id, "load_song", {
+                    id: id,
+                    playing: playing,
+                    plf: plf,
+                    playlist: playlist,
+                });
+            }
+
             if (!playlist) {
                 playlist = { id: null, items: [] };
             }
 
-            const next = this.middleware(listener);
-            if (!next) return this.notifyControlsValid();
-            const musicRoom = useMusicRoom();
+            this.resetSong(true);
             if (this.isActiveSong(id)) {
                 if (isEmpty(this.currentPlaylistItems)) {
                     this.currentPlaylistItems = playlist.items;
@@ -264,6 +277,7 @@ export const useSongPlay = defineStore({
             api.then((res) => {
                 const payload = res.data.data;
                 payload.playing = playing;
+                payload.listener = listener;
                 this.setCurrentSong(payload);
                 if (!musicRoom.inRoom) {
                     if (!playlist.items) playlist.items.push(payload);
@@ -312,8 +326,12 @@ export const useSongPlay = defineStore({
         },
         // ANCHOR loop //////////////////////////////////////////////////////
         loopSong(listener = false) {
+            const musicRoom = useMusicRoom();
             const next = this.middleware(listener);
             if (!next) return this.notifyControlsValid();
+            if (!listener && musicRoom.inRoom) {
+                return UserRepo.broadcastRoom(musicRoom.room.id, "loop_song");
+            }
             this.currentSong.el.currentTime = 0;
             this.currentSong.el.loop = true;
             this.playSong();
@@ -341,27 +359,30 @@ export const useSongPlay = defineStore({
         },
         // ANCHOR reset //////////////////////////////////////////////////////
         resetSong(listener = false) {
-            const next = this.middleware(listener);
-            if (!next) return this.notifyControlsValid();
+            // const next = this.middleware(listener);
+            // if (!next) return this.notifyControlsValid();
+            if (!this.currentSong.el) return;
             this.currentSong.el.currentTime = 0;
-            this.pauseSong();
+            this.currentSong.progress = 0;
+            this.pauseSong(listener);
         },
         // ANCHOR pause //////////////////////////////////////////////////////
         pauseSong(listener = false) {
             const next = this.middleware(listener);
             if (!next) return this.notifyControlsValid();
             if (!this.hasSong) return;
+
             this.currentSong.status = "paused";
+            console.log(this.currentSong.status, this.isPlaying);
             this.currentSong.el.pause();
         },
         // ANCHOR update setting //////////////////////////////////////////////////////
-        updateSettings(payload, listener = false) {
-            const next = this.middleware(listener);
-            if (!next) return this.notifyControlsValid();
-            if (payload.volume) {
+        updateSettings(payload) {
+            if (payload.hasOwnProperty("volume")) {
                 if (payload.volume <= 1) {
                     payload.volume = 0;
                 }
+
                 this.currentSong.el.volume = payload.volume / 100;
                 this.settings.volume = payload.volume;
                 if (!payload.volumeOff) {
@@ -376,9 +397,14 @@ export const useSongPlay = defineStore({
         nextOrPrevSong(type, listener = false) {
             const next = this.middleware(listener);
             if (!next) return this.notifyControlsValid();
+            console.log(this.currentPlaylistItems.length);
             let index;
             if (this.currentPlaylistItems.length <= 0) {
-                this.currentPlaylistItems = this.defaultPlaylist[0].items;
+                return notify({
+                    text: "Danh sách phát đang trống",
+                    type: "info",
+                    position: "top center",
+                });
             }
             index = this.currentPlaylistItems.findIndex((item) => {
                 return item.id === this.currentSong.info.id;
@@ -395,20 +421,41 @@ export const useSongPlay = defineStore({
                 }
             }
             const song = this.currentPlaylistItems[index];
-            this.loadSong(song.id, true, song.plf, {
-                id: this.currentPlaylistId,
-                items: this.currentPlaylistItems,
-            });
+            this.loadSong(
+                song.id,
+                true,
+                song.plf,
+                {
+                    id: this.currentPlaylistId,
+                    items: this.currentPlaylistItems,
+                },
+                listener
+            );
         },
         updateStatusCurrentSong(status) {
             this.currentSong.status = status;
         },
         // ANCHOR play or pause //////////////////////////////////////////////////////
         playOrPause(listener = false) {
+            const next = this.middleware(listener);
+            if (!next) return this.notifyControlsValid();
+            const musicRoom = useMusicRoom();
+            if (!this.loadedSong) return;
+            if (musicRoom.inRoom && !listener) {
+                if (!musicRoom.hasRoom) return;
+                const play = !this.isPlaying;
+                return UserRepo.broadcastRoom(
+                    musicRoom.room.id,
+                    "play_or_pause",
+                    {
+                        play: play,
+                    }
+                );
+            }
             if (this.isPlaying) {
-                this.pauseSong(listener);
+                this.pauseSong(true);
             } else {
-                this.playSong(listener);
+                this.playSong(true);
             }
         },
         // !SECTION  CONTROLS //////////////////////////////////////////////////////

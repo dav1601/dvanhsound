@@ -134,7 +134,7 @@ export default {
 
             img.onload = () => {
                 const pallet = colorThief.getPalette(img);
-                const color = pallet[0];
+                const color = pallet[2];
                 stateReact.mainRbg = color;
                 stateReact.mainColor =
                     "#" +
