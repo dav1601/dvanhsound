@@ -111,7 +111,7 @@ export default {
             const data = res.data.data;
             stateReactive.items = data;
             stateReactive.isLoadedItems = true;
-            setDefaultPlaylist(props.playlistId, data);
+            // setDefaultPlaylist(props.playlistId, data);
         };
         const fetchPlaylistInfo = () => {
             PlaylistRepository.getInfo(props.playlistId).then((res) => {

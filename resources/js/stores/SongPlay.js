@@ -21,8 +21,6 @@ export const useSongPlay = defineStore({
 
         myPlaylistRender: [],
 
-        defaultPlaylist: [],
-
         searchList: [],
 
         searchListRender: [],
