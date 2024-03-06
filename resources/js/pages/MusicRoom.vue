@@ -140,10 +140,10 @@ export default {
             return (chatContainer.scrollTop = chatContainer.scrollHeight);
         };
         //
-        onBeforeUnmount(() => {
-            window.Echo.leave(`room.music.` + musicRoom.room.id);
-            musicRoom.resetRoom();
-        });
+        // onBeforeUnmount(() => {
+        //     window.Echo.leave(`room.music.` + musicRoom.room.id);
+        //     musicRoom.resetRoom();
+        // });
         //
         const uuid = computed(() => {
             return route.params.id;

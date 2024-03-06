@@ -37,6 +37,11 @@ export const useSongPlay = defineStore({
 
         playlistQueue: [],
 
+        defaultPlaylist: {
+            id: "PLlD46yrpUbIV22mq_rZ0aITj3aldb0WAg",
+            items: [],
+        },
+
         currentSong: {
             status: "paused",
             el: null,
@@ -249,8 +254,11 @@ export const useSongPlay = defineStore({
                 });
             }
 
-            if (!playlist) {
-                playlist = { id: null, items: [] };
+            if (isEmpty(playlist.items)) {
+                playlist = {
+                    id: this.defaultPlaylist.id,
+                    items: this.defaultPlaylist.items,
+                };
             }
 
             this.resetSong(true);
@@ -280,7 +288,7 @@ export const useSongPlay = defineStore({
                 payload.listener = listener;
                 this.setCurrentSong(payload);
                 if (!musicRoom.inRoom) {
-                    if (!playlist.items) playlist.items.push(payload);
+                    // if (isEmpty(playlist.items)) playlist.items.push(payload);
                     this.setCurrentPlaylistItems(playlist.items, playlist.id);
                     this.storageData();
                 }
@@ -362,6 +370,13 @@ export const useSongPlay = defineStore({
             // const next = this.middleware(listener);
             // if (!next) return this.notifyControlsValid();
             if (!this.currentSong.el) return;
+            // this.currentSong = {
+            //     status: "paused",
+            //     el: null,
+            //     data: {},
+            //     info: {},
+            //     progress: 0,
+            // };
             this.currentSong.el.currentTime = 0;
             this.currentSong.progress = 0;
             this.pauseSong(listener);
@@ -397,9 +412,10 @@ export const useSongPlay = defineStore({
         nextOrPrevSong(type, listener = false) {
             const next = this.middleware(listener);
             if (!next) return this.notifyControlsValid();
-            console.log(this.currentPlaylistItems.length);
+
             let index;
             if (this.currentPlaylistItems.length <= 0) {
+                return this.loopSong(true);
                 return notify({
                     text: "Danh sách phát đang trống",
                     type: "info",

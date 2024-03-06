@@ -126,6 +126,8 @@ import { useResponsive } from "@/stores/Responsive";
 import { useSongPlay } from "@/stores/SongPlay";
 import { storeToRefs } from "pinia";
 import { useMusicRoom } from "@/stores/MusicRoom";
+import { RepositoryFactory } from "@/repositories/RepositoryFactory";
+const PlaylistRepository = RepositoryFactory.get("playlist");
 export default {
     components: {
         SidebarList,
@@ -209,6 +211,9 @@ export default {
             return responsive.routerLoading;
         });
         // SECTION Store //////////////////////////////////////////////////////
+        PlaylistRepository.getItems(songPlay.defaultPlaylist.id).then((res) => {
+            songPlay.defaultPlaylist.items = res.data.data;
+        });
         const overflowHtml = () => {
             const el = document.getElementsByTagName("html")[0];
             if (!permanent.value) {

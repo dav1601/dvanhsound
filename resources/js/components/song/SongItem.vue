@@ -4,7 +4,7 @@
         @mouseenter="setHover(true)"
         @mouseleave="setHover(false)"
         @dblclick.stop="dbClick"
-        @click.stop="listenClick"
+        @click.stop="dbClick"
         :class="{ active: isActive }"
     >
         <div class="song-item-col-1 overflow-hidden flex-shrink-1">
@@ -24,7 +24,7 @@
                     size="24"
                     class="block"
                     :icon="renderPlayOrPause"
-                    @click.stop="songPlay.playOrPause(false)"
+                    @click.stop="popActions"
                 ></v-icon>
                 <equaliser-loading
                     v-if="showEqua"
@@ -217,6 +217,9 @@ export default {
 
             return url;
         });
+        const isActive = computed(() => {
+            return storeSongPlay.isActiveSong(stateReactive.info.id);
+        });
         const albumOrChannel = computed(() => {
             let string = "";
             switch (props.plf) {
@@ -230,9 +233,7 @@ export default {
             }
             return string;
         });
-        const isActive = computed(() => {
-            return storeSongPlay.isActiveSong(stateReactive.info.id);
-        });
+
         const setHover = (hover) => {
             stateReactive.isHover = hover;
         };
@@ -268,7 +269,18 @@ export default {
                 id: props.playlistId,
             });
         };
-
+        const popActions = () => {
+            if (isActive.value) return storeSongPlay.playOrPause(true);
+            return storeSongPlay.loadSong(
+                stateReactive.info.id,
+                true,
+                props.plf,
+                {
+                    items: props.playlistItems,
+                    id: props.playlistId,
+                }
+            );
+        };
         const listenClick = (e) => {
             if (props.emitClick) {
                 return ctx.emit("click");
@@ -296,6 +308,7 @@ export default {
             renderPlayOrPause,
             dbClick,
             listenClick,
+            popActions,
         };
     },
 };
