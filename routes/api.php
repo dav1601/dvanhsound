@@ -68,6 +68,7 @@ Route::controller(YoutubeController::class)->as("yt.")->prefix('youtube/')->grou
         Route::get("{id}", "getTrack")->name("audio");
     });
     Route::post("convert_image", "convertImage")->name("yt.convert_image");
+    Route::get("crawl_trending", "crawlTrending")->name("yt.crawl_trending");
 });
 Route::controller(SpotifyController::class)->as("st.")->prefix('spotify/')->group(function () {
     Route::prefix("playlist/")->as("playlist.")->group(function () {

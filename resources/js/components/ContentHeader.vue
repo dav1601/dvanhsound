@@ -112,7 +112,6 @@ export default {
         const gadientSub = computed(() => {
             return bgColor();
         });
-        // FIXME change computed
 
         const resize2fit = () => {
             const el = document.getElementById("el");
@@ -133,8 +132,9 @@ export default {
             img.crossOrigin = "";
 
             img.onload = () => {
-                const pallet = colorThief.getPalette(img);
-                const color = pallet[2];
+                // const pallet = colorThief.getPalette(img);
+                // const color = pallet[1];
+                const color = colorThief.getColor(img);
                 stateReact.mainRbg = color;
                 stateReact.mainColor =
                     "#" +

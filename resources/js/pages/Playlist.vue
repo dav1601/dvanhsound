@@ -202,7 +202,9 @@ export default {
                         break;
 
                     default:
-                        url = info.value.images.maxres.url;
+                        url = info.value.images.hasOwnProperty("maxres")
+                            ? info.value.images.maxres.url
+                            : info.value.images.high.url;
                         break;
                 }
             }
@@ -222,11 +224,12 @@ export default {
         watch(
             () => route.params.id,
             async (newId) => {
-                stateReactive.loadedInfo = false;
-                stateReactive.loadedItems = false;
-                songPlay.loadedPlaylistItems = false;
-                console.log({ new: newId });
-                loadPlaylist();
+                if (newId) {
+                    stateReactive.loadedInfo = false;
+                    stateReactive.loadedItems = false;
+                    songPlay.loadedPlaylistItems = false;
+                    loadPlaylist();
+                }
             }
         );
         return {

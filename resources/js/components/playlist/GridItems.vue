@@ -42,6 +42,7 @@
                 :key="'grsks-' + i"
                 :isLoaded="isLoaded"
                 :plf="plf"
+                class="mb-1"
             ></song-item>
         </div>
     </div>

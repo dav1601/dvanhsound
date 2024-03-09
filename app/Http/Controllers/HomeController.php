@@ -30,4 +30,5 @@ class HomeController extends Controller
     {
         $url = $request->url();
     }
+   
 }

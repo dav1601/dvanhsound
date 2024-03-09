@@ -54,7 +54,13 @@ export default {
         });
         const image = computed(() => {
             if (currentSong.value.info.hasOwnProperty("images"))
-                return currentSong.value.info.images.high.url;
+                switch (currentSong.value.info.plf) {
+                    case "st":
+                        return currentSong.value.info.images[0];
+
+                    default:
+                        return currentSong.value.info.images.high.url;
+                }
             return "";
         });
 

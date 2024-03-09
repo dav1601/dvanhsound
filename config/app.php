@@ -194,6 +194,7 @@ return [
         App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        Weidner\Goutte\GoutteServiceProvider::class,
 
     ],
 
@@ -209,6 +210,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        'Goutte' => Weidner\Goutte\GoutteFacade::class,
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 

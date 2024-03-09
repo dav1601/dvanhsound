@@ -210,7 +210,8 @@ export default {
                         break;
 
                     default:
-                        url = stateReactive.info.images.medium.url;
+                        if (stateReactive.info.images.hasOwnProperty("medium"))
+                            url = stateReactive.info.images.medium.url;
                         break;
                 }
             }

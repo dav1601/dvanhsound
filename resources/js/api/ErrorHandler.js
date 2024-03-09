@@ -22,5 +22,5 @@ export const handleApiError = (err) => {
             break;
     }
     console.log(err);
-    return storeError.setError(message);
+    // return storeError.setError(message);
 };

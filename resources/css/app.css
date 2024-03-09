@@ -11,7 +11,8 @@
     .song-item-col-3 {
         @apply sm:w-[25%] sm:max-w-[25%];
     }
-    .song-item-col-4{
+    .song-item-col-4 {
         @apply w-[30%] max-w-[30%] sm:w-[18%] sm:max-w-[18%];
     }
 }
+

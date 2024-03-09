@@ -12,8 +12,8 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                "resources/css/app.css",
                 "resources/js/app.js",
+                "resources/css/app.css",
                 "resources/sass/app.scss",
             ],
             refresh: true,
@@ -28,10 +28,18 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                entryFileNames: `assets/[name].js?v[chunkhash]`,
+                chunkFileNames: `assets/[name].js?v[chunkhash]`,
+                assetFileNames: `assets/[name].[ext]?v[chunkhash]`,
+            },
+        },
+    },
     resolve: {
         alias: {
             "@": "/resources/js",
-
         },
     },
     css: {

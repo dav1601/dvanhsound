@@ -10,6 +10,8 @@ use Alaouy\Youtube\Facades\Youtube;
 use App\Http\Controllers\Controller;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Storage;
+use Weidner\Goutte;
+use Weidner\Goutte\GoutteFacade;
 
 class YoutubeController extends Controller
 {
@@ -109,5 +111,11 @@ class YoutubeController extends Controller
 
         $allPlaylist = Youtube::getPlaylistsByChannelId($channelId)['results'];
         return $allPlaylist;
+    }
+    public function crawlTrending(Request $request)
+    {
+        $crawler = GoutteFacade::request('GET', 'https://www.youtube.com/results?search_query=crawl+laravel&sp=CAISAA%253D%253D');
+
+        return $crawler;
     }
 }

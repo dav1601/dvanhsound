@@ -139,6 +139,7 @@ export const useSongPlay = defineStore({
         },
         // ANCHOR search action //////////////////////////////////////////////////////
         search(kw) {
+            
             this.isSearched = false;
             this.isSearching = true;
             if (!kw) {
@@ -233,7 +234,7 @@ export const useSongPlay = defineStore({
         },
         setDefaultPlaylist(id, items) {
             const payload = { id: id, items: items };
-            this.defaultPlaylist.push(payload);
+            // this.defaultPlaylist.push(payload);
         },
 
         // ANCHOR end set area //////////////////////////////////////////////////////

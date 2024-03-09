@@ -3,7 +3,7 @@
         <v-alert
             v-model="state.alert"
             type="info"
-            text="Nhạc từ Yt Music sẽ tải nhanh hơn Spotify"
+            text="Nhạc từ Yt Music sẽ tải nhanh hơn Spotify - JM666"
             elevation="2"
             class="my-4"
             variant="tonal"
@@ -12,7 +12,7 @@
             closable
             close-label="Close Alert"
         ></v-alert>
-        <div class="room-list">
+        <!-- <div class="room-list">
             <core-slide :isLoaded="state.loadedRooms" id="home-rooms">
                 <template v-slot:header-start>
                     <text-header
@@ -56,7 +56,7 @@
                     </swiper-slide>
                 </template>
             </core-slide>
-        </div>
+        </div> -->
         <div id="wp-frame-list">
             <div class="frame-list">
                 <frame-item
@@ -90,21 +90,29 @@ export default {
                         plf: "yt",
                     },
                     {
-                        id: "37i9dQZEVXbLdGSmz6xilI",
-                        plf: "st",
-                    },
-                    {
-                        id: "37i9dQZF1DX4g8Gs5nUhpp",
-                        plf: "st",
-                    },
-                    {
-                        id: "37i9dQZF1DX0F4i7Q9pshJ",
-                        plf: "st",
-                    },
-                    {
                         id: "PLlD46yrpUbIV22mq_rZ0aITj3aldb0WAg",
                         plf: "yt",
                     },
+                    {
+                        id: "PLlD46yrpUbIUlyK2Dc2c54os5BpEh4NUI",
+                        plf: "yt",
+                    },
+                    {
+                        id: "PLlD46yrpUbIWMA7MuGB3ihaaL2LD9Y7UG",
+                        plf: "yt",
+                    },
+                    // {
+                    //     id: "37i9dQZEVXbLdGSmz6xilI",
+                    //     plf: "st",
+                    // },
+                    // {
+                    //     id: "37i9dQZF1DX4g8Gs5nUhpp",
+                    //     plf: "st",
+                    // },
+                    // {
+                    //     id: "37i9dQZF1DX0F4i7Q9pshJ",
+                    //     plf: "st",
+                    // },
                 ],
                 alert: true,
                 rooms: [],
@@ -114,7 +122,7 @@ export default {
 
         const stateReactive = reactive({ ...initData() });
         const storeError = useErrors();
-       
+
         UserRepo.rooms({ limit: 12 }).then((res) => {
             const { data } = res.data;
             stateReactive.rooms = data;
