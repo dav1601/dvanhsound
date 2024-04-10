@@ -3,7 +3,7 @@
         <v-alert
             v-model="state.alert"
             type="info"
-            text="Nhạc từ Yt Music sẽ tải nhanh hơn Spotify - JM666"
+            text="Recommend to use music from Youtube - laxuda"
             elevation="2"
             class="my-4"
             variant="tonal"
@@ -86,9 +86,10 @@ export default {
             return {
                 arrayPlaylist: [
                     {
-                        id: "PLUadgMpPaifXLKV26KIqpFp6mpZiyF2l9",
+                        id: "PLlD46yrpUbIWMA7MuGB3ihaaL2LD9Y7UG",
                         plf: "yt",
                     },
+
                     {
                         id: "PLlD46yrpUbIV22mq_rZ0aITj3aldb0WAg",
                         plf: "yt",
@@ -97,10 +98,7 @@ export default {
                         id: "PLlD46yrpUbIUlyK2Dc2c54os5BpEh4NUI",
                         plf: "yt",
                     },
-                    {
-                        id: "PLlD46yrpUbIWMA7MuGB3ihaaL2LD9Y7UG",
-                        plf: "yt",
-                    },
+
                     // {
                     //     id: "37i9dQZEVXbLdGSmz6xilI",
                     //     plf: "st",
