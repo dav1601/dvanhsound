@@ -102,7 +102,7 @@
         </v-main>
         <!-- ANCHOR now playing bar --------------------------------- -->
         <NowPlayingBar
-            v-show="!hiddenAllNav && hasSong"
+            v-show="(!hiddenAllNav && hasSong) || loadingSong"
             :showVolume="state.showVol"
             @toggle-vol="toggleVol"
         />
@@ -146,7 +146,7 @@ export default {
         const auth = useAuthStore();
         const songPlay = useSongPlay();
         const musicRoom = useMusicRoom();
-        const { showPlayerPage, hasSong } = storeToRefs(songPlay);
+        const { showPlayerPage, hasSong, loadingSong } = storeToRefs(songPlay);
         const { inRoom } = storeToRefs(musicRoom);
         const responsive = useResponsive();
         const handleResize = () => {
@@ -286,6 +286,7 @@ export default {
             hasSong,
             routerLoading,
             inRoom,
+            loadingSong,
         };
     },
 };

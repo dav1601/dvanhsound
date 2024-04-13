@@ -47,6 +47,7 @@ export const useSongPlay = defineStore({
             info: {},
             progress: 0,
         },
+        loadingSong: false,
 
         settings: {
             volume: localStorage.getItem("songVolume")
@@ -139,7 +140,6 @@ export const useSongPlay = defineStore({
         },
         // ANCHOR search action //////////////////////////////////////////////////////
         search(kw) {
-            
             this.isSearched = false;
             this.isSearching = true;
             if (!kw) {
@@ -241,6 +241,7 @@ export const useSongPlay = defineStore({
         // SECTION CONTROLS //////////////////////////////////////////////////////
         // ANCHOR load song //////////////////////////////////////////////////////
         loadSong(id, playing = false, plf = "yt", playlist, listener = false) {
+            if (this.loadingSong) return;
             const musicRoom = useMusicRoom();
             const next = this.middleware(listener);
             if (!next) return this.notifyControlsValid();
@@ -270,6 +271,7 @@ export const useSongPlay = defineStore({
             }
 
             this.loadedSong = false;
+            this.loadingSong = true;
             let api;
             switch (plf) {
                 case "st":
@@ -286,11 +288,15 @@ export const useSongPlay = defineStore({
                 payload.playing = playing;
                 payload.listener = listener;
                 this.setCurrentSong(payload);
+                this.loadingSong = false;
                 if (!musicRoom.inRoom) {
                     // if (isEmpty(playlist.items)) playlist.items.push(payload);
                     this.setCurrentPlaylistItems(playlist.items, playlist.id);
                     this.storageData();
                 }
+            }).catch((err) => {
+                this.loadingSong = false;
+                this.loadedSong = true;
             });
         },
         // ANCHOR shuffle playlist //////////////////////////////////////////////////////

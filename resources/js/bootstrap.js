@@ -23,6 +23,9 @@ const token = Cookies.get("dvanhsound_token");
 axios.defaults.withCredentials = true;
 axios.defaults.withXSRFToken = true;
 axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+window.APP_URL = import.meta.env.VITE_APP_URL;
+
+
 window.Echo = new Echo({
     broadcaster: "socket.io",
     host: `${window.location.protocol}//${window.location.hostname}:6002`,

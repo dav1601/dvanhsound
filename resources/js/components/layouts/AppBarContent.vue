@@ -69,16 +69,23 @@
                     </v-menu>
                     <!-- login  -->
                     <div class="flex items-center" v-else>
-                        <v-btn
-                            class="capitalize rounded-full mx-4 text-center text-sm dvs-dark-bg"
+                        <!-- <v-btn
+                            class="capitalize rounded-full mx-4 text-center text-sm dvs-dark-bg "
                             :to="{ name: 'Register' }"
                             >Đăng ký</v-btn
+                        > -->
+                        <v-btn
+                            class="capitalize ml-2 hidden sm:flex sm:ml-4 rounded-full text-center text-sm dvs-dark-bg"
+                            :to="{ name: 'Login' }"
+                            >Sign in</v-btn
                         >
                         <v-btn
-                            class="capitalize rounded-full text-center text-sm dvs-dark-bg"
+                            density="comfortable"
+                            class="capitalize ml-2 sm:hidden rounded-full text-center text-sm dvs-dark-bg"
                             :to="{ name: 'Login' }"
-                            >Đăng nhập</v-btn
+                            icon="mdi-login"
                         >
+                        </v-btn>
                     </div>
                 </div>
                 <!-- -------- -->

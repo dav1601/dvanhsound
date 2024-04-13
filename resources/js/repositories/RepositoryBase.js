@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseDomain = "http://dvanhsound.local";
+const baseDomain = import.meta.env.VITE_APP_URL;
 const baseUrl = `${baseDomain}/api`;
 import Cookies from "js-cookie";
 import { handleApiError } from "@/api/ErrorHandler";

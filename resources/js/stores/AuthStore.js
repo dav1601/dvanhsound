@@ -4,7 +4,7 @@ import RepositoryBase from "@/repositories/RepositoryBase";
 import { notify } from "@kyvg/vue3-notification";
 import Cookies from "js-cookie";
 import { useUsers } from "@/stores/Users";
-
+import { useSongPlay } from "@/stores/SongPlay";
 export const useAuthStore = defineStore({
     id: "Auth",
     state: () => ({
@@ -59,9 +59,12 @@ export const useAuthStore = defineStore({
         },
 
         logout() {
+            const useSongPlay = useSongPlay();
             RepositoryBase.post("/logout")
                 .then((res) => {
                     this.clearUser();
+                    useSongPlay.myPlaylist = [];
+                    useSongPlay.myPlaylistRender = [];
                 })
                 .catch((err) => {
                     this.handleErroResponse(err);

@@ -4,6 +4,7 @@
         width="100vw"
         class="!overflow-visible sm:overflow-hidden"
         fixed
+        @click.stop="clickBottomNavigation"
     >
         <div
             id="now-playing-bar-content"
@@ -218,6 +219,7 @@ import { storeToRefs } from "pinia";
 import { notify } from "@kyvg/vue3-notification";
 import { useMusicRoom } from "@/stores/MusicRoom";
 import { useAuthStore } from "@/stores/AuthStore";
+import { useResponsive } from "@/stores/Responsive";
 import { RepositoryFactory } from "@/repositories/RepositoryFactory";
 import { debounce } from "lodash";
 const usersRepo = RepositoryFactory.get("user");
@@ -243,6 +245,7 @@ export default {
         const useStore = useSongPlay();
         const { showVolume } = toRefs(props);
         const { showPlayerPage } = storeToRefs(useStore);
+        const responsive = useResponsive();
         const musicRoom = useMusicRoom();
         // SECTION State //////////////////////////////////////////////////////
         const initData = () => {
@@ -548,6 +551,11 @@ export default {
                 nextOrPrev("next", listener);
             }
         };
+        const clickBottomNavigation = () => {
+            if (responsive.xs) {
+                return;
+            }
+        };
         // !SECTION End Methods //////////////////////////////////////////////////////
 
         // SECTION Watch //////////////////////////////////////////////////////
@@ -673,6 +681,7 @@ export default {
             clickNav,
             emitToggleVol,
             progress,
+            clickBottomNavigation,
         };
         // !SECTION //////////////////////////////////////////////////////
     },
