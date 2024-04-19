@@ -17,7 +17,10 @@ use App\Http\Controllers\Api\YoutubeController;
 
 Route::controller(HomeController::class)->group(function () {
     Route::get('system/test', 'index');
+    Route::get('trending', 'trending')->name("trending");
+    Route::post('trending/create', 'trending_create');
 });
+
 // Route::get('/{any}', function () {
 //     return view('app');
 // })->where('any', '^(?!api\/)[\/\w\.-]*')->name("app");

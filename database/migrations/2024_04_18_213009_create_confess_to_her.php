@@ -1,0 +1,37 @@
+<?php
+
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('confess_to_her', function (Blueprint $table) {
+            $table->id();
+            $table->uuid()->nullable();
+            $table->string("from_name", 35);
+            $table->string("to_name", 35);
+            $table->string("message", 255);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('confess_to_her');
+    }
+};
