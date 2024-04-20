@@ -13,19 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('room', function (Blueprint $table) {
+
+        Schema::create('members', function (Blueprint $table) {
             $table->id();
-            $table->string("title", 70);
-            $table->string("description", 140)->nullable();
-            $table->mediumText("image")->nullable();
-            $table->enum('status', ['public', 'private']);
-            $table->mediumText("password");
             $table->unsignedBigInteger("user_id");
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger("room_id");
+            $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
+            $table->boolean("isOwner")->default(false);
             $table->timestamps();
         });
 
-        
     }
 
     /**

@@ -31,8 +31,10 @@
         integrity="sha512-u3fPA7V8qQmhBPNT5quvaXVa1mnnLSXUep5PS1qo5NRzHwG19aHmNJnj1Q8hpA/nBWZtZD4r4AX6YOt5ynLN2g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        var soureAudio = "https://res.cloudinary.com/vanh-tech/video/upload/v1713307188/ssstik.io_1712586792929_mwwnaf.mp3";
-        var soureLyric = "https://res.cloudinary.com/vanh-tech/raw/upload/v1713317168/lyric_s0winx.lrc";
+        var soureAudio =
+            "https://res.cloudinary.com/vanh-tech/video/upload/v1713567895/soundlove/dungngdungtime/dungngdungtime_w9sz9n.mp3";
+        var soureLyric =
+            "https://res.cloudinary.com/vanh-tech/raw/upload/v1713568567/soundlove/dungngdungtime/lyric_grhahp.lrc";
         var from_name = {{ Js::from($from) }};
         var to_name = {{ Js::from($to) }};
         var message = {{ Js::from($message) }};
@@ -434,21 +436,20 @@
     !(async function main() {
         'use strict'
         const BASE_URL = 'https://raw.githubusercontent.com/mcanam/assets/main/liricle-demo/'
-        console.log(from_name, to_name, message)
+
         const dom = {
             lyric: document.querySelector('#outputLyrics'),
             player: document.querySelector('.player'),
         }
 
         // load lrc file
-        const res = await fetch('https://res.cloudinary.com/vanh-tech/raw/upload/v1713317168/lyric_s0winx.lrc')
+        const res = await fetch(soureLyric)
         const lrc = await res.text()
 
         const lyrics = parseLyric(lrc)
 
-        dom.player.src =
-            'https://res.cloudinary.com/vanh-tech/video/upload/v1713307188/ssstik.io_1712586792929_mwwnaf.mp3'
-        var flag = [];
+        dom.player.src = soureAudio
+        var flag = []
         dom.player.ontimeupdate = () => {
             dom.lyric.classList.remove("animate__zoomIn");
             const time = dom.player.currentTime
@@ -473,6 +474,7 @@
             void dom.lyric.offsetWidth;
             dom.lyric.innerHTML = message
             dom.lyric.classList.add("animate__zoomIn");
+            flag = [];
         }
 
     })()
@@ -738,7 +740,6 @@
             this.instancedGeometry.setAttribute('aSpeed', new THREE.InstancedBufferAttribute(speeds, 1, false))
             this.instancedGeometry.setAttribute('aColor', new THREE.InstancedBufferAttribute(colors, 3, false))
             this.heart = new THREE.Mesh(this.instancedGeometry, this.heartMaterial)
-            console.log(this.heart)
             this.scene.add(this.heart)
         }
         addToScene() {
@@ -784,7 +785,7 @@
                     })
                 } else {
                     this.loadMusic().then(() => {
-                        console.log('music loaded')
+
                     })
                 }
             })
@@ -799,7 +800,7 @@
                     },
                     (xhr) => {},
                     (err) => {
-                        console.log(err)
+
                     },
                 )
             })
@@ -836,7 +837,7 @@
                     },
 
                     (error) => {
-                        console.log(error)
+
                     },
                 )
 
