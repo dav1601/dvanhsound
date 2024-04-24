@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
@@ -30,11 +31,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"
         integrity="sha512-u3fPA7V8qQmhBPNT5quvaXVa1mnnLSXUep5PS1qo5NRzHwG19aHmNJnj1Q8hpA/nBWZtZD4r4AX6YOt5ynLN2g=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
         var soureAudio =
-            "https://res.cloudinary.com/vanh-tech/video/upload/v1713567895/soundlove/dungngdungtime/dungngdungtime_w9sz9n.mp3";
+            "https://res.cloudinary.com/vanh-tech/video/upload/v1713840593/soundlove/dong%20thoai/dong_thoai_glifjn.mp3";
         var soureLyric =
-            "https://res.cloudinary.com/vanh-tech/raw/upload/v1713568567/soundlove/dungngdungtime/lyric_grhahp.lrc";
+            "https://res.cloudinary.com/vanh-tech/raw/upload/v1713841362/soundlove/dong%20thoai/lyric_dt_y88lvs.lrc";
         var from_name = {{ Js::from($from) }};
         var to_name = {{ Js::from($to) }};
         var message = {{ Js::from($message) }};
@@ -241,10 +243,45 @@
         #setting:hover img {
             transform: scale(1.2);
         }
+
+        #cupid {
+            position: fixed;
+            /* left: 50%;
+            top: 18%; */
+
+            z-index: 500000;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #cupid .container {
+            max-width: 500px;
+            max-height: 500px;
+            position: relative;
+        }
+
+        #fireworks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 100000;
+        }
+
+        /* canvas {
+            z-index: 10001;
+        } */
+
+        /* #cupid img {
+            transform: rotateZ(20deg) !important;
+        } */
     </style>
 </head>
 
 <body>
+    <div id="fireworks" class="d-none"></div>
     <div id="setting">
         <img width="100%" src="https://res.cloudinary.com/vanh-tech/image/upload/v1713479455/favourite_nyvcfb.png"
             alt="">
@@ -252,13 +289,27 @@
     <audio muted class="player">
 
     </audio>
-
+    <audio id="fws_sound" muted>
+        <source
+            src="https://res.cloudinary.com/vanh-tech/video/upload/v1713920124/soundlove/dong%20thoai/fireworks_ddsvhl.mp3"
+            type="audio/mpeg">
+    </audio>
     <!-- <div class="lyric anim-typewriter"></div> -->
     <canvas class="webgl"></canvas>
-    <h1 id="outputLyrics" class="animate__animated">Hí {{ $to }} , nhấn trái tim kia đi {{ $from }} có
+    {{-- <div id="cupid">
+        <div class="container">
+            <img width="100%" height="100%" class="animate__animated animate__backInDown"
+                src="https://res.cloudinary.com/vanh-tech/image/upload/v1713667473/soundlove/newcupid-removebg-preview_suru1b.png"
+                alt="">
+
+        </div>
+    </div> --}}
+    <h1 id="outputLyrics" class="animate__animated">Hí {{ $to }} , nhấn trái tim kia đi
+        {{ $from }} có
         một điều muốn
         nói với {{ $to }} 😊
     </h1>
+
     <button id="play-music" type="button" aria-label="Play music">
         <svg fill="currentColor" viewBox="0 0 512 512" width="100" title="music">
             <path
@@ -432,21 +483,49 @@
     </div>
 </div>
 {{-- end modal --}}
+<script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
 <script type="module">
     !(async function main() {
         'use strict'
-        const BASE_URL = 'https://raw.githubusercontent.com/mcanam/assets/main/liricle-demo/'
 
-        const dom = {
+
+        var dom = {
             lyric: document.querySelector('#outputLyrics'),
             player: document.querySelector('.player'),
+            soundFws: document.getElementById("fws_sound"),
+            contFws: document.getElementById("fireworks")
         }
+
+        var fireworks = new Fireworks.default(dom.contFws)
+
+        function startFireworks() {
+            $("#fireworks").removeClass("d-none")
+            dom.soundFws.volume = 0.2
+            dom.soundFws.muted = false
+            dom.soundFws.play()
+            fireworks.start()
+        }
+
+        function stopFireworks() {
+            $("#fireworks").addClass("d-none")
+            fireworks.stop(true)
+
+        }
+        dom.soundFws.onended = () => {
+            stopFireworks();
+            dom.soundFws.volume = 0
+            dom.soundFws.muted = true
+        }
+
 
         // load lrc file
         const res = await fetch(soureLyric)
         const lrc = await res.text()
+        const newLrc = lrc.replace(/Anh/g, from_name).replace(/Em/g, to_name)
 
-        const lyrics = parseLyric(lrc)
+
+        const lyrics = parseLyric(newLrc)
+
 
         dom.player.src = soureAudio
         var flag = []
@@ -470,6 +549,7 @@
 
         }
         dom.player.onended = () => {
+            startFireworks();
             dom.lyric.classList.remove("animate__lightSpeedInLeft");
             void dom.lyric.offsetWidth;
             dom.lyric.innerHTML = message
@@ -915,6 +995,7 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.0/gsap.min.js"></script>
+
 {{-- ANCHOR  --}}
 <script>
     $(function() {
@@ -946,7 +1027,12 @@
             navigator.clipboard.writeText(copyText.value);
 
             // Alert the copied text
-            alert("Copied the url");
+            return Toastify({
+                text: "Copied Link",
+                duration: 5000,
+                gravity: "top", // `top` or `bottom`
+                position: "center", // `left`, `center` or `right`
+            }).showToast();
         }
 
         $(document).on('click', "#setting", function() {
